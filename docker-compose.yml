@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: bitnami/postgresql:latest
+    container_name: postgres_pulse
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=pulse
+    restart: unless-stopped
