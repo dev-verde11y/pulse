@@ -49,5 +49,114 @@
 }
 
 .swiper-pagination-bullet-active {
-  background: white !important;
+  background: #2563eb !important;
+}
+
+/* Custom Anime Card Animations - Removido para evitar conflitos */
+
+/* Gradient Overlays */
+.hero-gradient {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+}
+
+.card-gradient-hover {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(37, 99, 235, 0.1) 100%);
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+}
+
+/* Category Button Animations */
+.category-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.category-hover:hover::before {
+  left: 100%;
+}
+
+/* Carousel Navigation Custom */
+.carousel-nav-custom {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+}
+
+.carousel-section:hover .carousel-nav-custom {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Hero Banner Custom Pagination */
+.hero-pagination-bullet {
+  width: 12px !important;
+  height: 12px !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  opacity: 1 !important;
+  border-radius: 50% !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  border: 2px solid transparent !important;
+}
+
+.hero-pagination-bullet:hover {
+  background: rgba(255, 255, 255, 0.7) !important;
+  transform: scale(1.2) !important;
+}
+
+.hero-pagination-bullet-active {
+  background: #2563eb !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: scale(1.3) !important;
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.5) !important;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
 }

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx prisma:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

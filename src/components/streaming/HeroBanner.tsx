@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Swiper, SwiperSlide } from 'swiper/react'
+import { useRef } from 'react'
+import { Swiper, SwiperSlide, SwiperRef } from 'swiper/react'
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules'
 
 // Import Swiper styles
@@ -81,137 +81,197 @@ const heroContent: HeroContent[] = [
 ]
 
 export function HeroBanner() {
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const swiperRef = useRef<SwiperRef | null>(null)
+
+  const goToNext = () => {
+    if (swiperRef.current && swiperRef.current.swiper) {
+      swiperRef.current.swiper.slideNext()
+    }
+  }
+
+  const goToPrev = () => {
+    if (swiperRef.current && swiperRef.current.swiper) {
+      swiperRef.current.swiper.slidePrev()
+    }
+  }
   
   return (
-    <div className="relative h-[80vh] w-full overflow-hidden">
+    <div className="relative h-[70vh] sm:h-[80vh] lg:h-[85vh] min-h-[500px] sm:min-h-[600px] w-full overflow-hidden">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
         spaceBetween={0}
         slidesPerView={1}
-        navigation={true}
-        pagination={{ clickable: true }}
+        navigation={false}
+        pagination={{
+          el: '.hero-pagination',
+          clickable: true,
+          renderBullet: (index, className) => {
+            return `<span class="${className} hero-pagination-bullet"></span>`
+          },
+        }}
         autoplay={{
-          delay: 10000,
+          delay: 8000,
           disableOnInteraction: false,
         }}
-        onSlideChange={(swiper) => setCurrentSlide(swiper.activeIndex)}
-        onSwiper={(swiper) => console.log('Swiper initialized:', swiper)}
+        onSlideChange={() => {}}
+        ref={swiperRef}
         className="h-full w-full relative z-0"
-        style={{ '--swiper-navigation-color': '#fff', '--swiper-pagination-color': '#fff' } as React.CSSProperties}
+        style={{ 
+          '--swiper-navigation-color': '#2563eb',
+          '--swiper-pagination-color': '#2563eb' 
+        } as React.CSSProperties}
       >
-        {heroContent.map((content, index) => (
+        {heroContent.map((content) => (
           <SwiperSlide key={content.id}>
-            <div 
-              className="relative h-full w-full bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${content.backgroundImage})` }}
-            >
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+            <div className="relative h-full w-full">
+              {/* Background Image with Parallax Effect */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 transition-transform duration-[8000ms]"
+                style={{ backgroundImage: `url(${content.backgroundImage})` }}
+              />
               
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center z-10">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                  <div className="max-w-2xl text-white relative">
-                    {/* Type Badge */}
-                    <div className="mb-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        content.type === 'anime' ? 'bg-red-600' : 
-                        content.type === 'filme' ? 'bg-blue-600' : 'bg-green-600'
-                      }`}>
-                        {content.type}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-2 leading-tight drop-shadow-lg">
-                      {content.title}
-                    </h1>
+              {/* Advanced Gradient Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/50" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
+              
+              {/* Main Content Container */}
+              <div className="absolute inset-0 flex items-end pb-20 lg:pb-24 z-10">
+                <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                     
-                    {/* Subtitle */}
-                    <h2 className="text-xl md:text-2xl text-gray-300 mb-4 font-light">
-                      {content.subtitle}
-                    </h2>
+                    {/* Left Column - Main Content */}
+                    <div className="space-y-6 animate-fadeIn">
+                      {/* Type Badge */}
+                      <div className="flex items-center gap-3">
+                        <div className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider backdrop-blur-sm ${
+                          content.type === 'anime' ? 'bg-blue-600/90 text-white' : 
+                          content.type === 'filme' ? 'bg-indigo-600/90 text-white' : 'bg-cyan-600/90 text-white'
+                        }`}>
+                          {content.type}
+                        </div>
+                        {content.episode && (
+                          <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-white">
+                            {content.episode}
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Meta Info */}
-                    <div className="flex items-center gap-4 mb-6 text-sm">
-                      <span className="bg-yellow-600 px-2 py-1 rounded text-black font-bold">
-                        {content.rating}
-                      </span>
-                      <span>{content.year}</span>
-                      <span>{content.duration}</span>
+                      {/* Title with Enhanced Typography */}
+                      <div className="space-y-2">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.9] text-white drop-shadow-2xl tracking-tight">
+                          {content.title}
+                        </h1>
+                        <h2 className="text-lg md:text-xl lg:text-2xl text-blue-300 font-medium max-w-xl">
+                          {content.subtitle}
+                        </h2>
+                      </div>
+
+                      {/* Meta Information */}
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                            <span className="text-xs font-bold text-white">{content.rating}</span>
+                          </div>
+                          <span className="font-medium">{content.year}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                          <span>{content.duration}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                          <span>HD</span>
+                        </div>
+                      </div>
+
+                      {/* Genres as Pills */}
+                      <div className="flex flex-wrap gap-2">
+                        {content.genres.slice(0, 4).map((genre) => (
+                          <span key={genre} className="bg-white/15 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-full text-sm text-white/90 hover:bg-white/25 transition-colors cursor-pointer">
+                            {genre}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-base lg:text-lg leading-relaxed text-white/80 max-w-2xl line-clamp-3">
+                        {content.description}
+                      </p>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+                        <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-2xl group">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                          <span className="text-sm sm:text-base">{content.episode ? `Continuar ${content.episode}` : 'Assistir Agora'}</span>
+                        </button>
+                        
+                        <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 flex items-center justify-center group">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-sm sm:text-base">Mais Info</span>
+                        </button>
+
+                        <button className="bg-transparent hover:bg-white/10 border-2 border-white/40 hover:border-white/60 text-white font-semibold p-3 sm:p-4 rounded-xl transition-all duration-300 flex items-center justify-center group sm:w-auto">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      {/* Progress Bar (if episode) */}
                       {content.episode && (
-                        <span className="bg-white/20 px-2 py-1 rounded">
-                          {content.episode}
-                        </span>
+                        <div className="pt-6 space-y-3">
+                          <div className="flex items-center justify-between text-sm text-white/70">
+                            <span>Seu progresso no episódio</span>
+                            <span className="text-blue-300 font-medium">67% concluído</span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
+                            <div className="bg-gradient-to-r from-blue-500 to-blue-400 h-2 rounded-full w-2/3 transition-all duration-1000 shadow-lg"></div>
+                          </div>
+                        </div>
                       )}
                     </div>
 
-                    {/* Genres */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {content.genres.map((genre) => (
-                        <span key={genre} className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm">
-                          {genre}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-lg leading-relaxed mb-8 text-gray-200 max-w-xl line-clamp-4">
-                      {content.description}
-                    </p>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <button className="bg-white text-black font-bold py-4 px-8 rounded-lg hover:bg-gray-200 transition-all duration-200 flex items-center justify-center transform hover:scale-105 shadow-lg">
-                        <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                        {content.episode ? `Assistir ${content.episode}` : 'Assistir Agora'}
-                      </button>
-                      
-                      <button className="bg-gray-600/80 backdrop-blur-sm text-white font-semibold py-4 px-8 rounded-lg hover:bg-gray-600 transition-all duration-200 flex items-center justify-center">
-                        <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Mais Informações
-                      </button>
-
-                      <button className="bg-transparent border-2 border-white/50 text-white font-semibold py-4 px-6 rounded-lg hover:bg-white/10 transition-all duration-200 flex items-center justify-center">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Progress Bar (if episode) */}
-                    {content.episode && (
-                      <div className="mt-8">
-                        <div className="flex items-center gap-3 text-sm text-gray-300 mb-2">
-                          <span>Progresso do episódio</span>
-                          <span className="text-white font-medium">67%</span>
-                        </div>
-                        <div className="w-full bg-gray-700 rounded-full h-2">
-                          <div className="bg-red-600 h-2 rounded-full w-2/3"></div>
-                        </div>
+                    {/* Right Column - Additional Info/Logo Space */}
+                    <div className="hidden lg:flex items-end justify-end">
+                      <div className="space-y-4 text-right">
+                        {/* Space for future logo or additional content */}
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Volume/Sound Toggle */}
-              <button className="absolute bottom-8 right-8 bg-black/50 backdrop-blur-sm p-3 rounded-full text-white hover:bg-black/70 transition-all duration-200">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M6 9v6a1 1 0 001.447.894L12 13h3a1 1 0 001-1V8a1 1 0 00-1-1h-3L7.447 4.106A1 1 0 006 5v4z" />
-                </svg>
-              </button>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* Custom Navigation Buttons */}
+      <button 
+        onClick={goToPrev}
+        className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
+      >
+        <svg className="w-6 h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      
+      <button 
+        onClick={goToNext}
+        className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
+      >
+        <svg className="w-6 h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      {/* Custom Pagination */}
+      <div className="hero-pagination absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3"></div>
 
     </div>
   )

@@ -13,7 +13,16 @@ interface JWTPayload {
 async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET)
-    return payload as JWTPayload
+    
+    // Validate that payload has required properties
+    if (
+      typeof payload.userId === 'string' && 
+      typeof payload.email === 'string'
+    ) {
+      return payload as unknown as JWTPayload
+    }
+    
+    return null
   } catch (error) {
     // Log apenas tipo de erro, sem dados sensíveis
     console.log('[Middleware] Token verification failed:', error instanceof Error ? error.name : 'Unknown error')
