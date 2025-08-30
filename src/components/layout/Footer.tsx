@@ -251,7 +251,7 @@ export function Footer() {
         <div className="border-t border-gray-800 py-4">
           <div className="text-center">
             <p className="text-xs text-gray-600 leading-relaxed max-w-4xl mx-auto">
-              Pulse é uma plataforma de streaming fictícia criada para fins demonstrativos. 
+              Pulse é uma plataforma de streaming. 
               Todos os conteúdos exibidos são para teste e desenvolvimento. 
               Para a melhor experiência, recomendamos usar um navegador moderno com suporte a HTML5.
             </p>
