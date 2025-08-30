@@ -75,7 +75,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Pulse</h1>
-          <p className="text-gray-600">Entre na sua conta e gerencie seu sistema</p>
+          <p className="text-gray-600">Entre na sua conta</p>
         </div>
 
         <Card className="backdrop-blur-sm bg-white/90 shadow-xl border-0">

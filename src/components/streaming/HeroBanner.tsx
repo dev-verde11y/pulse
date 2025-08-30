@@ -40,8 +40,21 @@ const heroContent: HeroContent[] = [
     backgroundImage: 'https://dw9to29mmj727.cloudfront.net/promo/2016/6282-Header_KaijuNo8_2000x800.jpg',
     genres: ['Ação', 'Drama', 'Fantasia', 'Militar']
   },
-  {
+    {
     id: '2',
+    title: 'Demon Slayer',
+    subtitle: 'Kimetsu no Yaiba',
+    description: 'Desde os tempos antigos, rumores de demônios comedores de carne rondam por aí. Tanjiro Kamado vive nas montanhas com sua família. Um dia, quando retorna de vender carvão na cidade, encontra sua família massacrada por um demônio. A única sobrevivente é sua irmã Nezuko, que se transformou em um demônio.',
+    type: 'anime',
+    year: 2019,
+    rating: '14+',
+    duration: '23 min',
+    episode: 'T3 E11',
+    backgroundImage: 'https://cdn.selectgame.net/wp-content/uploads/2025/06/Kimetsu-capa-Akaza-28-06.webp',
+    genres: ['Ação', 'Sobrenatural', 'Histórico', 'Shounen']
+  },
+  {
+    id: '3',
     title: 'Demon Slayer',
     subtitle: 'Kimetsu no Yaiba',
     description: 'Desde os tempos antigos, rumores de demônios comedores de carne rondam por aí. Tanjiro Kamado vive nas montanhas com sua família. Um dia, quando retorna de vender carvão na cidade, encontra sua família massacrada por um demônio. A única sobrevivente é sua irmã Nezuko, que se transformou em um demônio.',
@@ -54,7 +67,7 @@ const heroContent: HeroContent[] = [
     genres: ['Ação', 'Sobrenatural', 'Histórico', 'Shounen']
   },
   {
-    id: '3',
+    id: '4',
     title: 'Tougen Anki',
     subtitle: 'Kimi no Na wa',
     description: 'Mitsuha é uma colegial que vive numa pequena cidade rural no Japão. Entediada com a vida no campo, ela sonha em ser um garoto bonito de Tokyo na próxima vida. Enquanto isso, Taki é um colegial que vive em Tokyo, trabalha meio período num restaurante italiano e aspira ser um arquiteto.',
