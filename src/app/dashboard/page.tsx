@@ -1,9 +1,10 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { Header } from '@/components/layout/Header'
 import { HeroBanner } from '@/components/streaming/HeroBanner'
- import { Footer } from '@/components/layout/Footer'
+import { Footer } from '@/components/layout/Footer'
 import { AnimeCarousel } from '@/components/streaming/AnimeCarousel'
 import { 
   continueWatching, 
@@ -19,7 +20,12 @@ import {
 import '@/styles/swiper.css'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+
+  // Mostra loading screen enquanto verifica autenticação
+  if (loading) {
+    return <LoadingScreen message="Preparando seu conteúdo..." />
+  }
 
   return (
     <div className="min-h-screen bg-black">

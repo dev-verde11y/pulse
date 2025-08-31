@@ -53,19 +53,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (isExpired) {
             // Token expirado, remove dados
             logout()
+            setLoading(false)
           } else {
+            // Atualiza estado de forma batch para evitar re-renders
+            const userData = JSON.parse(storedUser)
             setToken(storedToken)
-            setUser(JSON.parse(storedUser))
-            // Verifica se o token ainda é válido no servidor
+            setUser(userData)
+            setLoading(false)
+            // Verifica se o token ainda é válido no servidor (em background)
             validateToken(storedToken)
           }
         } catch (error) {
           // Token inválido, remove dados
           logout()
+          setLoading(false)
         }
+      } else {
+        setLoading(false)
       }
+    } else {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   const validateToken = async (token: string) => {
@@ -81,9 +89,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       const data = await response.json()
-      setUser(data.user)
+      // Só atualiza se o usuário mudou
+      setUser(prevUser => {
+        if (JSON.stringify(prevUser) !== JSON.stringify(data.user)) {
+          return data.user
+        }
+        return prevUser
+      })
     } catch (error) {
-      // Token inválido, remove do localStorage
+      // Token inválido, remove do localStorage silenciosamente
       logout()
     }
   }
@@ -91,7 +105,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       setError(null)
-      setLoading(true)
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -108,7 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const data: AuthResponse = await response.json()
       
-      // Salva no localStorage e cookie
+      // Salva no localStorage e cookie de forma síncrona
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
@@ -116,13 +129,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         document.cookie = `token=${data.token}; path=/; max-age=${2 * 60 * 60}` // 2 horas
       }
       
+      // Atualiza estado de forma batch
       setToken(data.token)
       setUser(data.user)
+      setLoading(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
-      throw err
-    } finally {
       setLoading(false)
+      throw err
     }
   }
 
