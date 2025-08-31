@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { AuthContextType, User, LoginCredentials, RegisterCredentials, AuthResponse } from '@/types/auth'
+import { AuthContextType, User, LoginCredentials, RegisterCredentials, AuthResponse, SubscriptionInfo } from '@/types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -14,6 +14,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null)
 
   // Verifica expiração do token periodicamente
   useEffect(() => {
@@ -125,6 +126,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
+        if (data.subscriptionInfo) {
+          localStorage.setItem('subscriptionInfo', JSON.stringify(data.subscriptionInfo))
+        }
         // Salva no cookie para o middleware (2 horas)
         document.cookie = `token=${data.token}; path=/; max-age=${2 * 60 * 60}` // 2 horas
       }
@@ -132,7 +136,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Atualiza estado de forma batch
       setToken(data.token)
       setUser(data.user)
+      setSubscriptionInfo(data.subscriptionInfo || null)
       setLoading(false)
+      
+      // Retorna os dados para que o componente possa lidar com modal de renovação
+      return data
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
       setLoading(false)
@@ -178,11 +186,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      localStorage.removeItem('subscriptionInfo')
       // Remove cookie
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     }
     setToken(null)
     setUser(null)
+    setSubscriptionInfo(null)
     setError(null)
   }
 
@@ -194,6 +204,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     loading,
     error,
+    subscriptionInfo,
   }
 
   return (

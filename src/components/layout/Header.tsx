@@ -325,7 +325,7 @@ export function Header() {
                       </div>
                       <div className="ml-2 hidden lg:block">
                         <div className="text-sm font-medium text-white">{user?.name || 'Admin'}</div>
-                        <div className="text-xs text-blue-400">Premium</div>
+                        <div className="text-xs text-blue-400">{user?.currentPlan || 'FREE'}</div>
                       </div>
                       <svg className="ml-1 h-3 w-3 text-gray-400 group-hover:text-white transition-colors hidden lg:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -344,8 +344,26 @@ export function Header() {
                             <div className="ml-3 flex-1">
                               <div className="font-semibold text-white text-sm">{user?.name || 'Admin'}</div>
                               <div className="text-xs text-gray-400 truncate">{user?.email}</div>
-                              <div className="flex items-center mt-1">
-                                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">PREMIUM</span>
+                              <div className="flex items-center gap-2 mt-1">
+                                {user?.role === 'ADMIN' && (
+                                  <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded flex items-center">
+                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 1l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-1.74L12 1z"/>
+                                    </svg>
+                                    ADMIN
+                                  </span>
+                                )}
+                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                                  user?.currentPlan === 'FREE' 
+                                    ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
+                                    : user?.currentPlan === 'FAN'
+                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                    : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
+                                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                                }`}>
+                                  {user?.currentPlan || 'FREE'}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -362,9 +380,25 @@ export function Header() {
                             <span className="ml-auto bg-blue-600 text-white text-xs px-1 py-0.5 rounded-full">12</span>
                           </a>
                           <a href="#" className="flex items-center px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors duration-150 rounded mx-2">
-                            <svg className="w-4 h-4 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                            <span>Premium</span>
+                            <svg className={`w-4 h-4 mr-2 ${
+                              user?.currentPlan === 'FREE' ? 'text-gray-400' :
+                              user?.currentPlan === 'FAN' ? 'text-blue-400' :
+                              'text-yellow-400'
+                            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                            <span>{user?.currentPlan || 'FREE'}</span>
                           </a>
+                          {user?.role === 'ADMIN' && (
+                            <>
+                              <div className="border-t border-gray-700/50 my-1 mx-2"></div>
+                              <a href="#" className="flex items-center px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors duration-150 rounded mx-2">
+                                <svg className="w-4 h-4 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Painel Admin</span>
+                              </a>
+                            </>
+                          )}
                           <div className="border-t border-gray-700/50 my-1 mx-2"></div>
                           <button 
                             onClick={handleLogout}
@@ -451,9 +485,29 @@ export function Header() {
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="text-base font-semibold text-white">{user?.name || 'Admin'}</div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <div className="text-sm text-gray-300 truncate">{user?.email}</div>
-                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-0.5 rounded">PREMIUM</span>
+                      <div className="flex items-center gap-1">
+                        {user?.role === 'ADMIN' && (
+                          <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-0.5 rounded flex items-center">
+                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 1l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-1.74L12 1z"/>
+                            </svg>
+                            ADMIN
+                          </span>
+                        )}
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                          user?.currentPlan === 'FREE' 
+                            ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
+                            : user?.currentPlan === 'FAN'
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                            : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
+                            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                            : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                        }`}>
+                          {user?.currentPlan || 'FREE'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -3,6 +3,9 @@ export interface User {
   email: string
   name: string | null
   avatar: string | null
+  currentPlan?: 'FREE' | 'FAN' | 'MEGA_FAN' | 'MEGA_FAN_ANNUAL'
+  role?: string
+  subscriptionStatus?: string
   createdAt: string
   updatedAt: string
 }
@@ -10,11 +13,12 @@ export interface User {
 export interface AuthContextType {
   user: User | null
   token: string | null
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<AuthResponse>
   register: (email: string, password: string, name?: string) => Promise<void>
   logout: () => void
   loading: boolean
   error: string | null
+  subscriptionInfo: SubscriptionInfo | null
 }
 
 export interface LoginCredentials {
@@ -26,8 +30,21 @@ export interface RegisterCredentials extends LoginCredentials {
   name?: string
 }
 
+export interface SubscriptionInfo {
+  isExpired?: boolean
+  isInGracePeriod?: boolean
+  daysUntilExpiry?: number | null
+  subscriptionStatus?: string
+  expiredWarning?: string
+  gracePeriodWarning?: string
+  graceDaysLeft?: number
+  showRenewalModal?: boolean
+  availablePlans?: any[]
+}
+
 export interface AuthResponse {
   message: string
   user: User
   token: string
+  subscriptionInfo?: SubscriptionInfo
 }

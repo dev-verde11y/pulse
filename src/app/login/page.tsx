@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import Image from 'next/image'
 import Link from 'next/link'
+import { AuthResponse, SubscriptionInfo } from '@/types/auth'
 import '@/styles/login-animations.css'
 
 export default function LoginPage() {
@@ -14,16 +15,40 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [isLogging, setIsLogging] = useState(false)
+  const [showRenewalModal, setShowRenewalModal] = useState(false)
+  const [renewalInfo, setRenewalInfo] = useState<SubscriptionInfo | null>(null)
+  const [showContactMessage, setShowContactMessage] = useState(false)
   
-  const { login, loading, error, user } = useAuth()
+  const { login, logout, loading, error, user } = useAuth()
   const router = useRouter()
 
-  // Redireciona se já estiver logado
+  // Redireciona se já estiver logado (mas não se o modal de renovação estiver aberto)
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !showRenewalModal) {
       router.push('/dashboard')
     }
-  }, [user, loading, router])
+  }, [user, loading, router, showRenewalModal])
+
+  // Fechar modal com ESC
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showRenewalModal) {
+        setShowRenewalModal(false)
+        logout()
+      }
+    }
+
+    if (showRenewalModal) {
+      document.addEventListener('keydown', handleKeyDown)
+      // Previne scroll do body quando modal está aberto
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [showRenewalModal, logout])
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {}
@@ -54,10 +79,19 @@ export default function LoginPage() {
     setIsLogging(true)
     
     try {
-      await login(email, password)
-      // Pequeno delay para mostrar sucesso antes do redirect
-      await new Promise(resolve => setTimeout(resolve, 300))
-      router.replace('/dashboard')
+      const response: AuthResponse = await login(email, password)
+      
+      // Verifica se precisa mostrar modal de renovação
+      if (response.subscriptionInfo?.showRenewalModal) {
+        setRenewalInfo(response.subscriptionInfo)
+        setShowRenewalModal(true)
+        setIsLogging(false)
+        return // Não redireciona, fica na página com o modal
+      } else {
+        // Login normal - redireciona para dashboard
+        await new Promise(resolve => setTimeout(resolve, 300))
+        router.replace('/dashboard')
+      }
     } catch (err) {
       console.error('Login error:', err)
       setIsLogging(false)
@@ -292,6 +326,7 @@ export default function LoginPage() {
                     </>
                   )}
                 </button>
+
               </form>
 
               <div className="mt-6 sm:mt-8 text-center space-y-4">
@@ -326,6 +361,209 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Renovação de Assinatura */}
+      {showRenewalModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={(e) => {
+            // Se clicar no fundo (não no modal), fecha e faz logout
+            if (e.target === e.currentTarget) {
+              setShowRenewalModal(false)
+              logout()
+            }
+          }}
+        >
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto relative">
+            {/* Botão Fechar */}
+            <button
+              onClick={() => {
+                setShowRenewalModal(false)
+                logout()
+              }}
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all duration-200 z-10"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <div className="p-6">
+              {!showContactMessage ? (
+                <>
+                  {/* Header */}
+                  <div className="text-center mb-6">
+                    <div className={`mx-auto w-16 h-16 ${renewalInfo?.isExpired ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-orange-500 to-yellow-500'} rounded-full flex items-center justify-center mb-4`}>
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {renewalInfo?.isExpired ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        )}
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">
+                      {renewalInfo?.isExpired ? 'Assinatura Expirada' : 'Período de Graça'}
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                      {renewalInfo?.isExpired 
+                        ? renewalInfo.expiredWarning
+                        : `${renewalInfo?.gracePeriodWarning} Você ainda pode usar a plataforma com algumas limitações.`
+                      }
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Mensagem de Contato */}
+                  <div className="text-center mb-6">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      Entre em Contato
+                    </h3>
+                    <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
+                      <p className="text-gray-300 text-sm mb-3">
+                        Para renovar sua assinatura, entre em contato conosco:
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center space-x-2">
+                          <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-cyan-400 font-semibold text-sm">suporte@pulse.com</span>
+                        </div>
+                        <div className="flex items-center justify-center space-x-2">
+                          <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <span className="text-green-400 font-semibold text-sm">(11) 99999-9999</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-xs">
+                      Nossa equipe responderá em até 24 horas úteis
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {!showContactMessage ? (
+                <>
+                  {/* Informações da Situação */}
+                  <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-300 text-sm">Status:</span>
+                      <span className={`text-sm font-semibold ${renewalInfo?.isExpired ? 'text-red-400' : 'text-orange-400'}`}>
+                        {renewalInfo?.isExpired ? 'Expirada' : 'Período de Graça'}
+                      </span>
+                    </div>
+                    {renewalInfo?.graceDaysLeft && (
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-gray-300 text-sm">Dias restantes:</span>
+                        <span className="text-orange-400 font-semibold text-sm">{renewalInfo.graceDaysLeft} dias</span>
+                      </div>
+                    )}
+                    
+                    {/* Limitações do período de graça */}
+                    {!renewalInfo?.isExpired && renewalInfo?.isInGracePeriod && (
+                      <div className="border-t border-gray-700 pt-3">
+                        <div className="text-yellow-400 text-xs font-semibold mb-2">⚠️ Limitações Ativas:</div>
+                        <div className="text-gray-400 text-xs space-y-1">
+                          <div>• Qualidade limitada a HD</div>
+                          <div>• Sem downloads offline</div>
+                          <div>• Anúncios ocasionais</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => {
+                        setShowContactMessage(true)
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
+                    >
+                      Renovar Assinatura
+                    </button>
+                    {renewalInfo?.isExpired ? (
+                      <button
+                        onClick={() => {
+                          setShowRenewalModal(false)
+                          logout()
+                        }}
+                        className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 rounded-xl transition-all duration-300"
+                      >
+                        Cancelar e Sair
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setShowRenewalModal(false)
+                          router.push('/dashboard')
+                        }}
+                        className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 rounded-xl transition-all duration-300"
+                      >
+                        Continuar com Acesso Limitado
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Planos Disponíveis (se houver) */}
+                  {renewalInfo?.availablePlans && renewalInfo.availablePlans.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-white font-semibold mb-3 text-sm">Planos Disponíveis:</h4>
+                      <div className="space-y-2">
+                        {renewalInfo.availablePlans.slice(0, 2).map((plan: any) => (
+                          <div key={plan.id} className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="text-white font-medium text-sm">{plan.name}</span>
+                                <div className="text-xs text-gray-400">{plan.description}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-white font-bold text-sm">R$ {plan.price}</div>
+                                <div className="text-xs text-gray-400">
+                                  {plan.billingCycle === 'MONTHLY' ? '/mês' : '/ano'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setShowRenewalModal(false)
+                      logout()
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    Fechar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowContactMessage(false)
+                    }}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 rounded-xl transition-all duration-300"
+                  >
+                    Voltar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
