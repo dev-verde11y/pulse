@@ -19,7 +19,7 @@ export function LoadingScreen({ fullscreen = true, message = "Carregando..." }: 
             </div>
             <div className="relative">
               <Image
-                src="/images/logo-ini.png"
+                src="/images/logo.png"
                 alt="Logo Pulse"
                 width={64}
                 height={64}

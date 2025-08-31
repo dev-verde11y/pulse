@@ -105,7 +105,7 @@ export function Footer() {
             <div className="lg:col-span-2 space-y-4">
               <Link href="/" className="flex items-center space-x-2">
                 <Image
-                  src="/images/logo-ini.png"
+                  src="/images/logo.png"
                   alt="Logo Pulse"
                   width={40}
                   height={40}

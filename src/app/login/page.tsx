@@ -82,7 +82,7 @@ export default function LoginPage() {
             <div className="space-y-6">
               <Link href="/" className="inline-flex items-center space-x-3">
                 <Image
-                  src="/images/logo-ini.png"
+                  src="/images/logo.png"
                   alt="Logo Pulse"
                   width={60}
                   height={60}
@@ -124,7 +124,7 @@ export default function LoginPage() {
             <div className="lg:hidden text-center mb-8">
               <Link href="/" className="inline-flex items-center space-x-2">
                 <Image
-                  src="/images/logo-ini.png"
+                  src="/images/logo.png"
                   alt="Logo Pulse"
                   width={40}
                   height={40}
