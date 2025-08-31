@@ -1,7 +1,7 @@
 'use client'
 
 import { Anime } from '@/data/mockData'
-import { PlayIcon, PlusIcon, ShareIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid'
+import { PlayIcon, PlusIcon} from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
 
 interface AnimeDetailBannerProps {
@@ -79,14 +79,6 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
               
               <button className="flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg transition-all duration-300 transform hover:scale-105">
                 <PlusIcon className="w-6 h-6" />
-              </button>
-              
-              <button className="flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg transition-all duration-300 transform hover:scale-105">
-                <ShareIcon className="w-6 h-6" />
-              </button>
-              
-              <button className="flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg transition-all duration-300 transform hover:scale-105">
-                <EllipsisHorizontalIcon className="w-6 h-6" />
               </button>
             </div>
             

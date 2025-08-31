@@ -11,6 +11,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Pulse - Sistema de Autenticação",
   description: "Sistema profissional de autenticação com Next.js",
+   icons: {
+    icon: "favicon.ico",
+  },
 };
 
 export default function RootLayout({
