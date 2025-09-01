@@ -10,21 +10,32 @@ CREATE TYPE "public"."PlanType" AS ENUM ('FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_AN
 -- CreateEnum
 CREATE TYPE "public"."BillingCycle" AS ENUM ('MONTHLY', 'ANNUALLY', 'LIFETIME');
 
--- AlterTable
-ALTER TABLE "public"."users" ADD COLUMN     "adFree" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "autoRenewal" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "currentPlan" "public"."PlanType" NOT NULL DEFAULT 'FREE',
-ADD COLUMN     "emailNotifications" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "gameVaultAccess" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "gracePeriodEnd" TIMESTAMP(3),
-ADD COLUMN     "language" TEXT NOT NULL DEFAULT 'pt-BR',
-ADD COLUMN     "lastPaymentDate" TIMESTAMP(3),
-ADD COLUMN     "maxScreens" INTEGER NOT NULL DEFAULT 1,
-ADD COLUMN     "nextBillingDate" TIMESTAMP(3),
-ADD COLUMN     "offlineViewing" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "role" "public"."UserRole" NOT NULL DEFAULT 'USER',
-ADD COLUMN     "subscriptionExpiry" TIMESTAMP(3),
-ADD COLUMN     "subscriptionStatus" "public"."SubscriptionStatus" NOT NULL DEFAULT 'ACTIVE';
+-- CreateTable
+CREATE TABLE "public"."users" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "name" TEXT,
+    "avatar" TEXT,
+    "role" "public"."UserRole" NOT NULL DEFAULT 'USER',
+    "subscriptionStatus" "public"."SubscriptionStatus" NOT NULL DEFAULT 'ACTIVE',
+    "currentPlan" "public"."PlanType" NOT NULL DEFAULT 'FREE',
+    "subscriptionExpiry" TIMESTAMP(3),
+    "maxScreens" INTEGER NOT NULL DEFAULT 1,
+    "offlineViewing" BOOLEAN NOT NULL DEFAULT false,
+    "gameVaultAccess" BOOLEAN NOT NULL DEFAULT false,
+    "adFree" BOOLEAN NOT NULL DEFAULT false,
+    "lastPaymentDate" TIMESTAMP(3),
+    "nextBillingDate" TIMESTAMP(3),
+    "autoRenewal" BOOLEAN NOT NULL DEFAULT true,
+    "gracePeriodEnd" TIMESTAMP(3),
+    "language" TEXT NOT NULL DEFAULT 'pt-BR',
+    "emailNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "public"."plans" (
@@ -117,6 +128,9 @@ CREATE TABLE "public"."favorites" (
 
     CONSTRAINT "favorites_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "plans_name_key" ON "public"."plans"("name");

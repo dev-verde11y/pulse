@@ -96,7 +96,7 @@ export function HeroBanner() {
   }
   
   return (
-    <div className="relative h-[70vh] sm:h-[80vh] lg:h-[85vh] min-h-[500px] sm:min-h-[600px] w-full overflow-hidden">
+    <div className="relative h-[calc(100vh-1rem)] w-full overflow-hidden">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
@@ -116,7 +116,7 @@ export function HeroBanner() {
         }}
         onSlideChange={() => {}}
         ref={swiperRef}
-        className="h-full w-full relative z-0"
+        className="h-full w-full relative z-10"
         style={{ 
           '--swiper-navigation-color': '#2563eb',
           '--swiper-pagination-color': '#2563eb' 
@@ -137,7 +137,7 @@ export function HeroBanner() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
               
               {/* Main Content Container */}
-              <div className="absolute inset-0 flex items-end pb-20 lg:pb-24 z-10">
+              <div className="absolute inset-0 flex items-end pb-20 lg:pb-24 z-20">
                 <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                     
@@ -254,7 +254,7 @@ export function HeroBanner() {
       {/* Custom Navigation Buttons */}
       <button 
         onClick={goToPrev}
-        className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
+        className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 z-30 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
       >
         <svg className="w-6 h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -263,7 +263,7 @@ export function HeroBanner() {
       
       <button 
         onClick={goToNext}
-        className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
+        className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
       >
         <svg className="w-6 h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -271,7 +271,7 @@ export function HeroBanner() {
       </button>
 
       {/* Custom Pagination */}
-      <div className="hero-pagination absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3"></div>
+      <div className="hero-pagination absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3"></div>
 
     </div>
   )
