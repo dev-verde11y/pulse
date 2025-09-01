@@ -16,6 +16,22 @@ interface Notification {
   read: boolean
 }
 
+// Helper function to format plan names for display
+const formatPlanName = (planType: string | undefined): string => {
+  switch (planType) {
+    case 'FREE':
+      return 'Grátis'
+    case 'FAN':
+      return 'Fan'
+    case 'MEGA_FAN':
+      return 'Mega Fan'
+    case 'MEGA_FAN_ANNUAL':
+      return 'Super Premium'
+    default:
+      return 'Grátis'
+  }
+}
+
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
@@ -325,7 +341,7 @@ export function Header() {
                       </div>
                       <div className="ml-2 hidden lg:block">
                         <div className="text-sm font-medium text-white">{user?.name || 'Admin'}</div>
-                        <div className="text-xs text-blue-400">{user?.currentPlan || 'FREE'}</div>
+                        <div className="text-xs text-blue-400">{formatPlanName(user?.currentPlan)}</div>
                       </div>
                       <svg className="ml-1 h-3 w-3 text-gray-400 group-hover:text-white transition-colors hidden lg:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -362,7 +378,7 @@ export function Header() {
                                     ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                                     : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                                 }`}>
-                                  {user?.currentPlan || 'FREE'}
+                                  {formatPlanName(user?.currentPlan)}
                                 </span>
                               </div>
                             </div>
@@ -385,7 +401,7 @@ export function Header() {
                               user?.currentPlan === 'FAN' ? 'text-blue-400' :
                               'text-yellow-400'
                             }`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                            <span>{user?.currentPlan || 'FREE'}</span>
+                            <span>{formatPlanName(user?.currentPlan)}</span>
                           </a>
                           {user?.role === 'ADMIN' && (
                             <>
@@ -505,7 +521,7 @@ export function Header() {
                             ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                             : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                         }`}>
-                          {user?.currentPlan || 'FREE'}
+                          {formatPlanName(user?.currentPlan)}
                         </span>
                       </div>
                     </div>
