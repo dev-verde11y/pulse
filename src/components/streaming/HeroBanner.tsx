@@ -96,7 +96,7 @@ export function HeroBanner() {
   }
   
   return (
-    <div className="relative h-[calc(100vh-1rem)] w-full overflow-hidden">
+    <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[65vh] xl:h-[70vh] w-full overflow-hidden">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
@@ -111,9 +111,10 @@ export function HeroBanner() {
           },
         }}
         autoplay={{
-          delay: 8000,
+          delay: 6000,
           disableOnInteraction: false,
         }}
+        loop={true}
         onSlideChange={() => {}}
         ref={swiperRef}
         className="h-full w-full relative z-10"
@@ -137,41 +138,41 @@ export function HeroBanner() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
               
               {/* Main Content Container */}
-              <div className="absolute inset-0 flex items-end pb-20 lg:pb-24 z-20">
-                <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+              <div className="absolute inset-0 flex items-center pb-6 sm:pb-8 md:pb-10 lg:pb-12 z-20">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+                  <div className="max-w-3xl">
                     
-                    {/* Left Column - Main Content */}
-                    <div className="space-y-6 animate-fadeIn">
+                    {/* Main Content */}
+                    <div className="space-y-3 sm:space-y-4 md:space-y-5 animate-fadeIn">
                       {/* Type Badge */}
-                      <div className="flex items-center gap-3">
-                        <div className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider backdrop-blur-sm ${
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider backdrop-blur-sm ${
                           content.type === 'anime' ? 'bg-blue-600/90 text-white' : 
                           content.type === 'filme' ? 'bg-indigo-600/90 text-white' : 'bg-cyan-600/90 text-white'
                         }`}>
                           {content.type}
                         </div>
                         {content.episode && (
-                          <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-white">
+                          <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-white">
                             {content.episode}
                           </div>
                         )}
                       </div>
 
                       {/* Title with Enhanced Typography */}
-                      <div className="space-y-2">
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.9] text-white drop-shadow-2xl tracking-tight">
+                      <div className="space-y-1 sm:space-y-2">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[0.85] text-white drop-shadow-2xl tracking-tight">
                           {content.title}
                         </h1>
-                        <h2 className="text-lg md:text-xl lg:text-2xl text-blue-300 font-medium max-w-xl">
+                        <h2 className="text-sm sm:text-base md:text-lg lg:text-xl text-blue-300 font-medium max-w-lg leading-relaxed">
                           {content.subtitle}
                         </h2>
                       </div>
 
                       {/* Meta Information */}
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/90">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded flex items-center justify-center">
                             <span className="text-xs font-bold text-white">{content.rating}</span>
                           </div>
                           <span className="font-medium">{content.year}</span>
@@ -182,66 +183,47 @@ export function HeroBanner() {
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-1 h-1 bg-white/60 rounded-full"></div>
-                          <span>HD</span>
+                          <span>4K Ultra HD</span>
                         </div>
                       </div>
 
                       {/* Genres as Pills */}
                       <div className="flex flex-wrap gap-2">
-                        {content.genres.slice(0, 4).map((genre) => (
-                          <span key={genre} className="bg-white/15 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-full text-sm text-white/90 hover:bg-white/25 transition-colors cursor-pointer">
+                        {content.genres.slice(0, 3).map((genre) => (
+                          <span key={genre} className="bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm text-white/90 hover:bg-blue-500/30 transition-colors cursor-pointer">
                             {genre}
                           </span>
                         ))}
                       </div>
 
                       {/* Description */}
-                      <p className="text-base lg:text-lg leading-relaxed text-white/80 max-w-2xl line-clamp-3">
+                      <p className="text-xs sm:text-sm md:text-base leading-relaxed text-white/80 max-w-xl line-clamp-2">
                         {content.description}
                       </p>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
-                        <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-2xl group">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-1 sm:pt-2">
+                        <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 sm:py-3 px-5 sm:px-6 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-xl group">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M8 5v14l11-7z" />
                           </svg>
                           <span className="text-sm sm:text-base">{content.episode ? `Continuar ${content.episode}` : 'Assistir Agora'}</span>
                         </button>
                         
-                        <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 flex items-center justify-center group">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 hover:border-blue-300/50 text-white font-semibold py-2.5 sm:py-3 px-5 sm:px-6 rounded-lg transition-all duration-300 flex items-center justify-center group">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span className="text-sm sm:text-base">Mais Info</span>
+                          <span className="text-sm">Mais Info</span>
                         </button>
 
-                        <button className="bg-transparent hover:bg-white/10 border-2 border-white/40 hover:border-white/60 text-white font-semibold p-3 sm:p-4 rounded-xl transition-all duration-300 flex items-center justify-center group sm:w-auto">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button className="bg-transparent hover:bg-white/10 border-2 border-white/40 hover:border-blue-300/60 text-white font-semibold p-2.5 sm:p-3 rounded-lg transition-all duration-300 flex items-center justify-center group sm:w-auto">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
                         </button>
                       </div>
 
-                      {/* Progress Bar (if episode) */}
-                      {content.episode && (
-                        <div className="pt-6 space-y-3">
-                          <div className="flex items-center justify-between text-sm text-white/70">
-                            <span>Seu progresso no episódio</span>
-                            <span className="text-blue-300 font-medium">67% concluído</span>
-                          </div>
-                          <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-500 to-blue-400 h-2 rounded-full w-2/3 transition-all duration-1000 shadow-lg"></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Column - Additional Info/Logo Space */}
-                    <div className="hidden lg:flex items-end justify-end">
-                      <div className="space-y-4 text-right">
-                        {/* Space for future logo or additional content */}
-                      </div>
                     </div>
                   </div>
                 </div>
