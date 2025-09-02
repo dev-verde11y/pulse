@@ -1,5 +1,6 @@
-import { PrismaClient, PlanType, BillingCycle } from '@prisma/client'
+import { PrismaClient, PlanType, BillingCycle, AnimeStatus, AnimeType, VideoQuality } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { mockAnimes } from '../src/data/mockData'
 
 const prisma = new PrismaClient()
 
@@ -383,6 +384,158 @@ async function main() {
   console.log('   ❌ Expired:', expiredUser.email, '- Password: TestUser@123!')
   console.log('   ⏰ Grace Period:', gracePeriodUser.email, '- Password: TestUser@123!')
   
+  // Seed Animes
+  console.log('🎬 Seeding animes...')
+  
+  const animePromises = mockAnimes.map(async (animeData) => {
+    // Convert duration from minutes to seconds for database
+    const durationInSeconds = animeData.duration * 60
+    
+    // Generate slug from title
+    const slug = animeData.title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .trim()
+    
+    // Map status from mock data to enum
+    let status: AnimeStatus = AnimeStatus.ONGOING
+    if (animeData.status === 'completed' || animeData.episodes <= 50) {
+      status = AnimeStatus.FINISHED
+    }
+    
+    // Map type from mock data to enum
+    let type: AnimeType = AnimeType.ANIME
+    if (animeData.title === 'Your Name' || animeData.title === 'Spirited Away' || animeData.title === 'Princess Mononoke') {
+      type = AnimeType.FILME
+    }
+    
+    // Create anime
+    const anime = await prisma.anime.upsert({
+      where: { slug },
+      update: {},
+      create: {
+        title: animeData.title,
+        description: animeData.description,
+        thumbnail: animeData.thumbnail,
+        banner: animeData.banner,
+        year: animeData.year,
+        status,
+        type,
+        rating: animeData.rating,
+        totalEpisodes: animeData.episodes,
+        isSubbed: animeData.isSubbed,
+        isDubbed: animeData.isDubbed,
+        genres: animeData.genre,
+        tags: [],
+        slug,
+        r2BucketPath: `animes/${slug}`,
+      },
+    })
+    
+    // Create season 1 for each anime (most animes have at least 1 season)
+    const season = await prisma.season.create({
+      data: {
+        animeId: anime.id,
+        seasonNumber: 1,
+        title: type === AnimeType.FILME ? undefined : 'Temporada 1',
+        description: `${type === AnimeType.FILME ? 'Filme' : 'Primeira temporada'} de ${animeData.title}`,
+        releaseDate: new Date(animeData.year, 0, 1),
+        r2BucketPath: `animes/${slug}/season-1`,
+      },
+    })
+    
+    // Create episodes
+    const episodesToCreate = type === AnimeType.FILME ? 1 : Math.min(animeData.episodes, 12) // Limit to 12 episodes for seed
+    
+    const episodePromises = Array.from({ length: episodesToCreate }, (_, index) => {
+      const episodeNumber = index + 1
+      return prisma.episode.create({
+        data: {
+          seasonId: season.id,
+          episodeNumber,
+          title: type === AnimeType.FILME 
+            ? animeData.title 
+            : `Episódio ${episodeNumber}`,
+          description: type === AnimeType.FILME 
+            ? animeData.description 
+            : `${animeData.title} - Episódio ${episodeNumber}`,
+          thumbnail: animeData.thumbnail,
+          duration: durationInSeconds,
+          r2VideoPath: `animes/${slug}/season-1/episode-${episodeNumber}/video.mp4`,
+          r2SubtitlePath: `animes/${slug}/season-1/episode-${episodeNumber}/subtitles.vtt`,
+          r2ThumbnailPath: `animes/${slug}/season-1/episode-${episodeNumber}/thumbnail.jpg`,
+          availableQualities: [VideoQuality.HD, VideoQuality.FULL_HD],
+          airDate: new Date(animeData.year, 0, episodeNumber),
+        },
+      })
+    })
+    
+    await Promise.all(episodePromises)
+    
+    return anime
+  })
+  
+  const animes = await Promise.all(animePromises)
+  
+  console.log(`✅ Created ${animes.length} animes with seasons and episodes`)
+  
+  // Create some watch history and favorites for test users
+  console.log('📊 Creating sample watch history and favorites...')
+  
+  // Add some favorites for the admin user
+  const adminFavorites = animes.slice(0, 5)
+  for (const anime of adminFavorites) {
+    await prisma.favorite.upsert({
+      where: {
+        userId_animeId: {
+          userId: adminUser.id,
+          animeId: anime.id,
+        },
+      },
+      update: {},
+      create: {
+        userId: adminUser.id,
+        animeId: anime.id,
+      },
+    })
+  }
+  
+  // Add some watch history for the fan user
+  const fanWatchList = animes.slice(0, 3)
+  for (const anime of fanWatchList) {
+    const season = await prisma.season.findFirst({
+      where: { animeId: anime.id },
+      include: { episodes: true },
+    })
+    
+    if (season && season.episodes.length > 0) {
+      const episode = season.episodes[0]
+      await prisma.watchHistory.upsert({
+        where: {
+          userId_animeId_episodeId: {
+            userId: fanUser.id,
+            animeId: anime.id,
+            episodeId: episode.id,
+          },
+        },
+        update: {},
+        create: {
+          userId: fanUser.id,
+          animeId: anime.id,
+          episodeId: episode.id,
+          progress: Math.random() * 100, // Random progress
+          duration: episode.duration,
+          completed: Math.random() > 0.5,
+        },
+      })
+    }
+  }
+  
+  console.log('✅ Sample watch history and favorites created')
   console.log('🎉 Seed completed successfully!')
 }
 

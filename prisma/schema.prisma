@@ -192,6 +192,7 @@ model WatchHistory {
   
   // Relations
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime       Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -207,9 +208,132 @@ model Favorite {
   
   // Relations
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime     Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
   
   @@unique([userId, animeId])
   @@map("favorites")
+}
+
+enum AnimeStatus {
+  FINISHED
+  ONGOING
+  UPCOMING
+  CANCELLED
+}
+
+enum AnimeType {
+  ANIME
+  FILME
+  SERIE
+}
+
+enum VideoQuality {
+  HD
+  FULL_HD
+  ULTRA_HD_4K
+}
+
+model Anime {
+  id            String       @id @default(uuid())
+  title         String
+  description   String       @db.Text
+  thumbnail     String?
+  banner        String?
+  logo          String?
+  
+  // Basic info
+  year          Int
+  status        AnimeStatus  @default(ONGOING)
+  type          AnimeType    @default(ANIME)
+  rating        String       // "Livre", "10+", "12+", "14+", "16+", "18+"
+  totalEpisodes Int?
+  
+  // Content flags
+  isSubbed      Boolean      @default(true)
+  isDubbed      Boolean      @default(false)
+  
+  // Metadata
+  genres        String[]     // Array of genres
+  tags          String[]     @default([])
+  director      String?
+  studio        String?
+  
+  // Cloudflare R2 integration
+  r2BucketPath  String?      // Base path in R2 bucket
+  
+  // Relations
+  seasons       Season[]
+  favorites     Favorite[]
+  watchHistory  WatchHistory[]
+  
+  // SEO
+  slug          String       @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("animes")
+}
+
+model Season {
+  id          String    @id @default(uuid())
+  animeId     String
+  
+  // Season info
+  seasonNumber Int
+  title       String?   // Optional season title like "Final Season"
+  description String?   @db.Text
+  
+  // Dates
+  releaseDate DateTime?
+  endDate     DateTime?
+  
+  // Cloudflare R2 integration
+  r2BucketPath String?  // Season-specific path in R2 bucket
+  
+  // Relations
+  anime       Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  episodes    Episode[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([animeId, seasonNumber])
+  @@map("seasons")
+}
+
+model Episode {
+  id            String    @id @default(uuid())
+  seasonId      String
+  
+  // Episode info
+  episodeNumber Int
+  title         String
+  description   String?   @db.Text
+  thumbnail     String?
+  
+  // Duration in seconds
+  duration      Int
+  
+  // Cloudflare R2 integration
+  r2VideoPath   String?   // Path to video file in R2
+  r2SubtitlePath String?  // Path to subtitle files in R2
+  r2ThumbnailPath String? // Path to thumbnail in R2
+  
+  // Video quality available
+  availableQualities VideoQuality[] @default([HD])
+  
+  // Air date
+  airDate       DateTime?
+  
+  // Relations
+  season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([seasonId, episodeNumber])
+  @@map("episodes")
 }
