@@ -2,6 +2,7 @@
 
 import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
+import { useRouter } from 'next/navigation'
 
 interface EpisodeListProps {
   anime: Anime
@@ -11,6 +12,8 @@ interface EpisodeListProps {
 }
 
 export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListProps) {
+  const router = useRouter()
+  
   // Buscar temporada selecionada
   const selectedSeason = anime.seasons?.find(s => s.seasonNumber === season)
   
@@ -29,11 +32,16 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
     ? episodesWithWatchStatus.sort((a, b) => b.episodeNumber - a.episodeNumber)
     : episodesWithWatchStatus.sort((a, b) => a.episodeNumber - b.episodeNumber)
 
+  const handleEpisodeClick = (episode: Episode) => {
+    router.push(`/watch/${episode.id}`)
+  }
+
   const renderListView = () => (
     <div className="grid gap-4">
       {sortedEpisodes.map((episode) => (
         <div
           key={episode.id}
+          onClick={() => handleEpisodeClick(episode)}
           className="bg-gray-900 hover:bg-gray-800 rounded-lg p-4 transition-all duration-300 cursor-pointer group"
         >
           <div className="flex gap-4">
@@ -107,6 +115,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
       {sortedEpisodes.map((episode) => (
         <div
           key={episode.id}
+          onClick={() => handleEpisodeClick(episode)}
           className="bg-gray-900 hover:bg-gray-800 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group"
         >
           {/* Episode Thumbnail */}

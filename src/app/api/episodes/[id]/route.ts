@@ -7,16 +7,22 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    
     const episode = await prisma.episode.findUnique({
       where: { id },
       include: {
         season: {
           include: {
             anime: {
-              select: {
-                id: true,
-                title: true,
-                thumbnail: true
+              include: {
+                seasons: {
+                  include: {
+                    episodes: {
+                      orderBy: { episodeNumber: 'asc' }
+                    }
+                  },
+                  orderBy: { seasonNumber: 'asc' }
+                }
               }
             }
           }
@@ -31,7 +37,13 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(episode)
+    // Adicionar seasonNumber ao episódio para facilitar o uso no frontend
+    const episodeWithSeason = {
+      ...episode,
+      seasonNumber: episode.season.seasonNumber
+    }
+
+    return NextResponse.json(episodeWithSeason)
   } catch (error) {
     console.error('Error fetching episode:', error)
     return NextResponse.json(
