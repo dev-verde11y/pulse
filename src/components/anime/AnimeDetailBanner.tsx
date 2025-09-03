@@ -28,6 +28,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
         <div className="flex flex-col lg:flex-row items-start gap-8">
           
           {/* Poster */}
+          {/* TODO: 💤✨ dormir!!! voltar aqui para ver esse detalhe! */}
           <div className="flex-shrink-0">
             <img
               src={anime.thumbnail || '/images/episode-placeholder.svg'}
