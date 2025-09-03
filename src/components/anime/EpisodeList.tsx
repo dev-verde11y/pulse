@@ -49,9 +49,12 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             {/* Episode Thumbnail */}
             <div className="relative flex-shrink-0 w-40 h-24 bg-gray-800 rounded-lg overflow-hidden">
               <img
-                src={episode.thumbnail || anime.thumbnail || '/images/placeholder.jpg'}
+                src={episode.thumbnail || anime.thumbnail || '/images/episode-placeholder.svg'}
                 alt={episode.title}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = '/images/episode-placeholder.svg'
+                }}
               />
               
               {/* Play Button Overlay */}
@@ -121,9 +124,12 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
           {/* Episode Thumbnail */}
           <div className="relative aspect-video bg-gray-800">
             <img
-              src={episode.thumbnail || anime.thumbnail || '/images/placeholder.jpg'}
+              src={episode.thumbnail || anime.thumbnail || '/images/episode-placeholder.svg'}
               alt={episode.title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = '/images/episode-placeholder.svg'
+              }}
             />
             
             {/* Play Button Overlay */}
@@ -133,7 +139,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             
             {/* Episode Number */}
             <div className="absolute top-2 left-2 bg-black/80 text-white px-2 py-1 rounded text-sm font-bold">
-              EP {episode.number}
+              EP {episode.episodeNumber}
             </div>
             
             {/* Duration */}

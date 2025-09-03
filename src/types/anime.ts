@@ -39,6 +39,11 @@ export interface Episode {
   duration?: number | null
   thumbnail?: string | null
   airDate?: Date | string | null
+  seasonNumber?: number
+  season?: {
+    animeId: string
+    seasonNumber: number
+  }
 }
 
 export interface WatchHistoryItem {

@@ -23,6 +23,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Execute immediately to prevent hydration mismatch
+                if (document.documentElement.hasAttribute('data-arp')) {
+                  document.documentElement.removeAttribute('data-arp');
+                }
+              })();
+            `
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
           {children}

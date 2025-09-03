@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { api } from '@/lib/api'
-import { Episode, Anime } from '@/types/anime'
+import { Episode, Anime, Season } from '@/types/anime'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 export default function WatchPage() {
@@ -35,7 +35,7 @@ export default function WatchPage() {
 
         // Coletar todos os episódios de todas as temporadas
         const episodes: Episode[] = []
-        animeData.seasons?.forEach(season => {
+        animeData.seasons?.forEach((season: Season) => {
           if (season.episodes) {
             episodes.push(...season.episodes.map(ep => ({ ...ep, seasonNumber: season.seasonNumber })))
           }
@@ -43,8 +43,8 @@ export default function WatchPage() {
 
         // Ordenar episódios por temporada e número do episódio
         episodes.sort((a, b) => {
-          if (a.seasonNumber !== b.seasonNumber) {
-            return a.seasonNumber - b.seasonNumber
+          if ((a.seasonNumber ?? 1) !== (b.seasonNumber ?? 1)) {
+            return (a.seasonNumber ?? 1) - (b.seasonNumber ?? 1)
           }
           return a.episodeNumber - b.episodeNumber
         })
@@ -163,7 +163,7 @@ export default function WatchPage() {
               <h3 className="text-lg font-bold mb-4">Sobre o Anime</h3>
               <div className="flex items-start space-x-4">
                 <img
-                  src={anime.thumbnail || '/images/placeholder.jpg'}
+                  src={anime.thumbnail || '/images/episode-placeholder.svg'}
                   alt={anime.title}
                   className="w-24 h-32 object-cover rounded-lg"
                 />
@@ -201,9 +201,14 @@ export default function WatchPage() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="w-16 h-10 bg-gray-700 rounded bg-cover bg-center"
-                           style={{ backgroundImage: `url(${ep.thumbnail || anime.thumbnail})` }}>
-                      </div>
+                      <img
+                        src={ep.thumbnail || anime.thumbnail || '/images/episode-placeholder.svg'}
+                        alt={ep.title}
+                        className="w-16 h-10 bg-gray-700 rounded object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/images/episode-placeholder.svg'
+                        }}
+                      />
                     </div>
                     <div className="flex-grow min-w-0">
                       <div className="text-sm font-medium text-white truncate">

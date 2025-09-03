@@ -146,6 +146,7 @@ export function VideoPlayer({
     }
   }
 
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

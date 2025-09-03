@@ -41,40 +41,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Carrega token do localStorage na inicialização
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('token')
-      const storedUser = localStorage.getItem('user')
-      
-      if (storedToken && storedUser) {
-        // Verifica se o token expirou antes de usar
-        try {
+    const loadStoredAuth = () => {
+      try {
+        const storedToken = localStorage.getItem('token')
+        const storedUser = localStorage.getItem('user')
+        
+        if (storedToken && storedUser) {
+          // Verifica se o token expirou antes de usar
           const tokenPayload = JSON.parse(atob(storedToken.split('.')[1]))
           const isExpired = tokenPayload.exp * 1000 < Date.now()
           
           if (isExpired) {
             // Token expirado, remove dados
             logout()
-            setLoading(false)
           } else {
             // Atualiza estado de forma batch para evitar re-renders
             const userData = JSON.parse(storedUser)
             setToken(storedToken)
             setUser(userData)
-            setLoading(false)
             // Verifica se o token ainda é válido no servidor (em background)
             validateToken(storedToken)
           }
-        } catch (error) {
-          // Token inválido, remove dados
-          logout()
-          setLoading(false)
         }
-      } else {
+      } catch (error) {
+        // Token inválido, remove dados
+        logout()
+      } finally {
         setLoading(false)
       }
-    } else {
-      setLoading(false)
     }
+
+    loadStoredAuth()
   }, [])
 
   const validateToken = async (token: string) => {
@@ -123,15 +120,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const data: AuthResponse = await response.json()
       
       // Salva no localStorage e cookie de forma síncrona
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-        if (data.subscriptionInfo) {
-          localStorage.setItem('subscriptionInfo', JSON.stringify(data.subscriptionInfo))
-        }
-        // Salva no cookie para o middleware (2 horas)
-        document.cookie = `token=${data.token}; path=/; max-age=${2 * 60 * 60}` // 2 horas
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      if (data.subscriptionInfo) {
+        localStorage.setItem('subscriptionInfo', JSON.stringify(data.subscriptionInfo))
       }
+      // Salva no cookie para o middleware (2 horas)
+      document.cookie = `token=${data.token}; path=/; max-age=${2 * 60 * 60}` // 2 horas
       
       // Atualiza estado de forma batch
       setToken(data.token)
@@ -183,12 +178,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const logout = () => {
-    if (typeof window !== 'undefined') {
+    try {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       localStorage.removeItem('subscriptionInfo')
       // Remove cookie
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    } catch (error) {
+      // Ignore localStorage errors on server
     }
     setToken(null)
     setUser(null)
