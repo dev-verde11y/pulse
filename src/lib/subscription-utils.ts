@@ -294,7 +294,7 @@ export class SubscriptionManager {
    */
   static isInGracePeriod(user: User): boolean {
     return user.subscriptionStatus === 'GRACE_PERIOD' && 
-           user.gracePeriodEnd && 
+           !!user.gracePeriodEnd && 
            user.gracePeriodEnd > new Date()
   }
 }

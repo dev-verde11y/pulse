@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { NextRequest } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { cookies } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
@@ -9,6 +11,49 @@ export interface JWTPayload {
   email: string
   iat?: number
   exp?: number
+}
+
+export interface User {
+  id: string
+  email: string
+  name: string | null
+  role: string
+}
+
+export async function auth(): Promise<{ user: User } | null> {
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+    
+    if (!token) {
+      return null
+    }
+
+    const payload = AuthUtils.verifyToken(token)
+    
+    if (!payload) {
+      return null
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true
+      }
+    })
+
+    if (!user) {
+      return null
+    }
+
+    return { user }
+  } catch (error) {
+    console.error('Auth error:', error)
+    return null
+  }
 }
 
 export class AuthUtils {

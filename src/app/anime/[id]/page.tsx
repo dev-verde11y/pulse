@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
@@ -8,20 +9,38 @@ import { Footer } from '@/components/layout/Footer'
 import { AnimeDetailBanner } from '@/components/anime/AnimeDetailBanner'
 import { EpisodeList } from '@/components/anime/EpisodeList'
 import { SeasonSelector } from '@/components/anime/SeasonSelector'
-import { mockAnimes } from '@/data/mockData'
-import { useState } from 'react'
+import { api } from '@/lib/api'
+import { Anime } from '@/types/anime'
 
 export default function AnimeDetailPage() {
   const params = useParams()
   const { user, loading } = useAuth()
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [anime, setAnime] = useState<Anime | null>(null)
+  const [dataLoading, setDataLoading] = useState(true)
   
-  const animeId = parseInt(params.id as string)
-  const anime = mockAnimes.find(a => a.id === animeId)
+  const animeId = params.id as string
 
-  if (loading) {
+  useEffect(() => {
+    async function loadAnime() {
+      try {
+        const animeData = await api.getAnime(animeId)
+        setAnime(animeData)
+      } catch (error) {
+        console.error('Error loading anime:', error)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    if (animeId) {
+      loadAnime()
+    }
+  }, [animeId])
+
+  if (loading || dataLoading) {
     return <LoadingScreen message="Carregando detalhes do anime..." />
   }
 
@@ -50,7 +69,7 @@ export default function AnimeDetailPage() {
           {/* Seletor de Temporada */}
           <SeasonSelector 
             currentSeason={selectedSeason}
-            totalSeasons={anime.seasons || 3}
+            seasons={anime.seasons || []}
             onSeasonChange={setSelectedSeason}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}

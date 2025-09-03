@@ -1,14 +1,17 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { mockAnimes } from '@/data/mockData'
-import type { Anime } from '@/data/mockData'
+import type { Anime } from '@/types/anime'
 
 interface SearchBarProps {
   className?: string
+  variant?: 'default' | 'header'
 }
 
-export function SearchBar({ className = '' }: SearchBarProps) {
+export function SearchBar({ className = '', variant = 'default' }: SearchBarProps) {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [results, setResults] = useState<Anime[]>([])
@@ -20,7 +23,7 @@ export function SearchBar({ className = '' }: SearchBarProps) {
     if (query.length > 1) {
       const filteredResults = mockAnimes.filter(anime =>
         anime.title.toLowerCase().includes(query.toLowerCase()) ||
-        anime.genre.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
+        anime.genres?.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
         anime.description.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 6)
       
@@ -47,6 +50,16 @@ export function SearchBar({ className = '' }: SearchBarProps) {
   }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (isOpen && selectedIndex >= 0) {
+        handleSelectResult(results[selectedIndex])
+      } else {
+        handleSearch()
+      }
+      return
+    }
+
     if (!isOpen) return
 
     if (e.key === 'ArrowDown') {
@@ -55,11 +68,6 @@ export function SearchBar({ className = '' }: SearchBarProps) {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1))
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (selectedIndex >= 0) {
-        handleSelectResult(results[selectedIndex])
-      }
     } else if (e.key === 'Escape') {
       setIsOpen(false)
       setSelectedIndex(-1)
@@ -71,8 +79,17 @@ export function SearchBar({ className = '' }: SearchBarProps) {
     setQuery('')
     setIsOpen(false)
     setSelectedIndex(-1)
-    // Aqui você pode navegar para a página do anime
-    console.log('Navigating to:', anime.title)
+    // Navegar para a página do anime
+    router.push(`/anime/${anime.id}`)
+  }
+
+  const handleSearch = () => {
+    if (query.trim()) {
+      setIsOpen(false)
+      setSelectedIndex(-1)
+      // Navegar para página de busca com o termo
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`)
+    }
   }
 
   const highlightText = (text: string, highlight: string) => {
@@ -89,7 +106,7 @@ export function SearchBar({ className = '' }: SearchBarProps) {
     <div className={`relative ${className}`} ref={searchRef}>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={`${variant === 'header' ? 'h-4 w-4' : 'h-5 w-5'} text-gray-400`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
@@ -101,25 +118,45 @@ export function SearchBar({ className = '' }: SearchBarProps) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query.length > 1 && setIsOpen(true)}
-          className="w-full bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className={`w-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+            variant === 'header' 
+              ? 'bg-gray-800/50 border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm backdrop-blur-sm'
+              : 'bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-xl pl-10 pr-20 py-2.5'
+          }`}
         />
-        {query && (
-          <button
-            onClick={() => {
-              setQuery('')
-              setIsOpen(false)
-              setSelectedIndex(-1)
-            }}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        {variant !== 'header' && (
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+            {query && (
+            <>
+              <button
+                onClick={handleSearch}
+                className="p-1 text-gray-400 hover:text-blue-400 transition-colors mr-1"
+                title="Buscar"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => {
+                  setQuery('')
+                  setIsOpen(false)
+                  setSelectedIndex(-1)
+                }}
+                className="p-1 text-gray-400 hover:text-white transition-colors"
+                title="Limpar"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              </>
+            )}
+          </div>
         )}
       </div>
 
-      {isOpen && results.length > 0 && (
+      {variant !== 'header' && isOpen && results.length > 0 && (
         <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-700 rounded-xl shadow-2xl backdrop-blur-sm z-50 overflow-hidden">
           <div className="p-3 border-b border-gray-700">
             <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">
@@ -144,10 +181,10 @@ export function SearchBar({ className = '' }: SearchBarProps) {
                     {highlightText(anime.title, query)}
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
-                    {anime.year} • {anime.episodes > 1 ? `${anime.episodes} eps` : 'Filme'}
+                    {anime.year} • {(anime.totalEpisodes || 1) > 1 ? `${anime.totalEpisodes} eps` : 'Filme'}
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {anime.genre.slice(0, 3).map((g, i) => (
+                    {anime.genres?.slice(0, 3).map((g, i) => (
                       <span key={i} className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
                         {g}
                       </span>
@@ -165,14 +202,17 @@ export function SearchBar({ className = '' }: SearchBarProps) {
             ))}
           </div>
           <div className="p-3 border-t border-gray-700 bg-gray-750">
-            <button className="w-full text-center text-xs text-blue-400 hover:text-blue-300 transition-colors">
+            <button 
+              onClick={handleSearch}
+              className="w-full text-center text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
               Ver todos os resultados para &quot;{query}&quot;
             </button>
           </div>
         </div>
       )}
 
-      {isOpen && query.length > 1 && results.length === 0 && (
+      {variant !== 'header' && isOpen && query.length > 1 && results.length === 0 && (
         <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-700 rounded-xl shadow-2xl backdrop-blur-sm z-50 overflow-hidden">
           <div className="p-6 text-center">
             <div className="text-gray-400 text-sm">

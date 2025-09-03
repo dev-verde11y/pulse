@@ -1,6 +1,6 @@
 'use client'
 
-import { Anime } from '@/data/mockData'
+import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
 
 interface EpisodeListProps {
@@ -10,38 +10,28 @@ interface EpisodeListProps {
   viewMode: 'grid' | 'list'
 }
 
-interface Episode {
-  id: number
-  number: number
-  title: string
-  description: string
-  duration: number
-  thumbnail: string
-  watched: boolean
-  progress?: number
-}
-
 export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListProps) {
-  // Mock episodes data - futuramente virá do banco de dados
-  let episodes: Episode[] = Array.from({ length: anime.episodes || 12 }, (_, i) => ({
-    id: i + 1,
-    number: i + 1,
-    title: `Episódio ${i + 1}`,
-    description: `Descrição do episódio ${i + 1} de ${anime.title}. Uma aventura emocionante continua enquanto nossos heróis enfrentam novos desafios.`,
-    duration: anime.duration || 24,
-    thumbnail: anime.thumbnail,
-    watched: i < 3, // Primeiros 3 episódios "assistidos"
+  // Buscar temporada selecionada
+  const selectedSeason = anime.seasons?.find(s => s.seasonNumber === season)
+  
+  // Episódios da temporada selecionada
+  const episodes: Episode[] = selectedSeason?.episodes || []
+  
+  // Para mock de status assistido (futuramente virá do histórico do usuário)
+  const episodesWithWatchStatus = episodes.map((episode, i) => ({
+    ...episode,
+    watched: i < 3, // Primeiros 3 episódios "assistidos"  
     progress: i === 2 ? 75 : undefined // Episódio 3 com 75% de progresso
   }))
 
   // Apply sorting
-  episodes = sortOrder === 'desc' 
-    ? episodes.sort((a, b) => b.number - a.number)
-    : episodes.sort((a, b) => a.number - b.number)
+  const sortedEpisodes = sortOrder === 'desc' 
+    ? episodesWithWatchStatus.sort((a, b) => b.episodeNumber - a.episodeNumber)
+    : episodesWithWatchStatus.sort((a, b) => a.episodeNumber - b.episodeNumber)
 
   const renderListView = () => (
     <div className="grid gap-4">
-      {episodes.map((episode) => (
+      {sortedEpisodes.map((episode) => (
         <div
           key={episode.id}
           className="bg-gray-900 hover:bg-gray-800 rounded-lg p-4 transition-all duration-300 cursor-pointer group"
@@ -51,7 +41,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             {/* Episode Thumbnail */}
             <div className="relative flex-shrink-0 w-40 h-24 bg-gray-800 rounded-lg overflow-hidden">
               <img
-                src={episode.thumbnail}
+                src={episode.thumbnail || anime.thumbnail || '/images/placeholder.jpg'}
                 alt={episode.title}
                 className="w-full h-full object-cover"
               />
@@ -85,15 +75,15 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between mb-2">
                 <h3 className="text-lg font-bold text-white group-hover:text-orange-400 transition-colors truncate">
-                  {episode.number}. {episode.title}
+                  {episode.episodeNumber}. {episode.title}
                 </h3>
                 <span className="text-sm text-gray-400 ml-4 flex-shrink-0">
-                  {episode.duration} min
+                  {episode.duration || 24} min
                 </span>
               </div>
               
               <p className="text-gray-300 text-sm line-clamp-2 mb-3">
-                {episode.description}
+                {episode.description || `Episódio ${episode.episodeNumber} de ${anime.title}`}
               </p>
               
               <div className="flex items-center gap-4 text-xs text-gray-500">
@@ -114,7 +104,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
 
   const renderGridView = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {episodes.map((episode) => (
+      {sortedEpisodes.map((episode) => (
         <div
           key={episode.id}
           className="bg-gray-900 hover:bg-gray-800 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group"
@@ -122,7 +112,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
           {/* Episode Thumbnail */}
           <div className="relative aspect-video bg-gray-800">
             <img
-              src={episode.thumbnail}
+              src={episode.thumbnail || anime.thumbnail || '/images/placeholder.jpg'}
               alt={episode.title}
               className="w-full h-full object-cover"
             />
@@ -168,7 +158,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
               {episode.title}
             </h3>
             <p className="text-xs text-gray-400 line-clamp-2 mb-2">
-              {episode.description}
+              {episode.description || `Episódio ${episode.episodeNumber} de ${anime.title}`}
             </p>
             
             <div className="flex items-center justify-between text-xs text-gray-500">
@@ -185,6 +175,15 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
       ))}
     </div>
   )
+
+  if (sortedEpisodes.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-400 text-lg mb-2">Nenhum episódio encontrado</div>
+        <div className="text-gray-500 text-sm">Esta temporada ainda não possui episódios cadastrados.</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

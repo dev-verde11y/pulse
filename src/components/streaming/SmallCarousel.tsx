@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Anime } from '@/data/mockData'
+import { Anime } from '@/types/anime'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { SmallAnimeCard } from './AnimeCards'
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { Header } from '@/components/layout/Header'
@@ -8,26 +9,59 @@ import { Footer } from '@/components/layout/Footer'
 import { SmallCarousel } from '@/components/streaming/SmallCarousel'
 import { MediumCarousel } from '@/components/streaming/MediumCarousel'
 import { ModernLargeCarousel } from '@/components/streaming/ModernLargeCarousel'
-import { 
-  continueWatching, 
-  myList, 
-  recommendations, 
-  trending, 
-  newReleases,
-  topRated,
-  action,
-  comedy,
-  categories 
-} from '@/data/mockData'
+import { api } from '@/lib/api'
+import { categories } from '@/data/mockData'
+import { Anime, WatchHistoryItem } from '@/types/anime'
 import '@/styles/swiper.css'
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
+  const [animes, setAnimes] = useState<Anime[]>([])
+  const [favorites, setFavorites] = useState<Anime[]>([])
+  const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [animesData, favoritesData, historyData] = await Promise.all([
+          api.getAnimes({ limit: 50 }),
+          user ? api.getFavorites().catch(() => []) : [],
+          user ? api.getWatchHistory(1, 20).then(res => res.history).catch(() => []) : []
+        ])
+
+        setAnimes(animesData.animes || [])
+        setFavorites(favoritesData || [])
+        setWatchHistory(historyData || [])
+      } catch (error) {
+        console.error('Error loading dashboard data:', error)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    if (!loading) {
+      loadData()
+    }
+  }, [user, loading])
 
   // Mostra loading screen enquanto verifica autenticação
-  if (loading) {
+  if (loading || dataLoading) {
     return <LoadingScreen message="Preparando seu conteúdo..." />
   }
+
+  // Filtrar animes por categoria
+  const trending = animes.filter(anime => ['16+', '18+'].includes(anime.rating)).slice(0, 10)
+  const newReleases = animes.filter(anime => {
+    const releaseYear = new Date(anime.createdAt).getFullYear()
+    return releaseYear >= new Date().getFullYear() - 1
+  }).slice(0, 10)
+  const topRated = [...animes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10)
+  const action = animes.filter(anime => anime.genres?.includes('Ação')).slice(0, 10)
+  const comedy = animes.filter(anime => anime.genres?.includes('Comédia')).slice(0, 10)
+  const continueWatchingAnimes = watchHistory.map(item => item.anime).slice(0, 10)
+  const myList = favorites.slice(0, 10)
+  const recommendations = animes.slice(0, 10)
 
   return (
     <div className="min-h-screen bg-black">
@@ -43,7 +77,7 @@ export default function DashboardPage() {
           {/* Continue Assistindo */}
           <MediumCarousel 
             title="Continue Assistindo" 
-            animes={continueWatching} 
+            animes={continueWatchingAnimes} 
           />
 
           {/* Em Alta */}

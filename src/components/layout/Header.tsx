@@ -173,18 +173,7 @@ export function Header() {
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:block flex-1 max-w-md mx-6">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Pesquisar animes, filmes, séries..."
-                className="w-full bg-gray-800/50 border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
+            <SearchBar variant="header" className="w-full" />
           </div>
 
           {/* Desktop Navigation */}
@@ -456,18 +445,7 @@ export function Header() {
         <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-gray-700 animate-slide-down">
           {/* Mobile Search Bar */}
           <div className="px-4 py-3 border-b border-gray-700">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Pesquisar animes, filmes, séries..."
-                className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
+            <SearchBar className="w-full" />
           </div>
           
           <div className="px-2 py-3 space-y-1">

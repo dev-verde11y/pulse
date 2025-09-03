@@ -1,6 +1,6 @@
 'use client'
 
-import { Anime } from '@/data/mockData'
+import { Anime } from '@/types/anime'
 import { PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 
@@ -38,12 +38,7 @@ export function SmallAnimeCard({ anime }: { anime: Anime }) {
 
         {/* Language Indicators - Bottom */}
         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
-          {anime.isSubbed && (
-            <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">LEG</span>
-          )}
-          {anime.isDubbed && (
-            <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">DUB</span>
-          )}
+          <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">LEG</span>
         </div>
       </div>
 
@@ -55,14 +50,14 @@ export function SmallAnimeCard({ anime }: { anime: Anime }) {
         <div className="flex items-center justify-between text-xs text-gray-400">
           <span>{anime.year}</span>
           <span>
-            {anime.episodes > 1 ? `${anime.episodes} eps` : 'Filme'}
+            {(anime.totalEpisodes || 1) > 1 ? `${anime.totalEpisodes} eps` : 'Filme'}
           </span>
         </div>
         
         {/* Gêneros - só o primeiro */}
         <div className="mt-1">
           <span className="text-xs text-gray-500 truncate block">
-            {anime.genre[0]}
+            {anime.genres?.[0]}
           </span>
         </div>
       </div>
@@ -109,12 +104,7 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
 
         {/* Language Indicators - Bottom Right */}
         <div className="absolute bottom-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
-          {anime.isSubbed && (
-            <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">LEG</span>
-          )}
-          {anime.isDubbed && (
-            <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">DUB</span>
-          )}
+          <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">LEG</span>
         </div>
       </div>
 
@@ -126,8 +116,8 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
         <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
           <span>{anime.year}</span>
           <span>•</span>
-          {anime.episodes > 1 ? (
-            <span>{anime.episodes} eps</span>
+          {(anime.totalEpisodes || 1) > 1 ? (
+            <span>{anime.totalEpisodes} eps</span>
           ) : (
             <span>Filme</span>
           )}
@@ -135,9 +125,9 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
         
         {/* Genres */}
         <div className="flex flex-wrap gap-1">
-          {anime.genre.slice(0, 2).map((g, index) => (
+          {anime.genres?.slice(0, 2).map((g, index) => (
             <span key={index} className="text-xs text-gray-500">
-              {g}{index < anime.genre.slice(0, 2).length - 1 && ', '}
+              {g}{index < anime.genres.slice(0, 2).length - 1 && ', '}
             </span>
           ))}
         </div>
@@ -149,8 +139,8 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
 // Card Continue Assistindo
 export function ContinueWatchingCard({ anime }: { anime: Anime }) {
   const router = useRouter()
-  const progress = anime.progress || 0
-  const remainingTime = Math.round((100 - progress) / 100 * anime.duration)
+  const progress = 45 // Mock progress - future: get from watch history
+  const remainingTime = Math.round((100 - progress) / 100 * (anime.duration || 24))
   
   const handleClick = () => {
     router.push(`/anime/${anime.id}`)
@@ -183,17 +173,12 @@ export function ContinueWatchingCard({ anime }: { anime: Anime }) {
               style={{width: `${progress}%`}}
             />
           </div>
-          <p className="text-xs text-gray-300 font-medium">EP {anime.currentEpisode}</p>
+          <p className="text-xs text-gray-300 font-medium">EP 12</p>
         </div>
 
         {/* Language Indicators - Top Right */}
         <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
-          {anime.isSubbed && (
-            <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">LEG</span>
-          )}
-          {anime.isDubbed && (
-            <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">DUB</span>
-          )}
+          <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">LEG</span>
         </div>
       </div>
 

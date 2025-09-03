@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/solid'
 
+import { Season } from '@/types/anime'
+
 interface SeasonSelectorProps {
   currentSeason: number
-  totalSeasons: number
+  seasons: Season[]
   onSeasonChange: (season: number) => void
   sortOrder: 'asc' | 'desc'
   onSortChange: (order: 'asc' | 'desc') => void
@@ -15,7 +17,7 @@ interface SeasonSelectorProps {
 
 export function SeasonSelector({ 
   currentSeason, 
-  totalSeasons, 
+  seasons, 
   onSeasonChange, 
   sortOrder, 
   onSortChange,
@@ -24,38 +26,42 @@ export function SeasonSelector({
 }: SeasonSelectorProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   
+  const currentSeasonData = seasons.find(s => s.seasonNumber === currentSeason)
+  const currentSeasonTitle = currentSeasonData?.title || `Temporada ${currentSeason}`
+  const currentSeasonEpisodeCount = currentSeasonData?.episodes?.length || 0
+  
   return (
     <div className="mb-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         
         {/* Left side - Season selector */}
         <div className="flex items-center gap-4">
-          {totalSeasons > 1 && (
+          {seasons.length > 1 && (
             <div className="relative">
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300"
               >
-                <span>T{currentSeason}: {getSeasonTitle(currentSeason)}</span>
+                <span>T{currentSeason}: {currentSeasonTitle}</span>
                 <ChevronDownIcon className={`w-5 h-5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
               {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <div className="absolute top-full left-0 mt-2 bg-gray-800 rounded-lg shadow-xl z-10 min-w-[250px] border border-gray-700">
-                  {Array.from({ length: totalSeasons }, (_, i) => i + 1).map((season) => (
+                  {seasons.map((season) => (
                     <button
-                      key={season}
+                      key={season.id}
                       onClick={() => {
-                        onSeasonChange(season)
+                        onSeasonChange(season.seasonNumber)
                         setIsDropdownOpen(false)
                       }}
                       className={`w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                        currentSeason === season ? 'bg-blue-600 text-white' : 'text-gray-200'
+                        currentSeason === season.seasonNumber ? 'bg-blue-600 text-white' : 'text-gray-200'
                       }`}
                     >
-                      <div className="font-bold">T{season}: {getSeasonTitle(season)}</div>
-                      <div className="text-sm text-gray-400">12 episódios</div>
+                      <div className="font-bold">T{season.seasonNumber}: {season.title}</div>
+                      <div className="text-sm text-gray-400">{season.episodes?.length || 0} episódios</div>
                     </button>
                   ))}
                 </div>
@@ -64,7 +70,7 @@ export function SeasonSelector({
           )}
           
           <div className="text-lg font-semibold text-white">
-            Episódios (12)
+            Episódios ({currentSeasonEpisodeCount})
           </div>
         </div>
         
@@ -130,13 +136,3 @@ export function SeasonSelector({
   )
 }
 
-function getSeasonTitle(season: number): string {
-  const seasonTitles: { [key: number]: string } = {
-    1: 'Dr. STONE',
-    2: 'Stone Wars', 
-    3: 'New World',
-    4: 'Science Future'
-  }
-  
-  return seasonTitles[season] || `Temporada ${season}`
-}

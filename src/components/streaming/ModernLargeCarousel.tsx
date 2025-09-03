@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Anime } from '@/data/mockData'
+import { Anime } from '@/types/anime'
 import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 
@@ -109,7 +109,7 @@ export function ModernLargeCarousel({ title, animes }: ModernLargeCarouselProps)
             </p>
 
             <div className="flex flex-wrap gap-3 mb-8">
-              {currentAnime.genre.slice(0, 4).map((genre, index) => (
+              {currentAnime.genres?.slice(0, 4).map((genre, index) => (
                 <span 
                   key={index} 
                   className="bg-gray-700/80 text-gray-200 px-4 py-2 rounded-full text-sm backdrop-blur-sm"

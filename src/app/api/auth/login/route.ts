@@ -132,7 +132,18 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json(response)
+    // Criar resposta com cookie
+    const jsonResponse = NextResponse.json(response)
+    
+    // Definir cookie httpOnly para o token
+    jsonResponse.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 2 // 2 horas
+    })
+
+    return jsonResponse
 
   } catch (error) {
     console.error('Login error:', error)

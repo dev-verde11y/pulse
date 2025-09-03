@@ -1,6 +1,6 @@
 'use client'
 
-import { Anime } from '@/data/mockData'
+import { Anime } from '@/types/anime'
 import { PlayIcon, PlusIcon} from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
 
@@ -30,7 +30,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
           {/* Poster */}
           <div className="flex-shrink-0">
             <img
-              src={anime.thumbnail}
+              src={anime.thumbnail || '/images/placeholder.jpg'}
               alt={anime.title}
               className="w-72 h-96 object-cover rounded-xl shadow-2xl"
             />
@@ -51,7 +51,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
               </span>
               <span className="text-white">Leg | Dub</span>
               <span className="text-white">•</span>
-              {anime.genre.slice(0, 5).map((g, index) => (
+              {anime.genres?.slice(0, 5).map((g, index) => (
                 <span key={index} className="text-blue-300 hover:text-blue-200 cursor-pointer">
                   {g}
                 </span>
