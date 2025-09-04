@@ -262,6 +262,12 @@ model Anime {
   
   // Cloudflare R2 integration
   r2BucketPath  String?      // Base path in R2 bucket
+  posterUrl     String?      // R2 public URL for poster
+  posterR2Key   String?      // R2 key for poster image
+  bannerUrl     String?      // R2 public URL for banner
+  bannerR2Key   String?      // R2 key for banner image
+  logoUrl       String?      // R2 public URL for logo
+  logoR2Key     String?      // R2 key for logo image
   
   // Relations
   seasons       Season[]
@@ -292,6 +298,8 @@ model Season {
   
   // Cloudflare R2 integration
   r2BucketPath String?  // Season-specific path in R2 bucket
+  bannerUrl    String?  // R2 public URL for season banner
+  bannerR2Key  String?  // R2 key for season banner image
   
   // Relations
   anime       Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade)
@@ -318,9 +326,13 @@ model Episode {
   duration      Int
   
   // Cloudflare R2 integration
-  r2VideoPath   String?   // Path to video file in R2
-  r2SubtitlePath String?  // Path to subtitle files in R2
-  r2ThumbnailPath String? // Path to thumbnail in R2
+  videoUrl         String?   // R2 public URL for video
+  r2Key           String?   // R2 key for video file
+  r2VideoPath     String?   // Legacy: Path to video file in R2
+  r2SubtitlePath  String?   // Path to subtitle files in R2
+  thumbnailUrl    String?   // R2 public URL for thumbnail
+  thumbnailR2Key  String?   // R2 key for thumbnail image
+  r2ThumbnailPath String?   // Legacy: Path to thumbnail in R2
   
   // Video quality available
   availableQualities VideoQuality[] @default([HD])

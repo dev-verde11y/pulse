@@ -4,6 +4,12 @@ import { Anime } from '@/types/anime'
 import { PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 
+// Helper para obter imagem do anime priorizando R2
+function getAnimeImage(anime: Anime): string {
+  // Prioridade: posterUrl (R2) > thumbnail (legacy) > placeholder
+  return anime.posterUrl || anime.thumbnail || '/images/anime-placeholder.svg'
+}
+
 // Card Pequeno e compacto
 export function SmallAnimeCard({ anime }: { anime: Anime }) {
   const router = useRouter()
@@ -20,7 +26,7 @@ export function SmallAnimeCard({ anime }: { anime: Anime }) {
       <div className="aspect-[2/3] bg-gray-800 rounded-md overflow-hidden relative mb-2">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${anime.thumbnail})` }}
+          style={{ backgroundImage: `url(${getAnimeImage(anime)})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
         
@@ -81,7 +87,7 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
       <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative mb-3">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${anime.thumbnail})` }}
+          style={{ backgroundImage: `url(${getAnimeImage(anime)})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
         
@@ -154,7 +160,7 @@ export function ContinueWatchingCard({ anime }: { anime: Anime }) {
       <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative mb-3">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${anime.thumbnail})` }}
+          style={{ backgroundImage: `url(${getAnimeImage(anime)})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
 

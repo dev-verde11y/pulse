@@ -5,7 +5,9 @@
       "Bash(npm uninstall:*)",
       "Bash(npm run build:*)",
       "Bash(npm run:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(docker exec:*)",
+      "Read(/E:\\www\\pulse\\src\\components\\video/**)"
     ],
     "deny": [],
     "ask": []

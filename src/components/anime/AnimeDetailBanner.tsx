@@ -10,7 +10,7 @@ interface AnimeDetailBannerProps {
 
 export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   const backgroundStyle = {
-    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%), url(${anime.banner || anime.thumbnail || '/images/episode-placeholder.svg'})`,
+    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%), url(${anime.bannerUrl || anime.banner || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
@@ -31,7 +31,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
           {/* TODO: 💤✨ dormir!!! voltar aqui para ver esse detalhe! */}
           <div className="flex-shrink-0">
             <img
-              src={anime.thumbnail || '/images/episode-placeholder.svg'}
+              src={anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
               alt={anime.title}
               className="w-72 h-96 object-cover rounded-xl shadow-2xl"
             />

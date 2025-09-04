@@ -202,7 +202,7 @@ export default function WatchPage() {
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
                       <img
-                        src={ep.thumbnail || anime.thumbnail || '/images/episode-placeholder.svg'}
+                        src={ep.thumbnailUrl || ep.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
                         alt={ep.title}
                         className="w-16 h-10 bg-gray-700 rounded object-cover"
                         onError={(e) => {

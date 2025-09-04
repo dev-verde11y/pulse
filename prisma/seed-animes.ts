@@ -16,6 +16,19 @@ function generateSlug(title: string): string {
 
 // Dados de animes reais com informações completas
 const realAnimes = [
+   // Kaiju No. 8
+  {
+    title: "kaiju no. 8",
+    description: "Em um mundo ameaçado por criaturas chamadas Kaiju, Kafka Hibino sonha em se juntar às Forças de Defesa para lutar contra eles. No entanto, ele acaba trabalhando na limpeza dos restos dos Kaiju mortos. Sua vida muda drasticamente quando ele ganha a habilidade de se transformar em um Kaiju e é forçado a lutar contra os monstros que ele sempre quis derrotar.",
+    thumbnail: "https://m.media-amazon.com/images/I/81+z4YcclGL._UF1000,1000_QL80_.jpg",
+    banner: "https://m.media-amazon.com/images/I/81+z4YcclGL._UF1000,1000_QL80_.jpg",
+    year: 2024,
+    status: "ONGOING" as AnimeStatus,
+    type: "ANIME" as AnimeType,
+    rating: "14+",
+    totalEpisodes: 12,
+    genres: ["Ação", "Sci-Fi", "Shounen"],
+  },
   // Attack on Titan
   {
     title: "Shingeki no Kyojin",

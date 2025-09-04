@@ -12,6 +12,14 @@ export interface Anime {
   createdAt: Date | string
   updatedAt: Date | string
   
+  // Cloudflare R2 fields
+  posterUrl?: string | null
+  posterR2Key?: string | null
+  bannerUrl?: string | null
+  bannerR2Key?: string | null
+  logoUrl?: string | null
+  logoR2Key?: string | null
+  
   // Additional fields that might be used in components
   duration?: number | null
   
@@ -40,6 +48,13 @@ export interface Episode {
   thumbnail?: string | null
   airDate?: Date | string | null
   seasonNumber?: number
+  
+  // Cloudflare R2 fields
+  videoUrl?: string | null
+  r2Key?: string | null
+  thumbnailUrl?: string | null
+  thumbnailR2Key?: string | null
+  
   season?: {
     animeId: string
     seasonNumber: number

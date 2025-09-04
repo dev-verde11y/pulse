@@ -6,6 +6,48 @@ import path from 'path'
 // Configuração do diretório local dos vídeos
 const VIDEO_BASE_PATH = 'E:\\animes\\Kaiju.No.8.S01.1080p'
 
+// Função helper para servir arquivos de vídeo
+function serveVideoFile(videoPath: string, request: NextRequest) {
+  // Obter informações do arquivo
+  const stat = fs.statSync(videoPath)
+  const fileSize = stat.size
+  const range = request.headers.get('range')
+
+  if (range) {
+    // Suporte para streaming com range requests
+    const parts = range.replace(/bytes=/, '').split('-')
+    const start = parseInt(parts[0], 10)
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+    const chunkSize = (end - start) + 1
+
+    const file = fs.createReadStream(videoPath, { start, end })
+    
+    return new Response(file as unknown as ReadableStream, {
+      status: 206,
+      headers: {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize.toString(),
+        'Content-Type': 'video/x-matroska',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    })
+  } else {
+    // Servir arquivo completo
+    const file = fs.createReadStream(videoPath)
+    
+    return new Response(file as unknown as ReadableStream, {
+      status: 200,
+      headers: {
+        'Content-Length': fileSize.toString(),
+        'Content-Type': 'video/x-matroska',
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    })
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -34,7 +76,13 @@ export async function GET(
       )
     }
 
-    // Para Kaiju No. 8, mapear episódios para arquivos locais
+    // Prioridade 1: Verificar se tem videoUrl do Cloudflare R2
+    if (episode.videoUrl) {
+      // Se tem URL do vídeo no R2, redirecionar para lá
+      return NextResponse.redirect(episode.videoUrl)
+    }
+
+    // Prioridade 2: Para Kaiju No. 8, mapear episódios para arquivos locais (fallback)
     if (episode.season.anime.title.includes('Kaiju') || episode.season.anime.slug === 'kaiju-no-8') {
       const episodeNumber = episode.episodeNumber.toString().padStart(2, '0')
       const filename = `Kaiju.No.8.S01E${episodeNumber}.1080p.CR.WEB-DL.AAC2.0.H.264.DUAL-Anitsu.mkv`
@@ -48,49 +96,12 @@ export async function GET(
         )
       }
 
-      // Obter informações do arquivo
-      const stat = fs.statSync(videoPath)
-      const fileSize = stat.size
-      const range = request.headers.get('range')
-
-      if (range) {
-        // Suporte para streaming com range requests
-        const parts = range.replace(/bytes=/, '').split('-')
-        const start = parseInt(parts[0], 10)
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
-        const chunkSize = (end - start) + 1
-
-        const file = fs.createReadStream(videoPath, { start, end })
-        
-        return new Response(file as unknown as ReadableStream, {
-          status: 206,
-          headers: {
-            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': chunkSize.toString(),
-            'Content-Type': 'video/x-matroska',
-            'Cache-Control': 'public, max-age=3600'
-          }
-        })
-      } else {
-        // Servir arquivo completo
-        const file = fs.createReadStream(videoPath)
-        
-        return new Response(file as unknown as ReadableStream, {
-          status: 200,
-          headers: {
-            'Content-Length': fileSize.toString(),
-            'Content-Type': 'video/x-matroska',
-            'Accept-Ranges': 'bytes',
-            'Cache-Control': 'public, max-age=3600'
-          }
-        })
-      }
+      return serveVideoFile(videoPath, request)
     }
 
-    // Para outros animes, usar URLs do Cloudflare R2 (futuro)
+    // Prioridade 3: Fallback construir URL baseado no caminho do bucket
     if (episode.season.anime.r2BucketPath) {
-      const r2VideoUrl = `https://your-r2-domain.com/${episode.season.anime.r2BucketPath}/season-${episode.season.seasonNumber}/episode-${episode.episodeNumber}/video.mp4`
+      const r2VideoUrl = `${process.env.API_URL_pub}/animes/${episode.season.anime.slug}/season-${episode.season.seasonNumber}/episode-${episode.episodeNumber}/video-${quality}.mp4`
       
       return NextResponse.redirect(r2VideoUrl)
     }

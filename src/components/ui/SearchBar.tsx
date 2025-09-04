@@ -174,7 +174,7 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
               >
                 <div 
                   className="w-12 h-16 bg-gray-700 rounded-md flex-shrink-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${anime.thumbnail})` }}
+                  style={{ backgroundImage: `url(${anime.posterUrl || anime.thumbnail || '/images/anime-placeholder.svg'})` }}
                 />
                 <div className="ml-3 flex-grow min-w-0">
                   <div className="text-sm font-medium text-white truncate">

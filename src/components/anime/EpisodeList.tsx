@@ -1,7 +1,7 @@
 'use client'
 
 import { Anime, Episode } from '@/types/anime'
-import { PlayIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
+import { PlayIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 
 interface EpisodeListProps {
@@ -20,9 +20,16 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
   // Episódios da temporada selecionada
   const episodes: Episode[] = selectedSeason?.episodes || []
   
+  // Verificar disponibilidade do episódio baseado em videoUrl ou r2Key
+  const isEpisodeAvailable = (episode: Episode) => {
+    return !!(episode.videoUrl || episode.r2Key)
+  }
+
+
   // Para mock de status assistido (futuramente virá do histórico do usuário)
   const episodesWithWatchStatus = episodes.map((episode, i) => ({
     ...episode,
+    available: isEpisodeAvailable(episode),
     watched: i < 3, // Primeiros 3 episódios "assistidos"  
     progress: i === 2 ? 75 : undefined // Episódio 3 com 75% de progresso
   }))
@@ -32,7 +39,10 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
     ? episodesWithWatchStatus.sort((a, b) => b.episodeNumber - a.episodeNumber)
     : episodesWithWatchStatus.sort((a, b) => a.episodeNumber - b.episodeNumber)
 
-  const handleEpisodeClick = (episode: Episode) => {
+  const handleEpisodeClick = (episode: Episode & { available: boolean }) => {
+    if (!episode.available) {
+      return // Não redireciona se episódio não estiver disponível
+    }
     router.push(`/watch/${episode.id}`)
   }
 
@@ -42,14 +52,18 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
         <div
           key={episode.id}
           onClick={() => handleEpisodeClick(episode)}
-          className="bg-gray-900 hover:bg-gray-800 rounded-lg p-4 transition-all duration-300 cursor-pointer group"
+          className={`bg-gray-900 rounded-lg p-4 transition-all duration-300 group ${
+            episode.available 
+              ? 'hover:bg-gray-800 cursor-pointer' 
+              : 'opacity-50 cursor-not-allowed grayscale'
+          }`}
         >
           <div className="flex gap-4">
             
             {/* Episode Thumbnail */}
             <div className="relative flex-shrink-0 w-40 h-24 bg-gray-800 rounded-lg overflow-hidden">
               <img
-                src={episode.thumbnail || anime.thumbnail || '/images/episode-placeholder.svg'}
+                src={episode.thumbnailUrl || episode.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
                 alt={episode.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -58,9 +72,18 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
               />
               
               {/* Play Button Overlay */}
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <PlayIcon className="w-8 h-8 text-white" />
-              </div>
+              {episode.available ? (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <PlayIcon className="w-8 h-8 text-white" />
+                </div>
+              ) : (
+                <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                  <div className="text-center">
+                    <ExclamationTriangleIcon className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                    <span className="text-gray-400 text-xs font-medium">Indisponível</span>
+                  </div>
+                </div>
+              )}
               
               {/* Progress Bar */}
               {episode.progress && (
@@ -99,10 +122,13 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
               
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>LEG | DUB</span>
-                {episode.watched && (
+                {!episode.available && (
+                  <span className="text-red-400 font-medium">⚠ Indisponível</span>
+                )}
+                {episode.available && episode.watched && (
                   <span className="text-green-400 font-medium">✓ Assistido</span>
                 )}
-                {episode.progress && !episode.watched && (
+                {episode.available && episode.progress && !episode.watched && (
                   <span className="text-orange-400 font-medium">{episode.progress}% assistido</span>
                 )}
               </div>
@@ -119,12 +145,16 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
         <div
           key={episode.id}
           onClick={() => handleEpisodeClick(episode)}
-          className="bg-gray-900 hover:bg-gray-800 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer group"
+          className={`bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 group ${
+            episode.available 
+              ? 'hover:bg-gray-800 cursor-pointer' 
+              : 'opacity-50 cursor-not-allowed grayscale'
+          }`}
         >
           {/* Episode Thumbnail */}
           <div className="relative aspect-video bg-gray-800">
             <img
-              src={episode.thumbnail || anime.thumbnail || '/images/episode-placeholder.svg'}
+              src={episode.thumbnailUrl || episode.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
               alt={episode.title}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -133,9 +163,18 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             />
             
             {/* Play Button Overlay */}
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <PlayIcon className="w-10 h-10 text-white" />
-            </div>
+            {episode.available ? (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <PlayIcon className="w-10 h-10 text-white" />
+              </div>
+            ) : (
+              <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                <div className="text-center">
+                  <ExclamationTriangleIcon className="w-10 h-10 text-gray-500 mx-auto mb-2" />
+                  <span className="text-gray-400 text-xs font-medium">Indisponível</span>
+                </div>
+              </div>
+            )}
             
             {/* Episode Number */}
             <div className="absolute top-2 left-2 bg-black/80 text-white px-2 py-1 rounded text-sm font-bold">
@@ -178,10 +217,13 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>LEG | DUB</span>
-              {episode.watched && (
+              {!episode.available && (
+                <span className="text-red-400 font-medium">⚠</span>
+              )}
+              {episode.available && episode.watched && (
                 <span className="text-green-400 font-medium">✓</span>
               )}
-              {episode.progress && !episode.watched && (
+              {episode.available && episode.progress && !episode.watched && (
                 <span className="text-orange-400 font-medium">{episode.progress}%</span>
               )}
             </div>

@@ -10,9 +10,35 @@ import {
   ArrowsPointingInIcon,
   BackwardIcon,
   ForwardIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  LanguageIcon
 } from '@heroicons/react/24/solid'
 import { Episode } from '@/types/anime'
+
+// Definições de tipos para audioTracks
+interface AudioTrackAPI {
+  id: string
+  label: string
+  language: string
+  enabled: boolean
+}
+
+interface AudioTrackList extends EventTarget {
+  readonly length: number
+  [index: number]: AudioTrackAPI
+}
+
+// Tipo estendido para HTMLVideoElement com audioTracks
+interface ExtendedHTMLVideoElement extends HTMLVideoElement {
+  audioTracks?: AudioTrackList
+}
+
+interface AudioTrack {
+  id: number
+  label: string
+  language: string
+  enabled: boolean
+}
 
 interface VideoPlayerProps {
   episode: Episode
@@ -29,7 +55,7 @@ export function VideoPlayer({
   hasNextEpisode, 
   hasPreviousEpisode 
 }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<ExtendedHTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
 
@@ -42,6 +68,9 @@ export function VideoPlayer({
   const [showControls, setShowControls] = useState(true)
   const [loading, setLoading] = useState(true)
   const [quality, setQuality] = useState('1080p')
+  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([])
+  const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(0)
+  const [showAudioMenu, setShowAudioMenu] = useState(false)
 
   // Auto-hide controls
   useEffect(() => {
@@ -61,10 +90,17 @@ export function VideoPlayer({
       }
     }
 
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowAudioMenu(false)
+      }
+    }
+
     const container = containerRef.current
     if (container) {
       container.addEventListener('mousemove', handleMouseMove)
       container.addEventListener('mouseleave', handleMouseLeave)
+      document.addEventListener('mousedown', handleClickOutside)
     }
 
     return () => {
@@ -72,6 +108,7 @@ export function VideoPlayer({
         container.removeEventListener('mousemove', handleMouseMove)
         container.removeEventListener('mouseleave', handleMouseLeave)
       }
+      document.removeEventListener('mousedown', handleClickOutside)
       clearTimeout(timeout)
     }
   }, [isPlaying])
@@ -97,6 +134,69 @@ export function VideoPlayer({
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
       setLoading(false)
+      
+      // Detectar trilhas de áudio disponíveis no arquivo MKV
+      const video = videoRef.current
+      
+      console.log('🎵 DEBUG - Video element:', video)
+      console.log('🎵 DEBUG - audioTracks:', video.audioTracks)
+      
+      // Aguardar carregamento completo das trilhas
+      setTimeout(() => {
+        const tracks: AudioTrack[] = []
+        
+        if (video.audioTracks && video.audioTracks.length > 1) {
+          console.log('🎵 Found', video.audioTracks.length, 'native audio tracks')
+          
+          for (let i = 0; i < video.audioTracks.length; i++) {
+            const track = video.audioTracks[i]
+            console.log(`🎵 Track ${i}:`, {
+              label: track.label,
+              language: track.language,
+              enabled: track.enabled
+            })
+            
+            tracks.push({
+              id: i,
+              label: track.label || (i === 0 ? 'Japonês (Original)' : 'Português (Dublado)'),
+              language: track.language || (i === 0 ? 'ja' : 'pt-BR'),
+              enabled: track.enabled
+            })
+            
+            if (track.enabled) {
+              setSelectedAudioTrack(i)
+            }
+          }
+        } else {
+          console.log('🎵 No native audioTracks detected - using fallback')
+          tracks.push({
+            id: 0,
+            label: 'Japonês (Original)',
+            language: 'ja',
+            enabled: true
+          })
+          
+          if (video.audioTracks && video.audioTracks.length === 0) {
+            tracks.push({
+              id: 1,
+              label: 'Português (Dublado)',
+              language: 'pt-BR',
+              enabled: false
+            })
+          }
+        }
+        
+        setAudioTracks(tracks)
+      }, 2000)
+      
+      // Trilha inicial
+      const initialTracks: AudioTrack[] = [{
+        id: 0,
+        label: 'Carregando...',
+        language: 'loading',
+        enabled: true
+      }]
+      setAudioTracks(initialTracks)
     }
   }
 
@@ -144,6 +244,38 @@ export function VideoPlayer({
     if (videoRef.current) {
       videoRef.current.currentTime = Math.max(0, Math.min(duration, currentTime + seconds))
     }
+  }
+
+  const handleAudioTrackChange = (trackId: number) => {
+    console.log('🎵 Attempting to change audio track to:', trackId)
+    
+    if (videoRef.current && videoRef.current.audioTracks && videoRef.current.audioTracks.length > 1) {
+      console.log('🎵 Using native audioTracks API')
+      console.log('🎵 Available tracks:', videoRef.current.audioTracks.length)
+      
+      // Desabilitar todas as trilhas
+      for (let i = 0; i < videoRef.current.audioTracks.length; i++) {
+        videoRef.current.audioTracks[i].enabled = false
+        console.log(`🎵 Disabled track ${i}`)
+      }
+      
+      // Habilitar trilha selecionada
+      if (trackId >= 0 && trackId < videoRef.current.audioTracks.length) {
+        videoRef.current.audioTracks[trackId].enabled = true
+        console.log(`🎵 Enabled track ${trackId}:`, videoRef.current.audioTracks[trackId])
+      }
+    } else {
+      console.log('🎵 No native audioTracks available or only single track')
+      console.log('🎵 audioTracks:', videoRef.current?.audioTracks)
+      console.log('🎵 audioTracks length:', videoRef.current?.audioTracks?.length || 0)
+    }
+    
+    setSelectedAudioTrack(trackId)
+    setAudioTracks(prev => prev.map(track => ({
+      ...track,
+      enabled: track.id === trackId
+    })))
+    setShowAudioMenu(false)
   }
 
 
@@ -340,6 +472,49 @@ export function VideoPlayer({
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Audio Track Selector */}
+              {audioTracks.length >= 1 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAudioMenu(!showAudioMenu)}
+                    className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm"
+                  >
+                    <LanguageIcon className="w-4 h-4" />
+                    <span>Áudio</span>
+                  </button>
+                  
+                  {showAudioMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-48 z-50">
+                      <div className="p-2">
+                        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
+                          Trilha de Áudio
+                        </div>
+                        {audioTracks.map((track) => (
+                          <button
+                            key={track.id}
+                            onClick={() => handleAudioTrackChange(track.id)}
+                            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                              track.enabled || selectedAudioTrack === track.id
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>{track.label}</span>
+                              {track.language !== 'default' && track.language !== 'unknown' && (
+                                <span className="text-xs text-gray-400 uppercase">
+                                  {track.language}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Quality Selector */}
               <select
                 value={quality}
