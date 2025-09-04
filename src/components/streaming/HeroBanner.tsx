@@ -96,7 +96,7 @@ export function HeroBanner() {
   }
   
   return (
-    <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[65vh] xl:h-[70vh] w-full overflow-hidden">
+    <div className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh] w-full overflow-hidden">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
@@ -133,14 +133,14 @@ export function HeroBanner() {
               />
               
               {/* Advanced Gradient Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/50" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
               
               {/* Main Content Container */}
               <div className="absolute inset-0 flex items-center pb-6 sm:pb-8 md:pb-10 lg:pb-12 z-20">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-                  <div className="max-w-3xl">
+                <div className="w-full px-6 sm:px-8 lg:px-12 ml-0 sm:ml-8 lg:ml-16">
+                  <div className="max-w-2xl">
                     
                     {/* Main Content */}
                     <div className="space-y-3 sm:space-y-4 md:space-y-5 animate-fadeIn">

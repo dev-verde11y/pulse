@@ -134,6 +134,7 @@ export default function WatchPage() {
         <div className="aspect-video w-full mb-8">
           <VideoPlayer
             episode={episode}
+            animeId={anime.id}
             onNextEpisode={handleNextEpisode}
             onPreviousEpisode={handlePreviousEpisode}
             hasNextEpisode={currentEpisodeIndex < allEpisodes.length - 1}

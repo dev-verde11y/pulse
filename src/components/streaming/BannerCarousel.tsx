@@ -5,12 +5,12 @@ import { Anime } from '@/types/anime'
 import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 
-interface ModernLargeCarouselProps {
+interface BannerCarouselProps {
   title: string
   animes: Anime[]
 }
 
-export function ModernLargeCarousel({ title, animes }: ModernLargeCarouselProps) {
+export function BannerCarousel({ title, animes }: BannerCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -26,25 +26,28 @@ export function ModernLargeCarousel({ title, animes }: ModernLargeCarouselProps)
   if (animes.length === 0) return null
 
   const currentAnime = animes[currentIndex]
+  const showNavigation = animes.length > 1
 
   return (
-    <section className="mb-12 relative">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-white">{title}</h2>
-        <div className="flex gap-3">
-          <button
-            onClick={prevSlide}
-            className="p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
-          >
-            <ChevronLeftIcon className="w-6 h-6 text-white" />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
-          >
-            <ChevronRightIcon className="w-6 h-6 text-white" />
-          </button>
-        </div>
+    <section className="mb-16 relative">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-4xl font-bold text-white tracking-tight">{title}</h2>
+        {showNavigation && (
+          <div className="flex gap-3">
+            <button
+              onClick={prevSlide}
+              className="p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
+            >
+              <ChevronLeftIcon className="w-6 h-6 text-white" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
+            >
+              <ChevronRightIcon className="w-6 h-6 text-white" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl">
@@ -136,24 +139,26 @@ export function ModernLargeCarousel({ title, animes }: ModernLargeCarouselProps)
           </div>
 
           {/* Indicadores de posição */}
-          <div className="absolute bottom-6 right-8 flex gap-2">
-            {animes.slice(0, 5).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
-                    ? 'bg-orange-600 scale-125' 
-                    : 'bg-gray-500 hover:bg-gray-400'
-                }`}
-              />
-            ))}
-            {animes.length > 5 && (
-              <span className="text-gray-400 text-sm ml-2">
-                {currentIndex + 1}/{animes.length}
-              </span>
-            )}
-          </div>
+          {showNavigation && (
+            <div className="absolute bottom-6 right-8 flex gap-2">
+              {animes.slice(0, 5).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentIndex 
+                      ? 'bg-orange-600 scale-125' 
+                      : 'bg-gray-500 hover:bg-gray-400'
+                  }`}
+                />
+              ))}
+              {animes.length > 5 && (
+                <span className="text-gray-400 text-sm ml-2">
+                  {currentIndex + 1}/{animes.length}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>

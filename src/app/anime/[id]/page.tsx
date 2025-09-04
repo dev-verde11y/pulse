@@ -8,7 +8,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { AnimeDetailBanner } from '@/components/anime/AnimeDetailBanner'
 import { EpisodeList } from '@/components/anime/EpisodeList'
-import { SeasonSelector } from '@/components/anime/SeasonSelector'
+import { SeasonSelector, EpisodeFilters } from '@/components/anime/SeasonSelector'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
 
@@ -18,6 +18,10 @@ export default function AnimeDetailPage() {
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [filters, setFilters] = useState<EpisodeFilters>({ 
+    status: 'all', 
+    availability: 'all' 
+  })
   const [anime, setAnime] = useState<Anime | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
   
@@ -75,6 +79,8 @@ export default function AnimeDetailPage() {
             onSortChange={setSortOrder}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
+            filters={filters}
+            onFiltersChange={setFilters}
           />
           
           {/* Lista de Episódios */}
@@ -83,6 +89,7 @@ export default function AnimeDetailPage() {
             season={selectedSeason}
             sortOrder={sortOrder}
             viewMode={viewMode}
+            filters={filters}
           />
           
         </div>

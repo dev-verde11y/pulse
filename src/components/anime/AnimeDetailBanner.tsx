@@ -1,19 +1,215 @@
 'use client'
 
-import { Anime } from '@/types/anime'
+import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, PlusIcon} from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { useState, useEffect } from 'react'
+import { api } from '@/lib/api'
 
 interface AnimeDetailBannerProps {
   anime: Anime
 }
 
 export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const [watchHistory, setWatchHistory] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  
   const backgroundStyle = {
     backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%), url(${anime.bannerUrl || anime.banner || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
+  }
+
+  // Carregar histórico de visualização quando o componente montar
+  useEffect(() => {
+    const loadWatchHistory = async () => {
+      if (!user || !anime.id) return
+      
+      setLoading(true)
+      try {
+        const allHistory = await api.getWatchHistory(1, 50)
+        console.log('All History Debug:', {
+          totalRecords: allHistory.history?.length,
+          currentAnimeId: anime.id,
+          allRecords: allHistory.history?.map((h: any) => ({
+            id: h.id,
+            animeId: h.animeId,
+            episodeId: h.episodeId,
+            progress: h.progress,
+            completed: h.completed
+          }))
+        })
+        
+        const animeHistory = allHistory.history?.filter((h: any) => h.animeId === anime.id) || []
+        console.log('Filtered History:', animeHistory)
+        
+        if (animeHistory.length === 0) {
+          console.log('No history found for anime:', anime.id)
+          setWatchHistory(null)
+          return
+        }
+        
+        setWatchHistory({
+          watchHistory: animeHistory,
+          anime: anime,
+          lastWatched: animeHistory[0]
+        })
+      } catch (error) {
+        // Usuário nunca assistiu - history fica null
+        setWatchHistory(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadWatchHistory()
+  }, [user, anime.id])
+
+  // Encontrar primeiro episódio de uma temporada
+  const getFirstEpisodeOfSeason = (seasonNumber: number) => {
+    const season = anime.seasons?.find(s => s.seasonNumber === seasonNumber)
+    if (season?.episodes && season.episodes.length > 0) {
+      const sortedEpisodes = [...season.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber)
+      return sortedEpisodes[0]
+    }
+    return null
+  }
+
+  // Determinar estado do botão e próximo episódio
+  const getButtonState = () => {
+    if (!user) {
+      return {
+        text: 'FAZER LOGIN PARA ASSISTIR',
+        action: () => router.push('/auth/login'),
+        disabled: false
+      }
+    }
+
+    if (!watchHistory) {
+      // Nunca assistiu
+      return {
+        text: 'ASSISTIR',
+        action: () => {
+          const firstEpisode = getFirstEpisodeOfSeason(1)
+          if (firstEpisode) {
+            router.push(`/watch/${firstEpisode.id}`)
+          }
+        },
+        disabled: false
+      }
+    }
+
+    // Debug temporário
+    console.log('Watch History Debug:', {
+      watchHistory,
+      lastWatched: watchHistory.lastWatched,
+      progress: watchHistory.lastWatched?.progress,
+      completed: watchHistory.lastWatched?.completed,
+      episodeId: watchHistory.lastWatched?.episodeId,
+      animeId: anime.id,
+      totalEpisodes: anime.seasons?.[0]?.episodes?.length
+    })
+
+    // Usuário já assistiu algo
+    const { lastWatched } = watchHistory
+    
+    // Organizar todos os episódios por temporada e número
+    const allEpisodes: Episode[] = []
+    anime.seasons?.forEach((season: any) => {
+      season.episodes?.forEach((ep: any) => {
+        allEpisodes.push({ ...ep, seasonNumber: season.seasonNumber })
+      })
+    })
+    allEpisodes.sort((a, b) => {
+      if (a.seasonNumber !== b.seasonNumber) {
+        return a.seasonNumber - b.seasonNumber
+      }
+      return a.episodeNumber - b.episodeNumber
+    })
+
+    // Encontrar último episódio assistido
+    const lastEpisodeId = lastWatched.episodeId
+    const lastEpisodeIndex = allEpisodes.findIndex(ep => ep.id === lastEpisodeId)
+    
+    if (lastEpisodeIndex === -1) {
+      // Episódio não encontrado na estrutura atual, voltar ao início
+      return {
+        text: 'ASSISTIR',
+        action: () => {
+          const firstEpisode = getFirstEpisodeOfSeason(1)
+          if (firstEpisode) {
+            router.push(`/watch/${firstEpisode.id}`)
+          }
+        },
+        disabled: false
+      }
+    }
+
+    const lastEpisode = allEpisodes[lastEpisodeIndex]
+    const nextEpisodeIndex = lastEpisodeIndex + 1
+    
+    // Verificar se o último episódio foi completado
+    // Usar campo 'completed' se disponível, senão usar progress < 90%
+    const isLastEpisodeComplete = lastWatched.completed || (lastWatched.progress && lastWatched.progress >= 90)
+    
+    if (!isLastEpisodeComplete) {
+      return {
+        text: `CONTINUAR T${lastEpisode.seasonNumber} E${lastEpisode.episodeNumber}`,
+        action: () => router.push(`/watch/${lastEpisodeId}`),
+        disabled: false
+      }
+    }
+    
+    // Se tem próximo episódio disponível
+    if (nextEpisodeIndex < allEpisodes.length) {
+      const nextEpisode = allEpisodes[nextEpisodeIndex]
+      return {
+        text: `ASSISTIR T${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`,
+        action: () => router.push(`/watch/${nextEpisode.id}`),
+        disabled: false
+      }
+    }
+    
+    // Terminou todos os episódios disponíveis, assistir novamente
+    return {
+      text: 'ASSISTIR NOVAMENTE T1 E1',
+      action: () => {
+        const firstEpisode = getFirstEpisodeOfSeason(1)
+        if (firstEpisode) {
+          router.push(`/watch/${firstEpisode.id}`)
+        }
+      },
+      disabled: false
+    }
+  }
+
+  const buttonState = getButtonState()
+
+  // Calcular rating dinâmico (mockado por enquanto)
+  const getRating = () => {
+    return anime._count?.favorites ? Math.min(5.0, 3.5 + (anime._count.favorites / 10000)) : 4.2
+  }
+
+  const getRatingCount = () => {
+    return anime._count?.favorites ? (anime._count.favorites * 2.5).toLocaleString('pt-BR') : '1.2K'
+  }
+
+  // Determinar idiomas disponíveis baseado no anime (mockado)
+  const getAvailableLanguages = () => {
+    const baseLanguages = ['Japanese', 'Português (Brasil)']
+    // Adicionar mais idiomas baseado na popularidade/ano
+    if (anime.year >= 2020) {
+      baseLanguages.push('English', 'Español (América Latina)')
+    }
+    if (anime._count?.favorites && anime._count.favorites > 100) {
+      baseLanguages.push('Français', 'Deutsch')
+    }
+    return baseLanguages
   }
 
   return (
@@ -63,19 +259,34 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
             <div className="flex items-center gap-2 mb-6">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <StarIcon 
+                    key={i} 
+                    className={`w-5 h-5 ${
+                      i < Math.floor(getRating()) 
+                        ? 'text-yellow-400 fill-current' 
+                        : 'text-gray-600'
+                    }`} 
+                  />
                 ))}
               </div>
               <span className="text-white font-medium">
-                Classificação média: <span className="text-yellow-400">4.8</span> (175.4K)
+                Classificação média: <span className="text-yellow-400">{getRating().toFixed(1)}</span> ({getRatingCount()})
               </span>
             </div>
             
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 mb-8">
-              <button className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105">
+              <button 
+                onClick={buttonState.action}
+                disabled={buttonState.disabled || loading}
+                className={`flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+                  buttonState.disabled || loading
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-orange-600 hover:bg-orange-700'
+                } text-white`}
+              >
                 <PlayIcon className="w-6 h-6" />
-                ASSISTIR NOVAMENTE T1 E1
+                {loading ? 'CARREGANDO...' : buttonState.text}
               </button>
               
               <button className="flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg transition-all duration-300 transform hover:scale-105">
@@ -89,9 +300,11 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                 {anime.description || `Milhares de anos após um misterioso fenômeno transformar a humanidade inteira em pedra, desperta um garoto extraordinariamente inteligente e amante da ciência chamado ${anime.title}.`}
               </p>
               
-              <p className="text-gray-300 leading-relaxed">
-                Diante de um mundo de pedra e do colapso generalizado da civilização, Senku decide usar sua mente para reconstruir o mundo. Ao lado de Taiju Oki, seu amigo de infância absurdamente forte, eles começam a reestabelecer a civilização do zero.
-              </p>
+              {anime.description && anime.description.length > 200 && (
+                <p className="text-gray-300 leading-relaxed">
+                  {anime.description.slice(200).split('.')[0]}...
+                </p>
+              )}
               
               <button className="text-orange-400 hover:text-orange-300 font-bold mt-4 transition-colors">
                 MAIS DETALHES
@@ -103,14 +316,27 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
               <div>
                 <h3 className="text-white font-bold mb-2">Áudio:</h3>
                 <p className="text-gray-300">
-                  Japanese, Português (Brasil), English, Deutsch, Español (América Latina), Español (España), Français, Italiano, Русский, العربية
+                  {getAvailableLanguages().join(', ')}
                 </p>
               </div>
               
               <div>
                 <h3 className="text-white font-bold mb-2">Legendas:</h3>
                 <p className="text-gray-300">
-                  Português (Brasil), English, Deutsch, Español (América Latina), Español (España), Français, Italiano, Русский, العربية
+                  {getAvailableLanguages().join(', ')}
+                </p>
+              </div>
+              
+              {/* Informações adicionais */}
+              <div>
+                <h3 className="text-white font-bold mb-2">Ano de Lançamento:</h3>
+                <p className="text-gray-300">{anime.year}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-white font-bold mb-2">Total de Episódios:</h3>
+                <p className="text-gray-300">
+                  {anime.totalEpisodes || anime.seasons?.reduce((total, season) => total + (season.episodes?.length || 0), 0) || 'N/A'}
                 </p>
               </div>
             </div>

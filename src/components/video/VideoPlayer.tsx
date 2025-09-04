@@ -14,6 +14,8 @@ import {
   LanguageIcon
 } from '@heroicons/react/24/solid'
 import { Episode } from '@/types/anime'
+import { api } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Definições de tipos para audioTracks
 interface AudioTrackAPI {
@@ -46,6 +48,7 @@ interface VideoPlayerProps {
   onPreviousEpisode?: () => void
   hasNextEpisode?: boolean
   hasPreviousEpisode?: boolean
+  animeId: string
 }
 
 export function VideoPlayer({ 
@@ -53,7 +56,8 @@ export function VideoPlayer({
   onNextEpisode, 
   onPreviousEpisode, 
   hasNextEpisode, 
-  hasPreviousEpisode 
+  hasPreviousEpisode,
+  animeId
 }: VideoPlayerProps) {
   const videoRef = useRef<ExtendedHTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -71,6 +75,79 @@ export function VideoPlayer({
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([])
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(0)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
+  const [lastProgressUpdate, setLastProgressUpdate] = useState(0)
+  
+  const { user } = useAuth()
+
+  // Função para salvar progresso na API
+  const saveProgress = async (currentTime: number, duration: number, forceComplete = false) => {
+    if (!user || !episode.id || !animeId) return
+    
+    const progressPercent = (currentTime / duration) * 100
+    const isCompleted = forceComplete || progressPercent >= 90
+    
+    try {
+      await api.updateWatchHistory(
+        animeId,
+        episode.id, 
+        progressPercent
+      )
+    } catch (error) {
+      console.error('Erro ao salvar progresso:', error)
+    }
+  }
+
+  // Salvar progresso a cada 10 segundos durante reprodução
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    
+    if (isPlaying && user && videoRef.current) {
+      // Aguardar um momento para garantir que o vídeo carregou
+      const checkAndStart = () => {
+        if (videoRef.current && videoRef.current.duration > 0 && videoRef.current.currentTime >= 0) {
+          interval = setInterval(() => {
+            if (videoRef.current) {
+              const currentVideoTime = videoRef.current.currentTime
+              const videoDuration = videoRef.current.duration
+              saveProgress(currentVideoTime, videoDuration)
+              setLastProgressUpdate(currentVideoTime)
+            }
+          }, 10000) // 10 segundos
+        }
+      }
+      
+      // Aguardar 1 segundo para o vídeo carregar completamente
+      setTimeout(checkAndStart, 1000)
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [isPlaying, user])
+
+  // Salvar quando pausar
+  useEffect(() => {
+    if (!isPlaying && currentTime > 0 && duration > 0 && user) {
+      // Salvar quando pausar (se passou mais de 5 segundos desde última atualização)
+      if (Math.abs(currentTime - lastProgressUpdate) >= 5) {
+        saveProgress(currentTime, duration)
+        setLastProgressUpdate(currentTime)
+      }
+    }
+  }, [isPlaying, currentTime, duration, lastProgressUpdate, user])
+
+  // Salvar quando episódio terminar (90%+)
+  useEffect(() => {
+    if (duration > 0 && currentTime > 0 && user) {
+      const progressPercent = (currentTime / duration) * 100
+      
+      if (progressPercent >= 90) {
+        saveProgress(currentTime, duration, true)
+      }
+    }
+  }, [currentTime, duration, user])
 
   // Auto-hide controls
   useEffect(() => {
@@ -138,23 +215,13 @@ export function VideoPlayer({
       // Detectar trilhas de áudio disponíveis no arquivo MKV
       const video = videoRef.current
       
-      console.log('🎵 DEBUG - Video element:', video)
-      console.log('🎵 DEBUG - audioTracks:', video.audioTracks)
-      
       // Aguardar carregamento completo das trilhas
       setTimeout(() => {
         const tracks: AudioTrack[] = []
         
         if (video.audioTracks && video.audioTracks.length > 1) {
-          console.log('🎵 Found', video.audioTracks.length, 'native audio tracks')
-          
           for (let i = 0; i < video.audioTracks.length; i++) {
             const track = video.audioTracks[i]
-            console.log(`🎵 Track ${i}:`, {
-              label: track.label,
-              language: track.language,
-              enabled: track.enabled
-            })
             
             tracks.push({
               id: i,
@@ -168,7 +235,6 @@ export function VideoPlayer({
             }
           }
         } else {
-          console.log('🎵 No native audioTracks detected - using fallback')
           tracks.push({
             id: 0,
             label: 'Japonês (Original)',
@@ -247,27 +313,16 @@ export function VideoPlayer({
   }
 
   const handleAudioTrackChange = (trackId: number) => {
-    console.log('🎵 Attempting to change audio track to:', trackId)
-    
     if (videoRef.current && videoRef.current.audioTracks && videoRef.current.audioTracks.length > 1) {
-      console.log('🎵 Using native audioTracks API')
-      console.log('🎵 Available tracks:', videoRef.current.audioTracks.length)
-      
       // Desabilitar todas as trilhas
       for (let i = 0; i < videoRef.current.audioTracks.length; i++) {
         videoRef.current.audioTracks[i].enabled = false
-        console.log(`🎵 Disabled track ${i}`)
       }
       
       // Habilitar trilha selecionada
       if (trackId >= 0 && trackId < videoRef.current.audioTracks.length) {
         videoRef.current.audioTracks[trackId].enabled = true
-        console.log(`🎵 Enabled track ${trackId}:`, videoRef.current.audioTracks[trackId])
       }
-    } else {
-      console.log('🎵 No native audioTracks available or only single track')
-      console.log('🎵 audioTracks:', videoRef.current?.audioTracks)
-      console.log('🎵 audioTracks length:', videoRef.current?.audioTracks?.length || 0)
     }
     
     setSelectedAudioTrack(trackId)

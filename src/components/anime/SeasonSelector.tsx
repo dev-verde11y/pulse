@@ -5,6 +5,11 @@ import { ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/solid'
 
 import { Season } from '@/types/anime'
 
+export interface EpisodeFilters {
+  status: 'all' | 'not_watched' | 'in_progress' | 'completed'
+  availability: 'all' | 'available' | 'unavailable'
+}
+
 interface SeasonSelectorProps {
   currentSeason: number
   seasons: Season[]
@@ -13,6 +18,8 @@ interface SeasonSelectorProps {
   onSortChange: (order: 'asc' | 'desc') => void
   viewMode: 'grid' | 'list'
   onViewModeChange: (mode: 'grid' | 'list') => void
+  filters: EpisodeFilters
+  onFiltersChange: (filters: EpisodeFilters) => void
 }
 
 export function SeasonSelector({ 
@@ -22,9 +29,12 @@ export function SeasonSelector({
   sortOrder, 
   onSortChange,
   viewMode,
-  onViewModeChange 
+  onViewModeChange,
+  filters,
+  onFiltersChange
 }: SeasonSelectorProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   
   const currentSeasonData = seasons.find(s => s.seasonNumber === currentSeason)
   const currentSeasonTitle = currentSeasonData?.title || `Temporada ${currentSeason}`
@@ -126,10 +136,125 @@ export function SeasonSelector({
           </div>
           
           {/* Filter Button */}
-          <button className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300">
-            <FunnelIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">FILTROS</span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                isFiltersOpen || (filters.status !== 'all' || filters.availability !== 'all')
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white'
+              }`}
+            >
+              <FunnelIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">FILTROS</span>
+            </button>
+
+            {/* Filters Dropdown */}
+            {isFiltersOpen && (
+              <div className="absolute top-full right-0 mt-2 bg-gray-800 rounded-lg shadow-xl z-20 min-w-[280px] border border-gray-700">
+                <div className="p-4">
+                  <h4 className="text-sm font-bold text-white mb-4">Filtros de Episódios</h4>
+                  
+                  {/* Status Filter */}
+                  <div className="mb-4">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 block">
+                      Status de Visualização
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, status: 'all' })}
+                        className={`text-xs px-2.5 py-2 rounded transition-colors whitespace-nowrap ${
+                          filters.status === 'all' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        Todos
+                      </button>
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, status: 'not_watched' })}
+                        className={`text-xs px-2.5 py-2 rounded transition-colors whitespace-nowrap ${
+                          filters.status === 'not_watched' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        Não Assistidos
+                      </button>
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, status: 'in_progress' })}
+                        className={`text-xs px-2.5 py-2 rounded transition-colors whitespace-nowrap ${
+                          filters.status === 'in_progress' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        Em Progresso
+                      </button>
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, status: 'completed' })}
+                        className={`text-xs px-2.5 py-2 rounded transition-colors whitespace-nowrap ${
+                          filters.status === 'completed' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        Completos
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Availability Filter */}
+                  <div className="mb-4">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 block">
+                      Disponibilidade
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, availability: 'all' })}
+                        className={`text-xs px-2 py-2 rounded transition-colors whitespace-nowrap ${
+                          filters.availability === 'all' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        Todos
+                      </button>
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, availability: 'available' })}
+                        className={`text-xs px-2 py-2 rounded transition-colors whitespace-nowrap ${
+                          filters.availability === 'available' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        Disponíveis
+                      </button>
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, availability: 'unavailable' })}
+                        className={`text-xs px-1 py-2 rounded transition-colors whitespace-nowrap overflow-hidden ${
+                          filters.availability === 'unavailable' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                        title="Indisponíveis"
+                      >
+                        Indispon.
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Reset Button */}
+                  <button
+                    onClick={() => onFiltersChange({ status: 'all', availability: 'all' })}
+                    className="w-full text-xs px-3 py-2.5 bg-gray-600/50 hover:bg-gray-600 text-gray-300 hover:text-white rounded-md transition-all duration-200 font-medium border border-gray-600/30 hover:border-gray-500"
+                  >
+                    🗑️ Limpar Filtros
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -6,9 +6,9 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { Header } from '@/components/layout/Header'
 import { HeroBanner } from '@/components/streaming/HeroBanner'
 import { Footer } from '@/components/layout/Footer'
-import { SmallCarousel } from '@/components/streaming/SmallCarousel'
-import { MediumCarousel } from '@/components/streaming/MediumCarousel'
-import { ModernLargeCarousel } from '@/components/streaming/ModernLargeCarousel'
+import { CardCarousel } from '@/components/streaming/CardCarousel'
+import { PosterCarousel } from '@/components/streaming/PosterCarousel'
+import { BannerCarousel } from '@/components/streaming/BannerCarousel'
 import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
@@ -59,7 +59,12 @@ export default function DashboardPage() {
   const topRated = [...animes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10)
   const action = animes.filter(anime => anime.genres?.includes('Ação')).slice(0, 10)
   const comedy = animes.filter(anime => anime.genres?.includes('Comédia')).slice(0, 10)
-  const continueWatchingAnimes = watchHistory.map(item => item.anime).slice(0, 10)
+  const continueWatchingAnimes = watchHistory
+    .map(item => item.anime)
+    .filter((anime, index, self) => 
+      index === self.findIndex(a => a.id === anime.id)
+    )
+    .slice(0, 10)
   const myList = favorites.slice(0, 10)
   const recommendations = animes.slice(0, 10)
 
@@ -72,52 +77,52 @@ export default function DashboardPage() {
 
       {/* Content Sections */}
       <main className="bg-black text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-10">
           
           {/* Continue Assistindo */}
-          <MediumCarousel 
+          <CardCarousel 
             title="Continue Assistindo" 
             animes={continueWatchingAnimes} 
           />
 
           {/* Em Alta */}
-          <MediumCarousel 
+          <PosterCarousel 
             title="Em Alta" 
             animes={trending} 
           />
 
           {/* Minha Lista */}
-          <MediumCarousel 
+          <PosterCarousel 
             title="Minha Lista" 
             animes={myList} 
           />
 
           {/* Recomendados para Você */}
-          <MediumCarousel 
+          <PosterCarousel 
             title="Recomendados para Você" 
             animes={recommendations} 
           />
 
           {/* Lançamentos */}
-          <ModernLargeCarousel 
+          <BannerCarousel 
             title="Novos Lançamentos" 
             animes={newReleases} 
           />
 
           {/* Mais Avaliados */}
-          <MediumCarousel 
+          <PosterCarousel 
             title="Mais Avaliados" 
             animes={topRated} 
           />
 
           {/* Ação */}
-          <SmallCarousel 
+          <CardCarousel 
             title="Ação & Aventura" 
             animes={action} 
           />
 
           {/* Comédia */}
-          <SmallCarousel 
+          <CardCarousel 
             title="Comédia" 
             animes={comedy} 
           />
@@ -159,7 +164,6 @@ export default function DashboardPage() {
         </div>
       </main>
       
-      {/* Footer */}
       <Footer />
     </div>
   )

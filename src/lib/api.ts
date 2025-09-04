@@ -146,5 +146,18 @@ export const api = {
     }
     
     return response.json()
+  },
+
+  async getAnimeWatchHistory(animeId: string) {
+    const response = await fetch(`/api/watch-history/anime/${animeId}`)
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null // Nunca assistiu
+      }
+      throw new Error('Failed to fetch anime watch history')
+    }
+    
+    return response.json()
   }
 }

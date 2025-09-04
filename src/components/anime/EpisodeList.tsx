@@ -3,16 +3,24 @@
 import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { api } from '@/lib/api'
+import { EpisodeFilters } from './SeasonSelector'
 
 interface EpisodeListProps {
   anime: Anime
   season: number
   sortOrder: 'asc' | 'desc'
   viewMode: 'grid' | 'list'
+  filters: EpisodeFilters
 }
 
-export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListProps) {
+export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: EpisodeListProps) {
   const router = useRouter()
+  const { user } = useAuth()
+  const [watchHistory, setWatchHistory] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
   
   // Buscar temporada selecionada
   const selectedSeason = anime.seasons?.find(s => s.seasonNumber === season)
@@ -25,19 +33,89 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
     return !!(episode.videoUrl || episode.r2Key)
   }
 
+  // Carregar histórico do usuário
+  useEffect(() => {
+    const loadWatchHistory = async () => {
+      if (!user) return
+      
+      setLoading(true)
+      try {
+        const history = await api.getWatchHistory(1, 100) // Buscar histórico
+        const animeHistory = history.history.filter((h: any) => h.animeId === anime.id)
+        setWatchHistory(animeHistory)
+      } catch (error) {
+        console.error('Erro ao carregar histórico:', error)
+        setWatchHistory([])
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Para mock de status assistido (futuramente virá do histórico do usuário)
-  const episodesWithWatchStatus = episodes.map((episode, i) => ({
-    ...episode,
-    available: isEpisodeAvailable(episode),
-    watched: i < 3, // Primeiros 3 episódios "assistidos"  
-    progress: i === 2 ? 75 : undefined // Episódio 3 com 75% de progresso
-  }))
+    loadWatchHistory()
+  }, [user, anime.id])
+
+  // Função para obter dados de progresso de um episódio
+  const getEpisodeProgress = (episodeId: string) => {
+    const historyItem = watchHistory.find(h => h.episodeId === episodeId)
+    if (!historyItem) {
+      return { watched: false, progress: 0, completed: false }
+    }
+    
+    return {
+      watched: true,
+      progress: Math.round(historyItem.progress || 0),
+      completed: (historyItem.progress >= 90) || historyItem.completed
+    }
+  }
+
+  // Episódios com status real do histórico
+  const episodesWithWatchStatus = episodes.map((episode) => {
+    const progressData = getEpisodeProgress(episode.id)
+    return {
+      ...episode,
+      available: isEpisodeAvailable(episode),
+      watched: progressData.watched,
+      progress: progressData.progress,
+      completed: progressData.completed
+    }
+  })
 
   // Apply sorting
   const sortedEpisodes = sortOrder === 'desc' 
     ? episodesWithWatchStatus.sort((a, b) => b.episodeNumber - a.episodeNumber)
     : episodesWithWatchStatus.sort((a, b) => a.episodeNumber - b.episodeNumber)
+
+  // Apply filters
+  const filteredEpisodes = sortedEpisodes.filter((episode) => {
+    // Status filter
+    if (filters.status !== 'all') {
+      switch (filters.status) {
+        case 'not_watched':
+          if (episode.watched) return false
+          break
+        case 'in_progress':
+          if (!episode.watched || episode.completed) return false
+          break
+        case 'completed':
+          if (!episode.completed) return false
+          break
+      }
+    }
+    
+    // Availability filter
+    if (filters.availability !== 'all') {
+      switch (filters.availability) {
+        case 'available':
+          if (!episode.available) return false
+          break
+        case 'unavailable':
+          if (episode.available) return false
+          break
+      }
+    }
+    
+    return true
+  })
 
   const handleEpisodeClick = (episode: Episode & { available: boolean }) => {
     if (!episode.available) {
@@ -48,7 +126,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
 
   const renderListView = () => (
     <div className="grid gap-4">
-      {sortedEpisodes.map((episode) => (
+      {filteredEpisodes.map((episode) => (
         <div
           key={episode.id}
           onClick={() => handleEpisodeClick(episode)}
@@ -86,19 +164,28 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
               )}
               
               {/* Progress Bar */}
-              {episode.progress && (
+              {episode.progress > 0 && (
                 <div className="absolute bottom-1 left-1 right-1">
-                  <div className="w-full bg-gray-600 rounded-full h-1">
+                  <div className="w-full bg-gray-600 rounded-full h-1.5">
                     <div 
-                      className="bg-orange-600 h-1 rounded-full transition-all duration-300"
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        episode.completed ? 'bg-green-500' : 'bg-orange-600'
+                      }`}
                       style={{ width: `${episode.progress}%` }}
                     />
                   </div>
                 </div>
               )}
               
+              {/* Progress Percentage */}
+              {episode.progress > 0 && (
+                <div className="absolute bottom-2 right-2 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                  {episode.progress}%
+                </div>
+              )}
+              
               {/* Watched Badge */}
-              {episode.watched && (
+              {episode.completed && (
                 <div className="absolute top-2 right-2">
                   <CheckCircleIcon className="w-5 h-5 text-green-500" />
                 </div>
@@ -125,11 +212,14 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
                 {!episode.available && (
                   <span className="text-red-400 font-medium">⚠ Indisponível</span>
                 )}
-                {episode.available && episode.watched && (
-                  <span className="text-green-400 font-medium">✓ Assistido</span>
+                {episode.available && episode.completed && (
+                  <span className="text-green-400 font-medium">✓ Completo</span>
                 )}
-                {episode.available && episode.progress && !episode.watched && (
+                {episode.available && episode.progress > 0 && !episode.completed && (
                   <span className="text-orange-400 font-medium">{episode.progress}% assistido</span>
+                )}
+                {episode.available && !episode.watched && (
+                  <span className="text-blue-400 font-medium">Não assistido</span>
                 )}
               </div>
             </div>
@@ -141,7 +231,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
 
   const renderGridView = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {sortedEpisodes.map((episode) => (
+      {filteredEpisodes.map((episode) => (
         <div
           key={episode.id}
           onClick={() => handleEpisodeClick(episode)}
@@ -187,19 +277,28 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
             </div>
             
             {/* Progress Bar */}
-            {episode.progress && (
+            {episode.progress > 0 && (
               <div className="absolute bottom-0 left-0 right-0">
-                <div className="w-full bg-gray-600 h-1">
+                <div className="w-full bg-gray-600 h-1.5">
                   <div 
-                    className="bg-orange-600 h-1 transition-all duration-300"
+                    className={`h-1.5 transition-all duration-300 ${
+                      episode.completed ? 'bg-green-500' : 'bg-orange-600'
+                    }`}
                     style={{ width: `${episode.progress}%` }}
                   />
                 </div>
               </div>
             )}
             
+            {/* Progress Percentage */}
+            {episode.progress > 0 && (
+              <div className="absolute bottom-2 left-2 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                {episode.progress}%
+              </div>
+            )}
+            
             {/* Watched Badge */}
-            {episode.watched && (
+            {episode.completed && (
               <div className="absolute bottom-2 right-2">
                 <CheckCircleIcon className="w-5 h-5 text-green-500" />
               </div>
@@ -220,11 +319,14 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
               {!episode.available && (
                 <span className="text-red-400 font-medium">⚠</span>
               )}
-              {episode.available && episode.watched && (
+              {episode.available && episode.completed && (
                 <span className="text-green-400 font-medium">✓</span>
               )}
-              {episode.available && episode.progress && !episode.watched && (
+              {episode.available && episode.progress > 0 && !episode.completed && (
                 <span className="text-orange-400 font-medium">{episode.progress}%</span>
+              )}
+              {episode.available && !episode.watched && (
+                <span className="text-blue-400 font-medium">•</span>
               )}
             </div>
           </div>
@@ -233,11 +335,19 @@ export function EpisodeList({ anime, season, sortOrder, viewMode }: EpisodeListP
     </div>
   )
 
-  if (sortedEpisodes.length === 0) {
+  if (filteredEpisodes.length === 0) {
+    const hasEpisodes = episodes.length > 0
     return (
       <div className="text-center py-12">
-        <div className="text-gray-400 text-lg mb-2">Nenhum episódio encontrado</div>
-        <div className="text-gray-500 text-sm">Esta temporada ainda não possui episódios cadastrados.</div>
+        <div className="text-gray-400 text-lg mb-2">
+          {hasEpisodes ? 'Nenhum episódio corresponde aos filtros' : 'Nenhum episódio encontrado'}
+        </div>
+        <div className="text-gray-500 text-sm">
+          {hasEpisodes 
+            ? 'Tente ajustar os filtros para ver mais episódios.' 
+            : 'Esta temporada ainda não possui episódios cadastrados.'
+          }
+        </div>
       </div>
     )
   }
