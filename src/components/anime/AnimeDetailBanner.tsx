@@ -126,8 +126,11 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
       })
     })
     allEpisodes.sort((a, b) => {
-      if (a.seasonNumber !== b.seasonNumber) {
-        return a.seasonNumber - b.seasonNumber
+      const aSeasonNumber = a.seasonNumber || 1
+      const bSeasonNumber = b.seasonNumber || 1
+      
+      if (aSeasonNumber !== bSeasonNumber) {
+        return aSeasonNumber - bSeasonNumber
       }
       return a.episodeNumber - b.episodeNumber
     })
@@ -221,13 +224,13 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex flex-col lg:flex-row items-start gap-8">
+        <div className="flex flex-col lg:flex-row items-start gap-8 pt-10">
           
           {/* Poster */}
           {/* TODO: 💤✨ dormir!!! voltar aqui para ver esse detalhe! */}
           <div className="flex-shrink-0">
             <img
-              src={anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
+              src={anime.thumbnail || anime.banner || '/images/episode-placeholder.svg'}
               alt={anime.title}
               className="w-72 h-96 object-cover rounded-xl shadow-2xl"
             />

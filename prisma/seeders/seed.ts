@@ -1,6 +1,7 @@
 import { PrismaClient, PlanType, BillingCycle, AnimeStatus, AnimeType, VideoQuality } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { mockAnimes } from '../src/data/mockData'
+import { mockAnimes } from '../../src/data/mockData'
+import { seedHeroBanners } from './hero-banners'
 
 const prisma = new PrismaClient()
 
@@ -536,6 +537,10 @@ async function main() {
   }
   
   console.log('✅ Sample watch history and favorites created')
+  
+  // Seed Hero Banners
+  await seedHeroBanners()
+  
   console.log('🎉 Seed completed successfully!')
 }
 

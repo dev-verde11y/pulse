@@ -112,6 +112,17 @@ export const api = {
     return response.json()
   },
 
+  // Hero Banners
+  async getHeroBanners(): Promise<any[]> {
+    const response = await fetch('/api/hero-banners')
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch hero banners')
+    }
+
+    return response.json()
+  },
+
   async getWatchHistory(page = 1, limit = 20) {
     const params = new URLSearchParams({
       page: page.toString(),

@@ -273,6 +273,7 @@ model Anime {
   seasons       Season[]
   favorites     Favorite[]
   watchHistory  WatchHistory[]
+  heroBanners   HeroBanner[]
   
   // SEO
   slug          String       @unique
@@ -348,4 +349,40 @@ model Episode {
 
   @@unique([seasonId, episodeNumber])
   @@map("episodes")
+}
+
+model HeroBanner {
+  id            String   @id @default(uuid())
+  
+  // Content info
+  title         String
+  subtitle      String
+  description   String   @db.Text
+  
+  // Media assets
+  backgroundImage String
+  logo          String?
+  
+  // Meta info
+  type          String   @default("anime")
+  year          Int
+  rating        String   @default("16+")
+  duration      String   @default("24 min")
+  episode       String?
+  
+  // Genre tags
+  genres        String[] @default([])
+  
+  // Display order and status
+  displayOrder  Int      @default(0)
+  isActive      Boolean  @default(true)
+  
+  // Relation to anime (optional)
+  animeId       String?
+  anime         Anime?   @relation(fields: [animeId], references: [id], onDelete: SetNull)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("hero_banners")
 }
