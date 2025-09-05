@@ -8,6 +8,7 @@ import { HeroBanner } from '@/components/streaming/HeroBanner'
 import { Footer } from '@/components/layout/Footer'
 import { CardCarousel } from '@/components/streaming/CardCarousel'
 import { PosterCarousel } from '@/components/streaming/PosterCarousel'
+import { SmallCardCarousel } from '@/components/streaming/SmallCardCarousel'
 import { BannerCarousel } from '@/components/streaming/BannerCarousel'
 import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
@@ -77,10 +78,10 @@ export default function DashboardPage() {
 
       {/* Content Sections */}
       <main className="bg-black text-white">
-        <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-10">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 space-y-8 sm:space-y-10">
           
           {/* Continue Assistindo */}
-          <CardCarousel 
+          <SmallCardCarousel 
             title="Continue Assistindo" 
             animes={continueWatchingAnimes} 
           />
