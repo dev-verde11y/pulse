@@ -8,7 +8,7 @@ interface AnimeFilters {
   status?: 'ongoing' | 'completed' | 'upcoming'
   type?: 'tv' | 'movie' | 'ova' | 'special'
   search?: string
-  sortBy?: 'title' | 'releaseDate' | 'rating' | 'views'
+  sortBy?: 'title' | 'year' | 'rating' | 'createdAt'
   sortOrder?: 'asc' | 'desc'
 }
 
@@ -112,6 +112,18 @@ export const api = {
     return response.json()
   },
 
+  async clearAllFavorites() {
+    const response = await fetch('/api/favorites', {
+      method: 'DELETE'
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to clear all favorites')
+    }
+    
+    return response.json()
+  },
+
   // Hero Banners
   async getHeroBanners(): Promise<any[]> {
     const response = await fetch('/api/hero-banners')
@@ -167,6 +179,40 @@ export const api = {
         return null // Nunca assistiu
       }
       throw new Error('Failed to fetch anime watch history')
+    }
+    
+    return response.json()
+  },
+
+  async updateProfile(name: string) {
+    const response = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name })
+    })
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to update profile')
+    }
+    
+    return response.json()
+  },
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    const response = await fetch('/api/profile/password', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ currentPassword, newPassword })
+    })
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to change password')
     }
     
     return response.json()

@@ -2,9 +2,23 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const router = useRouter()
+
+  const handleViewAll = () => {
+    console.log('🔍 Botão VER TUDO clicado!')
+    console.log('🚀 Redirecionando para /search?q=*')
+    try {
+      router.push('/search?q=*')
+    } catch (error) {
+      console.error('❌ Erro no redirecionamento:', error)
+      // Fallback: usar window.location
+      window.location.href = '/search?q=*'
+    }
+  }
 
   const footerLinks = {
     company: {
@@ -39,7 +53,7 @@ export function Footer() {
       links: [
         { name: "Catálogo", href: "/catalogo" },
         { name: "Lançamentos", href: "/lancamentos" },
-        { name: "Mais Assistidos", href: "/populares" },
+        { name: "Mais Assistidos", href: "/popular" },
         { name: "Gêneros", href: "/generos" }
       ]
     }
@@ -96,171 +110,118 @@ export function Footer() {
   ]
 
   return (
-    <footer className="bg-gray-950 border-t border-gray-800 text-white">
+    <footer className="relative bg-black/95 backdrop-blur-sm border-t border-white/5">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-            {/* Brand Section */}
-            <div className="lg:col-span-2 space-y-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/images/logo.png"
-                  alt="Logo Pulse"
-                  width={40}
-                  height={40}
-                  className="rounded-lg shadow-xl"
-                />
-                <span className="text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">
-                  PULSE
-                </span>
-              </Link>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                A melhor plataforma de streaming do Brasil. Assista aos seus animes, filmes e séries favoritos em qualidade 4K com a experiência mais imersiva.
-              </p>
-              
-              {/* Features */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                {features.map((feature) => (
-                  <span 
-                    key={feature}
-                    className="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs font-medium border border-gray-700"
-                  >
-                    {feature}
-                  </span>
-                ))}
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        {/* Top Section - Logo and Description */}
+        <div className="py-16 text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <Image
+              src="/images/logo.png"
+              alt="Logo Pulse"
+              width={48}
+              height={48}
+              className="rounded-xl shadow-2xl"
+            />
+            <span className="text-3xl font-bold text-white tracking-tight">
+              PULSE
+            </span>
+          </div>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed mb-8">
+            Ainda procurando algo para assistir?<br />
+            <span className="text-white font-medium">Confira nossa biblioteca completa</span>
+          </p>
+          <a 
+            href="/search?q=*"
+            onClick={(e) => {
+              e.preventDefault()
+              handleViewAll()
+            }}
+            className="inline-flex items-center justify-center px-8 py-3 border-2 border-blue-500 text-blue-500 font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 cursor-pointer"
+          >
+            VER TUDO
+          </a>
+        </div>
+
+        {/* Middle Section - Links Grid */}
+        <div className="py-12 border-t border-white/5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+            {Object.values(footerLinks).map((section) => (
+              <div key={section.title} className="space-y-4">
+                <h3 className="text-white font-semibold text-sm uppercase tracking-wider">
+                  {section.title}
+                </h3>
+                <ul className="space-y-3">
+                  {section.links.map((link) => (
+                    <li key={link.name}>
+                      <Link 
+                        href={link.href}
+                        className="text-gray-400 hover:text-white text-sm transition-colors duration-200 block"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-
-            {/* Company Links */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-                {footerLinks.company.title}
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.company.links.map((link) => (
-                  <li key={link.name}>
-                    <Link 
-                      href={link.href}
-                      className="text-gray-400 hover:text-blue-400 text-sm transition-colors duration-200"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Support Links */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-                {footerLinks.support.title}
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.support.links.map((link) => (
-                  <li key={link.name}>
-                    <Link 
-                      href={link.href}
-                      className="text-gray-400 hover:text-blue-400 text-sm transition-colors duration-200"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Content Links */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-                {footerLinks.content.title}
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.content.links.map((link) => (
-                  <li key={link.name}>
-                    <Link 
-                      href={link.href}
-                      className="text-gray-400 hover:text-blue-400 text-sm transition-colors duration-200"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal Links */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-                {footerLinks.legal.title}
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.legal.links.map((link) => (
-                  <li key={link.name}>
-                    <Link 
-                      href={link.href}
-                      className="text-gray-400 hover:text-blue-400 text-sm transition-colors duration-200"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Separator */}
-        <div className="border-t border-gray-800"></div>
-
-        {/* Bottom Section */}
-        <div className="py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        {/* Bottom Section - Social and Copyright */}
+        <div className="py-8 border-t border-white/5">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             {/* Social Links */}
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500 font-medium">Siga-nos:</span>
-              <div className="flex space-x-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-blue-400 transition-colors duration-200 p-2 rounded-full hover:bg-gray-800"
-                    aria-label={social.name}
-                  >
-                    {social.icon}
-                  </a>
-                ))}
-              </div>
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors duration-200 p-3 rounded-full hover:bg-white/5"
+                  aria-label={social.name}
+                >
+                  {social.icon}
+                </a>
+              ))}
             </div>
 
-            {/* Copyright & Credits */}
+            {/* Copyright */}
             <div className="text-center md:text-right">
-              <p className="text-sm text-gray-500">
-                © {currentYear} <span className="font-semibold text-blue-400">Pulse Streaming</span>. Todos os direitos reservados.
+              <p className="text-sm text-gray-400">
+                © {currentYear} <span className="font-bold text-white">PULSE</span>
               </p>
-              <p className="text-xs text-gray-600 mt-1">
-                Desenvolvido com <span className="text-red-500">♥</span> no Brasil
+              <p className="text-xs text-gray-500 mt-1">
+                Original | © PULSE
               </p>
             </div>
           </div>
         </div>
 
-        {/* Very Bottom - Legal Notice */}
-        <div className="border-t border-gray-800 py-4">
-          <div className="text-center">
-            <p className="text-xs text-gray-600 leading-relaxed max-w-4xl mx-auto">
-              Pulse é uma plataforma de streaming. 
-              Todos os conteúdos exibidos são para teste e desenvolvimento. 
-              Para a melhor experiência, recomendamos usar um navegador moderno com suporte a HTML5.
-            </p>
+        {/* Legal Bottom */}
+        <div className="py-6 border-t border-white/5">
+          <div className="flex flex-wrap justify-center gap-6 text-xs text-gray-500">
+            <Link href="/termos" className="hover:text-gray-400 transition-colors">
+              Termos de Uso
+            </Link>
+            <Link href="/privacidade" className="hover:text-gray-400 transition-colors">
+              Política de Privacidade
+            </Link>
+            <Link href="/cookies" className="hover:text-gray-400 transition-colors">
+              Ferramenta de Consentimento de Cookies
+            </Link>
+            <span className="flex items-center gap-2">
+              🌐 <span>Português (Brasil)</span>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Gradient Overlay for Visual Effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:32px_32px]"></div>
+      </div>
     </footer>
   )
 }

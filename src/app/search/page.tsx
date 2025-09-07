@@ -78,7 +78,11 @@ export default function SearchPage() {
   const performSearch = useCallback(async (page = 1) => {
     console.log('performSearch called with:', { query, page, selectedGenres, selectedRating, selectedStatus, selectedType })
     
-    if (!query.trim() && selectedGenres.length === 0 && !selectedRating && !selectedStatus && !selectedType) {
+    // Tratar q=* como busca por todos os animes
+    const shouldShowAll = query.trim() === '*'
+    const hasSearchCriteria = query.trim() || selectedGenres.length > 0 || selectedRating || selectedStatus || selectedType || shouldShowAll
+    
+    if (!hasSearchCriteria) {
       console.log('No search criteria, clearing results')
       setAnimes([])
       setTotalResults(0)
@@ -95,7 +99,8 @@ export default function SearchPage() {
         : [sortBy, 'asc']
 
       const filters = {
-        search: query.trim() || undefined,
+        // Se for *, não enviar parâmetro de busca para retornar todos
+        search: shouldShowAll ? undefined : (query.trim() || undefined),
         genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined, // API só suporta 1 gênero por vez
         rating: selectedRating || undefined,
         status: selectedStatus as any || undefined,
@@ -149,7 +154,11 @@ export default function SearchPage() {
   // Search effect to trigger search when params change
   useEffect(() => {
     const executeSearch = async () => {
-      if (!query.trim() && selectedGenres.length === 0 && !selectedRating && !selectedStatus && !selectedType) {
+      // Tratar q=* como busca por todos os animes
+      const shouldShowAll = query.trim() === '*'
+      const hasSearchCriteria = query.trim() || selectedGenres.length > 0 || selectedRating || selectedStatus || selectedType || shouldShowAll
+      
+      if (!hasSearchCriteria) {
         setAnimes([])
         setTotalResults(0)
         return
@@ -165,7 +174,8 @@ export default function SearchPage() {
           : [sortBy, 'asc']
 
         const filters = {
-          search: query.trim() || undefined,
+          // Se for *, não enviar parâmetro de busca para retornar todos
+          search: shouldShowAll ? undefined : (query.trim() || undefined),
           genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined,
           rating: selectedRating || undefined,
           status: selectedStatus as any || undefined,
@@ -298,168 +308,170 @@ export default function SearchPage() {
 
           {/* Painel de Filtros */}
           {showFilters && (
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-white">Filtros Avançados</h3>
+            <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h3 className="text-xl font-bold text-white">Filtros</h3>
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1 rounded-lg hover:bg-white/5"
                 >
-                  Limpar Filtros
+                  Limpar Tudo
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-6">
                 
-                {/* Gêneros */}
+                {/* Row 1: Gêneros */}
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">Gêneros</label>
-                  <div className="max-h-40 overflow-y-auto">
+                  <label className="block text-sm font-semibold text-white mb-3">Gêneros</label>
+                  <div className="flex flex-wrap gap-2">
                     {GENRES.map(genre => (
-                      <label key={genre} className="flex items-center py-1 cursor-pointer group">
-                        <input
-                          type="checkbox"
-                          checked={selectedGenres.includes(genre)}
-                          onChange={() => toggleGenre(genre)}
-                          className="mr-2 rounded border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800"
-                        />
-                        <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                          {genre}
-                        </span>
-                      </label>
+                      <button
+                        key={genre}
+                        onClick={() => toggleGenre(genre)}
+                        className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 ${
+                          selectedGenres.includes(genre)
+                            ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/25'
+                            : 'bg-transparent border-white/20 text-gray-300 hover:border-white/40 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {genre}
+                      </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Classificação, Status, Tipo */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">Classificação</label>
+                {/* Row 2: Filtros Principais */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="relative">
+                    <label className="block text-sm font-semibold text-white mb-2">Classificação</label>
                     <select
                       value={selectedRating}
                       onChange={(e) => setSelectedRating(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+                      className="w-full pl-4 pr-10 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none"
                     >
                       <option value="">Todas</option>
                       {RATINGS.map(rating => (
-                        <option key={rating.value} value={rating.value}>{rating.label}</option>
+                        <option key={rating.value} value={rating.value} className="bg-gray-800">{rating.label}</option>
                       ))}
                     </select>
+                    <ChevronDownIcon className="absolute right-3 top-[42px] h-5 w-5 text-gray-400 pointer-events-none" />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">Status</label>
+                  <div className="relative">
+                    <label className="block text-sm font-semibold text-white mb-2">Status</label>
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+                      className="w-full pl-4 pr-10 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none"
                     >
                       <option value="">Todos</option>
                       {STATUSES.map(status => (
-                        <option key={status.value} value={status.value}>{status.label}</option>
+                        <option key={status.value} value={status.value} className="bg-gray-800">{status.label}</option>
                       ))}
                     </select>
+                    <ChevronDownIcon className="absolute right-3 top-[42px] h-5 w-5 text-gray-400 pointer-events-none" />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">Tipo</label>
+                  <div className="relative">
+                    <label className="block text-sm font-semibold text-white mb-2">Tipo</label>
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+                      className="w-full pl-4 pr-10 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none"
                     >
                       <option value="">Todos</option>
                       {TYPES.map(type => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
+                        <option key={type.value} value={type.value} className="bg-gray-800">{type.label}</option>
                       ))}
                     </select>
-                  </div>
-                </div>
-
-                {/* Ano e Ordenação */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">Período</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="De"
-                        value={yearFrom}
-                        onChange={(e) => setYearFrom(e.target.value)}
-                        min="1960"
-                        max="2030"
-                        className="w-20 px-2 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-                      />
-                      <span className="text-gray-400 py-2">até</span>
-                      <input
-                        type="number"
-                        placeholder="Até"
-                        value={yearTo}
-                        onChange={(e) => setYearTo(e.target.value)}
-                        min="1960"
-                        max="2030"
-                        className="w-20 px-2 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
+                    <ChevronDownIcon className="absolute right-3 top-[42px] h-5 w-5 text-gray-400 pointer-events-none" />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">Ordenar por</label>
+                  <div className="relative">
+                    <label className="block text-sm font-semibold text-white mb-2">Ordenar por</label>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+                      className="w-full pl-4 pr-10 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none"
                     >
                       {SORT_OPTIONS.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
+                        <option key={option.value} value={option.value} className="bg-gray-800">{option.label}</option>
                       ))}
                     </select>
+                    <ChevronDownIcon className="absolute right-3 top-[42px] h-5 w-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Row 3: Período */}
+                <div>
+                  <label className="block text-sm font-semibold text-white mb-2">Período</label>
+                  <div className="flex items-center gap-3 max-w-xs">
+                    <input
+                      type="number"
+                      placeholder="De"
+                      value={yearFrom}
+                      onChange={(e) => setYearFrom(e.target.value)}
+                      min="1960"
+                      max="2030"
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-center focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                    <span className="text-gray-400 text-sm">até</span>
+                    <input
+                      type="number"
+                      placeholder="Até"
+                      value={yearTo}
+                      onChange={(e) => setYearTo(e.target.value)}
+                      min="1960"
+                      max="2030"
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-center focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Filtros Ativos */}
               {(selectedGenres.length > 0 || selectedRating || selectedStatus || selectedType || yearFrom || yearTo) && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <p className="text-sm text-gray-400 mb-2">Filtros ativos:</p>
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <p className="text-sm text-gray-400 mb-3">Filtros ativos:</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedGenres.map(genre => (
-                      <span key={genre} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
+                      <span key={genre} className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 text-sm rounded-lg">
                         {genre}
-                        <button onClick={() => toggleGenre(genre)} className="hover:text-gray-300">
-                          <XMarkIcon className="h-3 w-3" />
+                        <button onClick={() => toggleGenre(genre)} className="hover:text-blue-200 transition-colors">
+                          <XMarkIcon className="h-4 w-4" />
                         </button>
                       </span>
                     ))}
                     {selectedRating && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm rounded-lg">
                         {selectedRating}
-                        <button onClick={() => setSelectedRating('')} className="hover:text-gray-300">
-                          <XMarkIcon className="h-3 w-3" />
+                        <button onClick={() => setSelectedRating('')} className="hover:text-purple-200 transition-colors">
+                          <XMarkIcon className="h-4 w-4" />
                         </button>
                       </span>
                     )}
                     {selectedStatus && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-600 text-white text-xs rounded-full">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/20 border border-green-500/30 text-green-300 text-sm rounded-lg">
                         {STATUSES.find(s => s.value === selectedStatus)?.label}
-                        <button onClick={() => setSelectedStatus('')} className="hover:text-gray-300">
-                          <XMarkIcon className="h-3 w-3" />
+                        <button onClick={() => setSelectedStatus('')} className="hover:text-green-200 transition-colors">
+                          <XMarkIcon className="h-4 w-4" />
                         </button>
                       </span>
                     )}
                     {selectedType && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-600 text-white text-xs rounded-full">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/20 border border-orange-500/30 text-orange-300 text-sm rounded-lg">
                         {TYPES.find(t => t.value === selectedType)?.label}
-                        <button onClick={() => setSelectedType('')} className="hover:text-gray-300">
-                          <XMarkIcon className="h-3 w-3" />
+                        <button onClick={() => setSelectedType('')} className="hover:text-orange-200 transition-colors">
+                          <XMarkIcon className="h-4 w-4" />
                         </button>
                       </span>
                     )}
                     {(yearFrom || yearTo) && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-600 text-white text-xs rounded-full">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/30 text-red-300 text-sm rounded-lg">
                         {yearFrom || '0'} - {yearTo || 'atual'}
-                        <button onClick={() => { setYearFrom(''); setYearTo('') }} className="hover:text-gray-300">
-                          <XMarkIcon className="h-3 w-3" />
+                        <button onClick={() => { setYearFrom(''); setYearTo('') }} className="hover:text-red-200 transition-colors">
+                          <XMarkIcon className="h-4 w-4" />
                         </button>
                       </span>
                     )}
@@ -487,26 +499,85 @@ export default function SearchPage() {
 
               {/* Paginação */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-8">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-                  >
-                    Anterior
-                  </button>
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-12 mb-8">
+                  {/* Informações da Página */}
+                  <div className="text-sm text-gray-400 order-2 sm:order-1">
+                    Página {currentPage} de {totalPages} ({totalResults} resultados)
+                  </div>
                   
-                  <span className="px-4 py-2 text-gray-300">
-                    Página {currentPage} de {totalPages}
-                  </span>
-                  
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-                  >
-                    Próxima
-                  </button>
+                  {/* Controles de Navegação */}
+                  <div className="flex items-center gap-2 order-1 sm:order-2">
+                    {/* Primeira Página */}
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 hover:border-white/20 transition-all"
+                      title="Primeira página"
+                    >
+                      ««
+                    </button>
+                    
+                    {/* Página Anterior */}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 hover:border-white/20 transition-all flex items-center gap-2"
+                    >
+                      <ChevronDownIcon className="h-4 w-4 rotate-90" />
+                      <span className="hidden sm:inline">Anterior</span>
+                    </button>
+
+                    {/* Números das Páginas */}
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum
+                        
+                        if (totalPages <= 5) {
+                          pageNum = i + 1
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i
+                        } else {
+                          pageNum = currentPage - 2 + i
+                        }
+                        
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-10 h-10 text-sm rounded-lg transition-all ${
+                              currentPage === pageNum
+                                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400'
+                                : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Próxima Página */}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 hover:border-white/20 transition-all flex items-center gap-2"
+                    >
+                      <span className="hidden sm:inline">Próxima</span>
+                      <ChevronDownIcon className="h-4 w-4 -rotate-90" />
+                    </button>
+                    
+                    {/* Última Página */}
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 hover:border-white/20 transition-all"
+                      title="Última página"
+                    >
+                      »»
+                    </button>
+                  </div>
                 </div>
               )}
             </>

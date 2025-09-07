@@ -177,6 +177,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prevUser => {
+      if (!prevUser) return null
+      
+      const updatedUser = { ...prevUser, ...userData }
+      
+      // Atualiza no localStorage
+      try {
+        localStorage.setItem('user', JSON.stringify(updatedUser))
+      } catch (error) {
+        // Ignore localStorage errors on server
+      }
+      
+      return updatedUser
+    })
+  }
+
   const logout = () => {
     try {
       localStorage.removeItem('token')
@@ -198,6 +215,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     token,
     login,
     register,
+    updateUser,
     logout,
     loading,
     error,

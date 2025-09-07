@@ -95,3 +95,31 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const deletedCount = await prisma.favorite.deleteMany({
+      where: { userId: session.user.id }
+    })
+
+    return NextResponse.json({ 
+      message: 'All favorites cleared successfully',
+      deletedCount: deletedCount.count 
+    })
+  } catch (error) {
+    console.error('Error clearing all favorites:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
