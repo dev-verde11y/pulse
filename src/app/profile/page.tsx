@@ -7,13 +7,9 @@ import { Footer } from '@/components/layout/Footer'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { api } from '@/lib/api'
 import { 
-  UserIcon,
   KeyIcon,
   CheckIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  CalendarIcon,
-  IdentificationIcon
+  EyeIcon
 } from '@heroicons/react/24/outline'
 
 interface ProfileData {
