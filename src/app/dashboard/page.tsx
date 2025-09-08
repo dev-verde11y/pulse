@@ -94,7 +94,7 @@ export default function DashboardPage() {
           />
 
           {/* Minha Lista */}
-          <PosterCarousel 
+          <SmallCardCarousel 
             title="Minha Lista" 
             animes={myList} 
           />

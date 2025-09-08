@@ -45,6 +45,8 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   const [bannersLoading, setBannersLoading] = useState(true)
   const [imagesLoaded, setImagesLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [favoriteLoading, setFavoriteLoading] = useState<string[]>([])
 
   const goToNext = () => {
     if (swiperRef.current && swiperRef.current.swiper) {
@@ -143,6 +145,53 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
 
     loadWatchHistory()
   }, [user])
+
+  // Carregar favoritos do usuário
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (!user) {
+        setFavorites([])
+        return
+      }
+
+      try {
+        const userFavorites = await api.getFavorites()
+        const favoriteIds = userFavorites.map((fav: Anime) => fav.id)
+        setFavorites(favoriteIds)
+      } catch (error) {
+        console.error('Error loading favorites:', error)
+        setFavorites([])
+      }
+    }
+
+    loadFavorites()
+  }, [user])
+
+  // Função para alternar favoritos
+  const toggleFavorite = async (animeId: string) => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    if (favoriteLoading.includes(animeId)) return
+
+    try {
+      setFavoriteLoading(prev => [...prev, animeId])
+      
+      if (favorites.includes(animeId)) {
+        await api.removeFromFavorites(animeId)
+        setFavorites(prev => prev.filter(id => id !== animeId))
+      } else {
+        await api.addToFavorites(animeId)
+        setFavorites(prev => [...prev, animeId])
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    } finally {
+      setFavoriteLoading(prev => prev.filter(id => id !== animeId))
+    }
+  }
 
   // Função para obter primeiro episódio de uma temporada
   const getFirstEpisodeOfSeason = (anime: Anime, seasonNumber: number = 1) => {
@@ -335,8 +384,8 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
           '--swiper-pagination-color': '#2563eb' 
         } as React.CSSProperties}
       >
-        {contentToShow.map((content) => (
-          <SwiperSlide key={content.id}>
+        {contentToShow.map((content, index) => (
+          <SwiperSlide key={`${content.id}-${index}`}>
             <div className="relative h-full w-full">
               {/* Background Image with Parallax Effect */}
               <div 
@@ -350,96 +399,133 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
               
               {/* Main Content Container */}
-              <div className="absolute inset-0 flex items-center pb-6 sm:pb-8 md:pb-10 lg:pb-12 z-20">
-                <div className="w-full px-6 sm:px-8 lg:px-12 ml-0 sm:ml-8 lg:ml-16">
-                  <div className="max-w-2xl">
+              <div className="absolute inset-0 flex items-center pb-4 sm:pb-6 md:pb-8 lg:pb-10 xl:pb-12 z-20">
+                <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 ml-0 sm:ml-4 lg:ml-8 xl:ml-16">
+                  <div className="max-w-xl sm:max-w-2xl">
                     
                     {/* Main Content */}
-                    <div className="space-y-3 sm:space-y-4 md:space-y-5 animate-fadeIn">
+                    <div className="space-y-2 sm:space-y-3 md:space-y-4 animate-fadeIn">
                       {/* Type Badge */}
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider backdrop-blur-sm bg-blue-600/90 text-white">
+                        <div className="px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider backdrop-blur-sm bg-blue-600/90 text-white">
                           ANIME
                         </div>
                         {content.episode && (
-                          <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-white">
+                          <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs md:text-sm font-medium text-white">
                             {content.episode}
                           </div>
                         )}
                       </div>
 
                       {/* Title with Enhanced Typography */}
-                      <div className="space-y-1 sm:space-y-2">
-                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[0.85] text-white drop-shadow-2xl tracking-tight">
+                      <div className="space-y-0.5 sm:space-y-1 md:space-y-2">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-[0.9] sm:leading-[0.85] text-white drop-shadow-2xl tracking-tight">
                           {content.title}
                         </h1>
-                        <h2 className="text-sm sm:text-base md:text-lg lg:text-xl text-blue-300 font-medium max-w-lg leading-relaxed">
-                          {content.subtitle || content.description?.slice(0, 80) + '...' || 'Descrição não disponível'}
+                        <h2 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-blue-300 font-medium max-w-xs sm:max-w-sm md:max-w-lg leading-relaxed">
+                          {content.subtitle || content.description?.slice(0, 60) + '...' || 'Descrição não disponível'}
                         </h2>
                       </div>
 
                       {/* Meta Information */}
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/90">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded flex items-center justify-center">
-                            <span className="text-xs font-bold text-white">{content.rating || '16'}+</span>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs md:text-sm text-white/90">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 bg-blue-600 rounded flex items-center justify-center">
+                            <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-white">{content.rating || '16'}+</span>
                           </div>
                           <span className="font-medium">{content.year || new Date().getFullYear()}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-white/60 rounded-full"></div>
                           <span>24 min</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="hidden sm:flex items-center gap-2">
                           <div className="w-1 h-1 bg-white/60 rounded-full"></div>
                           <span>4K Ultra HD</span>
                         </div>
                       </div>
 
                       {/* Genres as Pills */}
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {(content.genres || ['Ação', 'Aventura', 'Anime']).slice(0, 3).map((genre: string) => (
-                          <span key={genre} className="bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm text-white/90 hover:bg-blue-500/30 transition-colors cursor-pointer">
+                          <span key={genre} className="bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs md:text-sm text-white/90 hover:bg-blue-500/30 transition-colors cursor-pointer">
                             {genre}
                           </span>
                         ))}
                       </div>
 
                       {/* Description */}
-                      <p className="text-xs sm:text-sm md:text-base leading-relaxed text-white/80 max-w-xl line-clamp-2">
+                      <p className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed text-white/80 max-w-xs sm:max-w-sm md:max-w-xl line-clamp-2 hidden sm:block">
                         {content.description || 'Uma aventura épica cheia de ação e emoção que irá te manter na borda do assento.'}
                       </p>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-1 sm:pt-2">
+                      <div className="flex flex-col xs:flex-row sm:flex-row gap-1.5 sm:gap-2 md:gap-3 pt-1 sm:pt-2">
                         {(() => {
                           const buttonState = getButtonState(content)
                           return (
                             <button 
                               onClick={buttonState.action}
                               disabled={buttonState.disabled}
-                              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 sm:py-3 px-5 sm:px-6 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-xl group disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 sm:py-2.5 md:py-3 px-4 sm:px-5 md:px-6 rounded-md sm:rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-xl group disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] sm:min-h-[44px]"
                             >
-                              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1.5 sm:mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />
                               </svg>
-                              <span className="text-sm sm:text-base">{buttonState.text}</span>
+                              <span className="text-xs sm:text-sm md:text-base font-bold">{buttonState.text}</span>
                             </button>
                           )
                         })()}
                         
-                        <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 hover:border-blue-300/50 text-white font-semibold py-2.5 sm:py-3 px-5 sm:px-6 rounded-lg transition-all duration-300 flex items-center justify-center group">
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button 
+                          onClick={() => {
+                            if (content.animeId) {
+                              router.push(`/anime/${content.animeId}`)
+                            } else if (content.anime?.id) {
+                              router.push(`/anime/${content.anime.id}`)
+                            }
+                          }}
+                          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 hover:border-blue-300/50 text-white font-semibold py-2 sm:py-2.5 md:py-3 px-3 sm:px-4 md:px-5 rounded-md sm:rounded-lg transition-all duration-300 flex items-center justify-center group min-h-[40px] sm:min-h-[44px]"
+                        >
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1.5 sm:mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span className="text-sm">Mais Info</span>
+                          <span className="text-xs sm:text-sm">Mais Info</span>
                         </button>
 
-                        <button className="bg-transparent hover:bg-white/10 border-2 border-white/40 hover:border-blue-300/60 text-white font-semibold p-2.5 sm:p-3 rounded-lg transition-all duration-300 flex items-center justify-center group sm:w-auto">
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                          </svg>
-                        </button>
+                        {(() => {
+                          const animeId = content.animeId || content.anime?.id
+                          if (!animeId) return null
+                          
+                          const isFavorite = favorites.includes(animeId)
+                          const isLoading = favoriteLoading.includes(animeId)
+                          
+                          return (
+                            <button 
+                              onClick={() => toggleFavorite(animeId)}
+                              disabled={isLoading}
+                              className={`font-semibold p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg transition-all duration-300 flex items-center justify-center group border-2 min-h-[40px] min-w-[40px] sm:min-h-[44px] sm:min-w-[44px] ${
+                                isFavorite
+                                  ? 'bg-red-600/20 border-red-500/60 hover:bg-red-600/30 text-red-300'
+                                  : 'bg-transparent hover:bg-white/10 border-white/40 hover:border-blue-300/60 text-white'
+                              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                            >
+                              {isLoading ? (
+                                <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 animate-spin rounded-full border-b-2 border-current"></div>
+                              ) : (
+                                <svg 
+                                  className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" 
+                                  fill={isFavorite ? "currentColor" : "none"} 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                              )}
+                            </button>
+                          )
+                        })()}
                       </div>
 
                     </div>
@@ -454,24 +540,24 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
       {/* Custom Navigation Buttons */}
       <button 
         onClick={goToPrev}
-        className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 z-30 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
+        className="absolute left-2 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 z-30 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-2.5 sm:p-3 md:p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
       >
-        <svg className="w-6 h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
       
       <button 
         onClick={goToNext}
-        className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
+        className="absolute right-2 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 bg-black/40 backdrop-blur-md border border-white/20 hover:bg-black/60 hover:border-blue-600/50 p-2.5 sm:p-3 md:p-4 rounded-full text-white transition-all duration-300 cursor-pointer hover:scale-110 group"
       >
-        <svg className="w-6 h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
       {/* Custom Pagination */}
-      <div className="hero-pagination absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3"></div>
+      <div className="hero-pagination absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3"></div>
 
     </div>
   )

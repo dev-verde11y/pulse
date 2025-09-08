@@ -3,6 +3,8 @@
 import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, PlusIcon} from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
+import { HeartIcon } from '@heroicons/react/24/outline'
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
@@ -17,6 +19,8 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   const { user } = useAuth()
   const [watchHistory, setWatchHistory] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
   
   const backgroundStyle = {
     backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%), url(${anime.bannerUrl || anime.banner || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'})`,
@@ -69,6 +73,50 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
 
     loadWatchHistory()
   }, [user, anime.id])
+
+  // Verificar se o anime está nos favoritos
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (!user || !anime.id) return
+
+      try {
+        const favorites = await api.getFavorites()
+        const isFav = favorites.some((fav: Anime) => fav.id === anime.id)
+        setIsFavorite(isFav)
+      } catch (error) {
+        console.error('Erro ao verificar favoritos:', error)
+        setIsFavorite(false)
+      }
+    }
+
+    checkFavoriteStatus()
+  }, [user, anime.id])
+
+  // Função para alternar favoritos
+  const toggleFavorite = async () => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    if (favoriteLoading) return
+
+    try {
+      setFavoriteLoading(true)
+      
+      if (isFavorite) {
+        await api.removeFromFavorites(anime.id)
+        setIsFavorite(false)
+      } else {
+        await api.addToFavorites(anime.id)
+        setIsFavorite(true)
+      }
+    } catch (error) {
+      console.error('Erro ao alterar favorito:', error)
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   // Encontrar primeiro episódio de uma temporada
   const getFirstEpisodeOfSeason = (seasonNumber: number) => {
@@ -292,8 +340,23 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                 {loading ? 'CARREGANDO...' : buttonState.text}
               </button>
               
-              <button className="flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg transition-all duration-300 transform hover:scale-105">
-                <PlusIcon className="w-6 h-6" />
+              <button 
+                onClick={toggleFavorite}
+                disabled={favoriteLoading}
+                className={`flex items-center justify-center p-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                  isFavorite 
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-gray-800 hover:bg-gray-700 text-white'
+                } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              >
+                {favoriteLoading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                ) : isFavorite ? (
+                  <HeartIconSolid className="w-6 h-6" />
+                ) : (
+                  <HeartIcon className="w-6 h-6" />
+                )}
               </button>
             </div>
             
