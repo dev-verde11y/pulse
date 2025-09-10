@@ -23,11 +23,11 @@ const formatPlanName = (planType: string | undefined): string => {
     case 'FREE':
       return 'Grátis'
     case 'FAN':
-      return 'Fan'
+      return 'The Arcane'
     case 'MEGA_FAN':
-      return 'Mega Fan'
+      return 'The Sorcerer'
     case 'MEGA_FAN_ANNUAL':
-      return 'Super Premium'
+      return 'The Sage Premium'
     default:
       return 'Grátis'
   }

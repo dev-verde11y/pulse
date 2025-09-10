@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
 import { SubscriptionManager } from '@/lib/subscription-utils'
 import { PlanType } from '@prisma/client'
+import { getPlanByPriceId, LEGACY_PRICE_MAPPING } from './plan-config'
 import Stripe from 'stripe'
 
 export class PaymentManager {
@@ -129,16 +130,25 @@ export class PaymentManager {
       return null
     }
 
-    // Map price ID to plan type (você precisa ajustar esses IDs)
+    // Map price ID to plan type using centralized config
+    console.log('🔍 Mapping price ID to plan type:', priceId)
+    
+    const plan = getPlanByPriceId(priceId)
     let planType: PlanType
-    if (priceId === process.env.STRIPE_PRICE_ID) {
-      planType = 'FAN' // Mensal
-    } else if (priceId === process.env.STRIPE_SUBSCRIPTION_PRICE_ID) {
-      planType = 'MEGA_FAN_ANNUAL' // Anual
+    
+    if (plan) {
+      planType = plan.planType
+      console.log(`✅ Mapped to ${plan.planType} plan (${plan.name})`)
     } else {
-      // Try to find plan by looking up price in our database or mapping
-      console.warn('Unknown price ID, defaulting to FAN:', priceId)
-      planType = 'FAN'
+      // Legacy fallback mapping
+      const legacyMapping = LEGACY_PRICE_MAPPING[priceId]
+      if (legacyMapping) {
+        planType = legacyMapping as PlanType
+        console.log(`✅ Mapped via legacy mapping to ${planType}`)
+      } else {
+        console.warn('⚠️ Unknown price ID, defaulting to FAN:', priceId)
+        planType = 'FAN'
+      }
     }
 
     // Create subscription using existing manager
