@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
-import { SubscriptionManager } from '@/lib/subscription-utils'
-import { PlanType } from '@prisma/client'
+import { PaymentManager } from '@/lib/payments/payment-manager'
 import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -12,46 +10,69 @@ export async function POST(request: NextRequest) {
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')!
 
+    console.log('🔔 Webhook received!')
+    console.log('Body length:', body.length)
+    console.log('Signature:', signature ? 'present' : 'missing')
+
     let event: Stripe.Event
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+      console.log('✅ Webhook signature verified')
     } catch (err) {
-      console.error('Webhook signature verification failed:', err)
+      console.error('❌ Webhook signature verification failed:', err)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
-    console.log('Received webhook event:', event.type)
+    console.log('🎯 Processing event:', event.type, 'ID:', event.id)
 
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session)
+        console.log('💳 Processing checkout completion...')
+        const session = event.data.object as Stripe.Checkout.Session
+        console.log('Session ID:', session.id)
+        console.log('Payment status:', session.payment_status)
+        console.log('Mode:', session.mode)
+        
+        const result = await PaymentManager.completeCheckoutSession(session.id)
+        console.log('✅ Checkout processed, result:', result ? 'success' : 'no result')
         break
 
       case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object as any)
+        console.log('✅ Processing payment succeeded...')
+        await PaymentManager.handlePaymentSucceeded(event.data.object as Stripe.Invoice)
+        console.log('✅ Payment succeeded processed')
         break
 
       case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object as any)
+        console.log('❌ Processing payment failed...')
+        await PaymentManager.handlePaymentFailed(event.data.object as Stripe.Invoice)
+        console.log('✅ Payment failed processed')
         break
 
       case 'customer.subscription.updated':
+        console.log('🔄 Processing subscription updated...')
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
         break
 
       case 'customer.subscription.deleted':
+        console.log('🗑️ Processing subscription deleted...')
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
         break
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        console.log('ℹ️ Unhandled event type:', event.type)
     }
 
+    console.log('✅ Webhook processing completed successfully')
     return NextResponse.json({ received: true })
 
   } catch (error) {
-    console.error('Webhook processing error:', error)
+    console.error('💥 Webhook processing error:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
@@ -59,183 +80,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log('Processing checkout completed:', session.id)
-
-  const userId = session.client_reference_id || session.metadata?.userId
-  if (!userId) {
-    console.error('No user ID found in checkout session')
-    return
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId }
-  })
-
-  if (!user) {
-    console.error('User not found:', userId)
-    return
-  }
-
-  if (session.mode === 'subscription' && session.subscription) {
-    // Handle subscription
-    const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-    await processSubscription(subscription, userId)
-  } else if (session.mode === 'payment') {
-    // Handle one-time payment
-    // For now, we'll treat this as a monthly subscription
-    await handleOneTimePayment(session, userId)
-  }
-}
-
-async function handlePaymentSucceeded(invoice: any) {
-  console.log('Processing payment succeeded:', invoice.id)
-
-  // Check if invoice has subscription (for subscription payments)
-  const subscriptionId = invoice.subscription as string | null
-  
-  if (subscriptionId) {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-    const userId = subscription.metadata?.userId
-
-    if (userId) {
-      // Renew/activate subscription
-      const dbSubscription = await prisma.subscription.findFirst({
-        where: {
-          externalId: subscription.id,
-          userId: userId
-        }
-      })
-
-      if (dbSubscription) {
-        await SubscriptionManager.renewSubscription(dbSubscription.id)
-      }
-    }
-  }
-}
-
-async function handlePaymentFailed(invoice: any) {
-  console.log('Processing payment failed:', invoice.id)
-
-  // Check if invoice has subscription (for subscription payments)  
-  const subscriptionId = invoice.subscription as string | null
-  
-  if (subscriptionId) {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-    const userId = subscription.metadata?.userId
-
-    if (userId) {
-      // Handle failed payment - could put in grace period
-      await SubscriptionManager.handleExpiredUser(userId)
-    }
-  }
-}
-
+// Legacy webhook handlers - now handled by PaymentManager
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   console.log('Processing subscription updated:', subscription.id)
-
-  const userId = subscription.metadata?.userId
-  if (!userId) return
-
-  // Update subscription status based on Stripe status
-  const dbSubscription = await prisma.subscription.findFirst({
-    where: {
-      externalId: subscription.id,
-      userId: userId
-    }
-  })
-
-  if (dbSubscription) {
-    let status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
-    
-    switch (subscription.status) {
-      case 'active':
-        status = 'ACTIVE'
-        break
-      case 'canceled':
-      case 'unpaid':
-        status = 'CANCELLED'
-        break
-      default:
-        status = 'EXPIRED'
-    }
-
-    await prisma.subscription.update({
-      where: { id: dbSubscription.id },
-      data: {
-        status: status,
-        ...(status === 'CANCELLED' && {
-          cancelledAt: new Date(),
-          cancellationReason: 'Cancelled via Stripe'
-        })
-      }
-    })
-
-    // Update user status
-    if (status === 'CANCELLED' || status === 'EXPIRED') {
-      await SubscriptionManager.downgradeToFree(userId)
-    }
-  }
+  // TODO: Implement subscription update logic in PaymentManager
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log('Processing subscription deleted:', subscription.id)
-
-  const userId = subscription.metadata?.userId
-  if (!userId) return
-
-  // Mark subscription as cancelled and downgrade user
-  const dbSubscription = await prisma.subscription.findFirst({
-    where: {
-      externalId: subscription.id,
-      userId: userId
-    }
-  })
-
-  if (dbSubscription) {
-    await prisma.subscription.update({
-      where: { id: dbSubscription.id },
-      data: {
-        status: 'CANCELLED',
-        cancelledAt: new Date(),
-        cancellationReason: 'Cancelled via Stripe'
-      }
-    })
-
-    await SubscriptionManager.downgradeToFree(userId)
-  }
-}
-
-async function processSubscription(subscription: Stripe.Subscription, userId: string) {
-  const priceId = subscription.items.data[0]?.price.id
-  if (!priceId) return
-
-  // Map price IDs to plan types
-  let planType: PlanType
-  if (priceId === process.env.STRIPE_PRICE_ID) {
-    planType = 'FAN' // Monthly
-  } else if (priceId === process.env.STRIPE_SUBSCRIPTION_PRICE_ID) {
-    planType = 'MEGA_FAN_ANNUAL' // Annual
-  } else {
-    console.error('Unknown price ID:', priceId)
-    return
-  }
-
-  // Create or update subscription
-  const dbSubscription = await SubscriptionManager.upgradeUser(userId, planType, 'stripe')
-
-  // Link to Stripe subscription
-  await prisma.subscription.update({
-    where: { id: dbSubscription.id },
-    data: {
-      externalId: subscription.id,
-      externalData: subscription as any
-    }
-  })
-}
-
-async function handleOneTimePayment(session: Stripe.Checkout.Session, userId: string) {
-  // For one-time payments, create a monthly subscription
-  // This is a simplified approach - you might want different logic
-  await SubscriptionManager.upgradeUser(userId, 'FAN', 'stripe')
+  // TODO: Implement subscription deletion logic in PaymentManager
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
+import { PaymentManager } from '@/lib/payments/payment-manager'
 import { z } from 'zod'
 
 const checkoutSchema = z.object({
@@ -21,15 +21,9 @@ export async function POST(request: NextRequest) {
 
     // If user is authenticated, use their data
     if (session?.user?.id) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id }
-      })
-
-      if (user) {
-        customerEmail = user.email
-        clientReferenceId = user.id
-        metadata = { userId: user.id }
-      }
+      customerEmail = session.user.email
+      clientReferenceId = session.user.id
+      metadata = { userId: session.user.id }
     }
 
     // Create Stripe checkout session
@@ -48,6 +42,19 @@ export async function POST(request: NextRequest) {
       metadata: metadata,
     })
 
+    // Save session to database
+    try {
+      await PaymentManager.createCheckoutSessionRecord(
+        checkoutSession, 
+        session?.user?.id
+      )
+      console.log('Checkout session saved to database successfully')
+    } catch (dbError) {
+      console.error('Database save error (non-blocking):', dbError)
+      // Continue anyway - Stripe checkout session was created successfully
+      // The webhook will handle the completion tracking
+    }
+
     return NextResponse.json({ 
       sessionId: checkoutSession.id,
       url: checkoutSession.url 
@@ -55,8 +62,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Checkout creation error:', error)
+    
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create checkout session' }, 
+      { 
+        error: 'Failed to create checkout session',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, 
       { status: 500 }
     )
   }
