@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { CreateAnimeModal } from '@/components/admin/CreateAnimeModal'
 import { ViewAnimeModal } from '@/components/admin/ViewAnimeModal'
 import { EditAnimeModal } from '@/components/admin/EditAnimeModal'
@@ -66,7 +66,7 @@ export default function AnimesPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null)
 
-  const fetchAnimes = async (page = 1) => {
+  const fetchAnimes = useCallback(async (page = 1) => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -90,7 +90,7 @@ export default function AnimesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [sortBy, sortOrder, searchTerm, statusFilter, typeFilter])
 
   const closeAllModals = () => {
     setShowCreateModal(false)
@@ -144,110 +144,177 @@ export default function AnimesPage() {
 
   useEffect(() => {
     fetchAnimes()
-  }, [searchTerm, statusFilter, typeFilter, sortBy, sortOrder])
+  }, [fetchAnimes])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Gerenciar Animes</h1>
-          <p className="text-sm text-gray-400">Criar, editar e gerenciar seus animes</p>
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-green-100">
+            Animes
+          </h1>
+          <p className="text-gray-400 mt-1">Gerencie todos os animes do catálogo</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           <span>Novo Anime</span>
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-gray-900/60 border border-gray-700/40 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-gray-400">{pagination.totalItems} animes encontrados</span>
-          <button
-            onClick={() => {
-              setSearchTerm('')
-              setStatusFilter('')
-              setTypeFilter('')
-              setSortBy('title')
-              setSortOrder('asc')
-            }}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Limpar filtros
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Search */}
-          <div className="lg:col-span-2">
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-blue-600/20 via-blue-700/10 to-blue-800/5 border border-blue-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-blue-500/20">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4z" />
               </svg>
-              <input
-                type="text"
-                placeholder="Buscar animes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none transition-colors"
-              />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total de Animes</p>
+              <p className="text-xl font-bold text-blue-400">{pagination.totalItems}</p>
             </div>
           </div>
+        </div>
 
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none transition-colors"
-          >
-            <option value="">Todos os Status</option>
-            <option value="ONGOING">Em Andamento</option>
-            <option value="FINISHED">Finalizado</option>
-            <option value="UPCOMING">Em Breve</option>
-            <option value="CANCELLED">Cancelado</option>
-          </select>
+        <div className="bg-gradient-to-br from-green-600/20 via-green-700/10 to-green-800/5 border border-green-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-green-500/20">
+              <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Finalizados</p>
+              <p className="text-xl font-bold text-green-400">
+                {animes.filter(anime => anime.status === 'FINISHED').length}
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Type Filter */}
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none transition-colors"
-          >
-            <option value="">Todos os Tipos</option>
-            <option value="ANIME">Anime</option>
-            <option value="FILME">Filme</option>
-            <option value="SERIE">Série</option>
-          </select>
+        <div className="bg-gradient-to-br from-yellow-600/20 via-yellow-700/10 to-yellow-800/5 border border-yellow-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-yellow-500/20">
+              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Em Andamento</p>
+              <p className="text-xl font-bold text-yellow-400">
+                {animes.filter(anime => anime.status === 'ONGOING').length}
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Sort */}
-          <div className="flex space-x-2">
+        <div className="bg-gradient-to-br from-purple-600/20 via-purple-700/10 to-purple-800/5 border border-purple-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-purple-500/20">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total de Temporadas</p>
+              <p className="text-xl font-bold text-purple-400">
+                {animes.reduce((total, anime) => total + anime._count.seasons, 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gradient-to-br from-gray-900/80 via-gray-900/50 to-gray-800/30 border border-gray-700/50 rounded-xl p-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Buscar</label>
+            <input
+              type="text"
+              placeholder="Nome do anime..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
+            >
+              <option value="">Todos</option>
+              <option value="ONGOING">Em Andamento</option>
+              <option value="FINISHED">Finalizado</option>
+              <option value="UPCOMING">Em Breve</option>
+              <option value="CANCELLED">Cancelado</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Tipo</label>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
+            >
+              <option value="">Todos</option>
+              <option value="ANIME">Anime</option>
+              <option value="FILME">Filme</option>
+              <option value="SERIE">Série</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Ordenar por</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none transition-colors"
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
             >
               <option value="title">Título</option>
               <option value="year">Ano</option>
-              <option value="createdAt">Data</option>
+              <option value="createdAt">Data de Criação</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Ordem</label>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
+            >
+              <option value="asc">Crescente</option>
+              <option value="desc">Decrescente</option>
+            </select>
+          </div>
+
+          <div className="flex items-end">
             <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white hover:bg-gray-700/50 transition-colors flex items-center justify-center"
-              title={sortOrder === 'asc' ? 'Crescente' : 'Decrescente'}
+              onClick={() => {
+                setSearchTerm('')
+                setStatusFilter('')
+                setTypeFilter('')
+                setSortBy('title')
+                setSortOrder('asc')
+              }}
+              className="w-full px-3 py-2 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {sortOrder === 'asc' ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                )}
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
+              <span>Limpar</span>
             </button>
           </div>
         </div>

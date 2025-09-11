@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { CreateSeasonModal } from '@/components/admin/CreateSeasonModal'
+import { ViewSeasonModal } from '@/components/admin/ViewSeasonModal'
+import { EditSeasonModal } from '@/components/admin/EditSeasonModal'
 
 interface Season {
   id: string
@@ -55,7 +58,7 @@ export default function SeasonsPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedSeason, setSelectedSeason] = useState<Season | null>(null)
 
-  const fetchSeasons = async (page = 1) => {
+  const fetchSeasons = useCallback(async (page = 1) => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -78,7 +81,7 @@ export default function SeasonsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [sortBy, sortOrder, searchTerm, animeFilter])
 
   const closeAllModals = () => {
     setShowCreateModal(false)
@@ -118,96 +121,161 @@ export default function SeasonsPage() {
 
   useEffect(() => {
     fetchSeasons()
-  }, [searchTerm, animeFilter, sortBy, sortOrder])
+  }, [fetchSeasons])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Gerenciar Temporadas</h1>
-          <p className="text-sm text-gray-400">Criar, editar e gerenciar temporadas dos animes</p>
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-100 to-blue-100">
+            Temporadas
+          </h1>
+          <p className="text-gray-400 mt-1">Gerencie todas as temporadas do catálogo</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           <span>Nova Temporada</span>
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-gray-900/60 border border-gray-700/40 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-gray-400">{pagination.totalItems} temporadas encontradas</span>
-          <button
-            onClick={() => {
-              setSearchTerm('')
-              setAnimeFilter('')
-              setSortBy('seasonNumber')
-              setSortOrder('asc')
-            }}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Limpar filtros
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Search */}
-          <div>
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-blue-600/20 via-blue-700/10 to-blue-800/5 border border-blue-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-blue-500/20">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              <input
-                type="text"
-                placeholder="Buscar temporadas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-purple-500/50 focus:outline-none transition-colors"
-              />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total de Temporadas</p>
+              <p className="text-xl font-bold text-blue-400">{pagination.totalItems}</p>
             </div>
           </div>
+        </div>
 
-          {/* Anime Filter */}
-          <input
-            type="text"
-            placeholder="Filtrar por anime..."
-            value={animeFilter}
-            onChange={(e) => setAnimeFilter(e.target.value)}
-            className="px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-purple-500/50 focus:outline-none transition-colors"
-          />
+        <div className="bg-gradient-to-br from-green-600/20 via-green-700/10 to-green-800/5 border border-green-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-green-500/20">
+              <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Com Episódios</p>
+              <p className="text-xl font-bold text-green-400">
+                {seasons.filter(season => season._count.episodes > 0).length}
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Sort */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-purple-500/50 focus:outline-none transition-colors"
-          >
-            <option value="seasonNumber">Número da Temporada</option>
-            <option value="title">Título</option>
-            <option value="releaseDate">Data de Lançamento</option>
-            <option value="createdAt">Data de Criação</option>
-          </select>
+        <div className="bg-gradient-to-br from-yellow-600/20 via-yellow-700/10 to-yellow-800/5 border border-yellow-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-yellow-500/20">
+              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Sem Episódios</p>
+              <p className="text-xl font-bold text-yellow-400">
+                {seasons.filter(season => season._count.episodes === 0).length}
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Sort Direction */}
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-2.5 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white hover:bg-gray-700/50 transition-colors flex items-center justify-center"
-            title={sortOrder === 'asc' ? 'Crescente' : 'Decrescente'}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {sortOrder === 'asc' ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              )}
-            </svg>
-          </button>
+        <div className="bg-gradient-to-br from-purple-600/20 via-purple-700/10 to-purple-800/5 border border-purple-500/30 rounded-xl p-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-purple-500/20">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4zM6 6v12h12V6H6zm3-2V2h6v2H9z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total de Episódios</p>
+              <p className="text-xl font-bold text-purple-400">
+                {seasons.reduce((total, season) => total + season._count.episodes, 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gradient-to-br from-gray-900/80 via-gray-900/50 to-gray-800/30 border border-gray-700/50 rounded-xl p-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Buscar</label>
+            <input
+              type="text"
+              placeholder="Título da temporada..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-purple-500/50 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Anime</label>
+            <input
+              type="text"
+              placeholder="Nome do anime..."
+              value={animeFilter}
+              onChange={(e) => setAnimeFilter(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-purple-500/50 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Ordenar por</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-purple-500/50 focus:outline-none"
+            >
+              <option value="seasonNumber">Número da Temporada</option>
+              <option value="title">Título</option>
+              <option value="releaseDate">Data de Lançamento</option>
+              <option value="createdAt">Data de Criação</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Ordem</label>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-purple-500/50 focus:outline-none"
+            >
+              <option value="asc">Crescente</option>
+              <option value="desc">Decrescente</option>
+            </select>
+          </div>
+
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                setSearchTerm('')
+                setAnimeFilter('')
+                setSortBy('seasonNumber')
+                setSortOrder('asc')
+              }}
+              className="w-full px-3 py-2 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Limpar</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -370,7 +438,31 @@ export default function SeasonsPage() {
         )}
       </div>
 
-      {/* Modals will be added here */}
+      {/* Modals */}
+      <CreateSeasonModal
+        isOpen={showCreateModal}
+        onClose={closeAllModals}
+        onSuccess={() => {
+          fetchSeasons(pagination.currentPage)
+          closeAllModals()
+        }}
+      />
+      
+      <ViewSeasonModal
+        season={selectedSeason}
+        isOpen={showViewModal}
+        onClose={closeAllModals}
+      />
+      
+      <EditSeasonModal
+        season={selectedSeason}
+        isOpen={showEditModal}
+        onClose={closeAllModals}
+        onSuccess={() => {
+          fetchSeasons(pagination.currentPage)
+          closeAllModals()
+        }}
+      />
     </div>
   )
 }
