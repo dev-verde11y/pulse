@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         avatar: true,
+        role: true,
+        currentPlan: true,
         createdAt: true,
         updatedAt: true
       }

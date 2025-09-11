@@ -14,7 +14,8 @@
       "Read(/E:\\www\\pulse\\src\\app\\api\\watch-history/**)",
       "Read(/E:\\www\\pulse\\src\\contexts/**)",
       "Read(/E:\\www\\pulse\\prisma/**)",
-      "Read(/E:\\www\\pulse\\src\\components\\anime/**)"
+      "Read(/E:\\www\\pulse\\src\\components\\anime/**)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

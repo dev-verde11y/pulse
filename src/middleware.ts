@@ -6,6 +6,7 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secr
 interface JWTPayload {
   userId: string
   email: string
+  role?: string
   iat?: number
   exp?: number
 }
@@ -46,7 +47,10 @@ export async function middleware(request: NextRequest) {
   console.log('[Middleware] Request to:', pathname)
 
   // Rotas que requerem autenticação
-  const protectedRoutes = ['/dashboard', '/profile', '/api/protected']
+  const protectedRoutes = ['/dashboard', '/profile', '/favorites', '/admin', '/api/protected']
+  
+  // Rotas que requerem admin
+  const adminRoutes = ['/admin']
   
   // Rotas de auth que não devem ser acessadas se já logado
   const authRoutes = ['/login', '/register']
@@ -54,10 +58,13 @@ export async function middleware(request: NextRequest) {
   // Verifica se é uma rota protegida
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   
+  // Verifica se é uma rota admin
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route))
+  
   // Verifica se é uma rota de auth
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
   
-  console.log('[Middleware] isProtectedRoute:', isProtectedRoute, 'isAuthRoute:', isAuthRoute)
+  console.log('[Middleware] isProtectedRoute:', isProtectedRoute, 'isAdminRoute:', isAdminRoute, 'isAuthRoute:', isAuthRoute)
 
   if (isProtectedRoute) {
     console.log('[Middleware] Protected route detected')
@@ -82,12 +89,27 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    // Para rotas admin, verifica se o usuário é admin
+    if (isAdminRoute) {
+      console.log('[Middleware] Admin route detected, checking role:', payload.role)
+      
+      if (payload.role !== 'ADMIN') {
+        console.log('[Middleware] User is not admin, redirecting to dashboard')
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      
+      console.log('[Middleware] Admin access granted')
+    }
+
     console.log('[Middleware] Access granted to protected route')
 
     // Adiciona dados do usuário no header para as rotas protegidas
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-user-id', payload.userId)
     requestHeaders.set('x-user-email', payload.email)
+    if (payload.role) {
+      requestHeaders.set('x-user-role', payload.role)
+    }
 
     return NextResponse.next({
       request: {

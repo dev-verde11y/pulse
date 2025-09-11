@@ -80,9 +80,13 @@ export async function POST(request: NextRequest) {
     const isInGracePeriod = SubscriptionManager.isInGracePeriod(user)
     const daysUntilExpiry = SubscriptionManager.getDaysUntilExpiry(user)
 
-    // Gera JWT token
+    // Gera JWT token com role incluído
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { 
+        userId: user.id, 
+        email: user.email,
+        role: user.role 
+      },
       JWT_SECRET,
       { expiresIn: '2h' } // Reduzido para 2 horas
     )

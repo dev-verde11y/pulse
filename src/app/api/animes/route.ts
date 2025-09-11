@@ -2,6 +2,37 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+const createAnimeSchema = z.object({
+  title: z.string().min(1, 'Título é obrigatório'),
+  description: z.string().min(1, 'Descrição é obrigatória'),
+  year: z.number().int().min(1900, 'Ano deve ser maior que 1900').max(2100, 'Ano deve ser menor que 2100'),
+  status: z.enum(['FINISHED', 'ONGOING', 'UPCOMING', 'CANCELLED']).default('ONGOING'),
+  type: z.enum(['ANIME', 'FILME', 'SERIE']).default('ANIME'),
+  rating: z.string().min(1, 'Classificação é obrigatória'),
+  genres: z.array(z.string()).min(1, 'Pelo menos um gênero é obrigatório'),
+  slug: z.string().min(1, 'Slug é obrigatório').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
+  
+  // Campos opcionais
+  thumbnail: z.string().url().optional().nullable(),
+  banner: z.string().url().optional().nullable(),
+  logo: z.string().url().optional().nullable(),
+  totalEpisodes: z.number().int().positive().optional().nullable(),
+  isSubbed: z.boolean().default(true),
+  isDubbed: z.boolean().default(false),
+  tags: z.array(z.string()).default([]),
+  director: z.string().optional().nullable(),
+  studio: z.string().optional().nullable(),
+  
+  // Cloudflare R2 fields
+  posterUrl: z.string().url().optional().nullable(),
+  posterR2Key: z.string().optional().nullable(),
+  bannerUrl: z.string().url().optional().nullable(),
+  bannerR2Key: z.string().optional().nullable(),
+  logoUrl: z.string().url().optional().nullable(),
+  logoR2Key: z.string().optional().nullable(),
+  r2BucketPath: z.string().optional().nullable()
+})
+
 const animesQuerySchema = z.object({
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),
   limit: z.string().optional().transform(val => val ? parseInt(val) : 20),
@@ -156,6 +187,58 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching animes:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    
+    // Validar dados de entrada
+    const validatedData = createAnimeSchema.parse(body)
+    
+    // Verificar se slug é único
+    const existingSlug = await prisma.anime.findUnique({
+      where: { slug: validatedData.slug }
+    })
+    
+    if (existingSlug) {
+      return NextResponse.json(
+        { error: 'Slug já está em uso' },
+        { status: 409 }
+      )
+    }
+    
+    // Criar anime
+    const newAnime = await prisma.anime.create({
+      data: validatedData,
+      include: {
+        _count: {
+          select: {
+            seasons: true,
+            favorites: true
+          }
+        }
+      }
+    })
+    
+    return NextResponse.json(newAnime, { status: 201 })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { 
+          error: 'Validation error',
+          details: error.errors
+        },
+        { status: 400 }
+      )
+    }
+    
+    console.error('Error creating anime:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
