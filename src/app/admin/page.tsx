@@ -1,11 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+
+interface DashboardStats {
+  animes: number
+  episodes: number
+  seasons: number
+  heroBanners: number
+  users: number
+  storage: number
+  totalRevenue: number
+  activeSubscriptions: number
+  pendingPayments: number
+  monthlyGrowth: number
+}
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     animes: 0,
     episodes: 0,
+    seasons: 0,
+    heroBanners: 0,
     users: 0,
     storage: 0,
     totalRevenue: 0,
@@ -34,48 +49,80 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [loadingFinancials, setLoadingFinancials] = useState(true)
 
-  useEffect(() => {
-    // Simular carregamento de dados com animação progressiva
-    const timer = setTimeout(() => {
-      setStats({
-        animes: 1247,
-        episodes: 15830,
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Fetch data from all APIs in parallel
+      const [animesRes, episodesRes, seasonsRes, heroBannersRes] = await Promise.all([
+        fetch('/api/animes?limit=1').catch(() => null),
+        fetch('/api/episodes?limit=1').catch(() => null), 
+        fetch('/api/seasons?limit=1').catch(() => null),
+        fetch('/api/hero-banners?limit=1').catch(() => null)
+      ])
+
+      const [animesData, episodesData, seasonsData, heroBannersData] = await Promise.all([
+        animesRes?.ok ? animesRes.json() : null,
+        episodesRes?.ok ? episodesRes.json() : null,
+        seasonsRes?.ok ? seasonsRes.json() : null,
+        heroBannersRes?.ok ? heroBannersRes.json() : null
+      ])
+
+      setStats(prev => ({
+        ...prev,
+        animes: animesData?.pagination?.totalItems || 0,
+        episodes: episodesData?.pagination?.totalItems || 0,
+        seasons: seasonsData?.pagination?.totalItems || 0,
+        heroBanners: heroBannersData?.pagination?.totalItems || 0,
+        // Keep existing mock data for user/financial data
         users: 24567,
         storage: 2.4,
         totalRevenue: 125420.50,
         activeSubscriptions: 1856,
         pendingPayments: 23,
         monthlyGrowth: 18.5
-      })
+      }))
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      // Fallback to mock data
+      setStats(prev => ({
+        ...prev,
+        animes: 1247,
+        episodes: 15830,
+        seasons: 450,
+        heroBanners: 12,
+        users: 24567,
+        storage: 2.4,
+        totalRevenue: 125420.50,
+        activeSubscriptions: 1856,
+        pendingPayments: 23,
+        monthlyGrowth: 18.5
+      }))
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
+  }, [])
 
+  useEffect(() => {
+    fetchDashboardData()
+    
     // Simular carregamento de dados financeiros
     const financialTimer = setTimeout(() => {
       setPayments([
         { id: 1, user: 'João Silva', amount: 29.90, status: 'completed', method: 'credit_card', date: '2024-03-08' },
-        { id: 2, user: 'Maria Santos', amount: 19.90, status: 'pending', method: 'pix', date: '2024-03-07' },
-        { id: 3, user: 'Pedro Costa', amount: 299.90, status: 'completed', method: 'boleto', date: '2024-03-06' },
-        { id: 4, user: 'Ana Oliveira', amount: 29.90, status: 'failed', method: 'credit_card', date: '2024-03-05' },
-        { id: 5, user: 'Carlos Lima', amount: 19.90, status: 'completed', method: 'pix', date: '2024-03-04' }
+        
       ])
       
       setSubscriptions([
-        { id: 1, user: 'João Silva', plan: 'Mega Fan', status: 'ACTIVE', startDate: '2024-02-01', endDate: '2024-03-01', amount: 29.90 },
-        { id: 2, user: 'Maria Santos', plan: 'Fan', status: 'ACTIVE', startDate: '2024-01-15', endDate: '2024-02-15', amount: 19.90 },
-        { id: 3, user: 'Pedro Costa', plan: 'Mega Fan Annual', status: 'ACTIVE', startDate: '2024-01-01', endDate: '2025-01-01', amount: 299.90 },
-        { id: 4, user: 'Ana Oliveira', plan: 'Fan', status: 'EXPIRED', startDate: '2024-01-01', endDate: '2024-02-01', amount: 19.90 },
-        { id: 5, user: 'Carlos Lima', plan: 'Mega Fan', status: 'GRACE_PERIOD', startDate: '2024-01-10', endDate: '2024-02-10', amount: 29.90 }
+        { id: 1, user: 'João Silva', plan: 'Mega Fan', status: 'ACTIVE', startDate: '2024-02-01', endDate: '2024-03-01', amount: 29.90 }
       ])
       
       setLoadingFinancials(false)
     }, 1200)
 
     return () => {
-      clearTimeout(timer)
       clearTimeout(financialTimer)
     }
-  }, [])
+  }, [fetchDashboardData])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
@@ -109,7 +156,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {/* Animes Card */}
         <div className="group relative overflow-hidden bg-gradient-to-br from-gray-900/60 via-gray-900/40 to-gray-800/20 border border-gray-700/40 rounded-xl p-4 hover:border-blue-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5 backdrop-blur-sm">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -170,7 +217,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Users Card */}
+        {/* Seasons Card */}
         <div className="group relative overflow-hidden bg-gradient-to-br from-gray-900/60 via-gray-900/40 to-gray-800/20 border border-gray-700/40 rounded-xl p-4 hover:border-purple-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/5 backdrop-blur-sm">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="relative">
@@ -178,13 +225,73 @@ export default function AdminDashboard() {
               <div className="relative">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/15 to-purple-600/10">
                   <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-400">Temporadas</h3>
+            </div>
+            <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-500 mb-1">
+              {loading ? (
+                <span className="animate-pulse">---</span>
+              ) : (
+                formatNumber(stats.seasons)
+              )}
+            </p>
+            <div className="text-xs text-green-400 flex items-center space-x-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
+              </svg>
+              <span>+5.4% este mês</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Banners Card */}
+        <div className="group relative overflow-hidden bg-gradient-to-br from-gray-900/60 via-gray-900/40 to-gray-800/20 border border-gray-700/40 rounded-xl p-4 hover:border-orange-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/5 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="relative">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/15 to-orange-600/10">
+                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-400">Banners</h3>
+            </div>
+            <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-500 mb-1">
+              {loading ? (
+                <span className="animate-pulse">---</span>
+              ) : (
+                stats.heroBanners
+              )}
+            </p>
+            <div className="text-xs text-green-400 flex items-center space-x-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
+              </svg>
+              <span>+2.1% este mês</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Users Card */}
+        <div className="group relative overflow-hidden bg-gradient-to-br from-gray-900/60 via-gray-900/40 to-gray-800/20 border border-gray-700/40 rounded-xl p-4 hover:border-pink-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/5 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="relative">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-pink-500/15 to-pink-600/10">
+                  <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </div>
               </div>
               <h3 className="text-sm font-medium text-gray-400">Usuários</h3>
             </div>
-            <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-500 mb-1">
+            <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-pink-500 mb-1">
               {loading ? (
                 <span className="animate-pulse">---</span>
               ) : (
@@ -352,7 +459,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               ) : (
-                payments.slice(0, 4).map((payment: any) => (
+                payments.slice(0, 4).map((payment) => (
                   <div key={payment.id} className="flex items-center justify-between p-2 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-colors">
                     <div className="flex items-center space-x-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
@@ -418,7 +525,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               ) : (
-                subscriptions.slice(0, 4).map((subscription: any) => (
+                subscriptions.slice(0, 4).map((subscription) => (
                   <div key={subscription.id} className="flex items-center justify-between p-2 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-colors">
                     <div className="flex items-center space-x-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
