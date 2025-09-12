@@ -14,6 +14,43 @@ function formatPrice(price: any, billingCycle: any) {
   return { price: formatted, period: '' }
 }
 
+function getMoonPhaseName(planType: string) {
+  const moonPhases = {
+    'FREE': 'Grátis',
+    'FAN': 'The Arcane',
+    'MEGA_FAN': 'The Sorcerer', 
+    'MEGA_FAN_ANNUAL': 'The Sage'
+  }
+  return moonPhases[planType as keyof typeof moonPhases] || planType
+}
+
+function getMoonPhaseDescription(planType: string) {
+  const descriptions = {
+    'FREE': 'Acesso básico',
+    'FAN': 'New Moon • Básico mensal',
+    'MEGA_FAN': 'Full Moon • Experiência completa',
+    'MEGA_FAN_ANNUAL': 'Waning Moon • Melhor valor'
+  }
+  return descriptions[planType as keyof typeof descriptions] || 'Plano premium'
+}
+
+function updateFeatureText(feature: string, planType: string) {
+  // Atualiza referências aos planos antigos nas features
+  let updatedFeature = feature
+  
+  // Substitui referências ao "Fan" para "The Arcane"
+  if (updatedFeature.includes('Tudo do Fan') || updatedFeature.includes('do Fan')) {
+    updatedFeature = updatedFeature.replace(/Tudo do Fan|do Fan/g, 'Tudo do The Arcane')
+  }
+  
+  // Substitui referências ao "Mega Fan" para "The Sorcerer"  
+  if (updatedFeature.includes('Tudo do Mega Fan') || updatedFeature.includes('do Mega Fan')) {
+    updatedFeature = updatedFeature.replace(/Tudo do Mega Fan|do Mega Fan/g, 'Tudo do The Sorcerer')
+  }
+  
+  return updatedFeature
+}
+
 export default function PricingPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
@@ -198,7 +235,7 @@ export default function PricingPage() {
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce">
           <div className="flex flex-col items-center gap-2">
-            <span className="text-xs font-medium">Veja os Planos</span>
+            <span className="text-xs font-medium">Veja as Fases da Lua</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
@@ -212,7 +249,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Escolha Seu Plano <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent animate-gradient-x">Premium</span>
+              Escolha Sua <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent animate-gradient-x">Fase da Lua</span>
             </h2>
             <p className="text-xl text-white/70 max-w-2xl mx-auto">
               Todos os planos incluem 7 dias grátis. Sem compromisso, cancele quando quiser.
@@ -231,7 +268,7 @@ export default function PricingPage() {
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
                       <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg">
-                        ⭐ POPULAR
+                        🌕 POPULAR
                       </div>
                     </div>
                   )}
@@ -255,18 +292,18 @@ export default function PricingPage() {
                       }`}>
                         <span className="text-2xl">
                           {plan.type === 'FREE' && '🆓'}
-                          {plan.type === 'FAN' && '⭐'}
-                          {plan.type === 'MEGA_FAN' && '🔥'}
-                          {plan.type === 'MEGA_FAN_ANNUAL' && '💎'}
+                          {plan.type === 'FAN' && '🌑'}
+                          {plan.type === 'MEGA_FAN' && '🌕'}
+                          {plan.type === 'MEGA_FAN_ANNUAL' && '🌘'}
                         </span>
                       </div>
                       
                       <h3 className="text-xl font-bold text-white mb-2">
-                        {plan.name}
+                        {getMoonPhaseName(plan.type)}
                       </h3>
                       
                       <p className="text-gray-400 text-sm mb-4">
-                        {plan.description}
+                        {getMoonPhaseDescription(plan.type)}
                       </p>
                       
                       {/* Price */}
@@ -306,7 +343,7 @@ export default function PricingPage() {
                             </svg>
                           </div>
                           <span className="text-gray-300 text-sm">
-                            {feature}
+                            {updateFeatureText(feature, plan.type)}
                           </span>
                         </div>
                       ))}

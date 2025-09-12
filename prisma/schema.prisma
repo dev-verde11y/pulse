@@ -74,6 +74,7 @@ model User {
   subscriptions     Subscription[]
   watchHistory      WatchHistory[]
   favorites         Favorite[]
+  checkoutSessions  CheckoutSession[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -130,6 +131,10 @@ model Subscription {
   paymentMethod     String?            // "credit_card", "pix", "boleto"
   transactionId     String?
   
+  // External integration (Stripe, etc)
+  externalId        String?            // Stripe subscription ID
+  externalData      Json?              // Store full external object
+  
   // Renewal tracking
   renewalCount      Int                @default(0)
   lastRenewalDate   DateTime?
@@ -143,6 +148,7 @@ model Subscription {
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan              Plan               @relation(fields: [planId], references: [id])
   payments          Payment[]
+  checkoutSessions  CheckoutSession[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -176,6 +182,43 @@ model Payment {
   updatedAt DateTime @updatedAt
 
   @@map("payments")
+}
+
+model CheckoutSession {
+  id                 String    @id @default(uuid())
+  userId             String?
+  
+  // Stripe session info
+  stripeSessionId    String    @unique
+  stripeStatus       String    // "open", "complete", "expired"
+  paymentStatus      String    // "paid", "unpaid", "no_payment_required"
+  
+  // Session details
+  mode               String    // "subscription", "payment"
+  priceId            String
+  amount             Decimal   @db.Decimal(10, 2)
+  currency           String    @default("BRL")
+  
+  // URLs
+  successUrl         String?
+  cancelUrl          String?
+  
+  // External data
+  stripeData         Json?     // Full Stripe session object
+  
+  // Timestamps
+  expiresAt          DateTime?
+  completedAt        DateTime?
+  
+  // Relations
+  user               User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subscription       Subscription?  @relation(fields: [subscriptionId], references: [id])
+  subscriptionId     String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("checkout_sessions")
 }
 
 model WatchHistory {
