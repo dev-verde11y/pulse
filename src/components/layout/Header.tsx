@@ -192,7 +192,7 @@ export function Header() {
               </div>
               <div className="hidden sm:block">
                 <span className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-white">
-                  Stream.
+                  Zero.
                 </span>
               </div>
             </Link>
