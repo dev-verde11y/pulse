@@ -72,31 +72,17 @@ export default function AdminDashboard() {
         animes: animesData?.pagination?.totalItems || 0,
         episodes: episodesData?.pagination?.totalItems || 0,
         seasons: seasonsData?.pagination?.totalItems || 0,
-        heroBanners: heroBannersData?.pagination?.totalItems || 0,
-        // Keep existing mock data for user/financial data
-        users: 24567,
-        storage: 2.4,
-        totalRevenue: 125420.50,
-        activeSubscriptions: 1856,
-        pendingPayments: 23,
-        monthlyGrowth: 18.5
+        heroBanners: heroBannersData?.pagination?.total || 0,
+        // Ajustar conforme solicitado
+        users: 0,
+        storage: 0,
+        totalRevenue: 0,
+        activeSubscriptions: 0,
+        pendingPayments: 0,
+        monthlyGrowth: 0
       }))
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
-      // Fallback to mock data
-      setStats(prev => ({
-        ...prev,
-        animes: 1247,
-        episodes: 15830,
-        seasons: 450,
-        heroBanners: 12,
-        users: 24567,
-        storage: 2.4,
-        totalRevenue: 125420.50,
-        activeSubscriptions: 1856,
-        pendingPayments: 23,
-        monthlyGrowth: 18.5
-      }))
     } finally {
       setLoading(false)
     }
@@ -141,7 +127,7 @@ export default function AdminDashboard() {
               <span className="text-xs font-medium text-green-400">Online</span>
             </div>
             <h2 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100">
-              Painel Administrativo
+              Sistema UP!
             </h2>
           </div>
           <div className="hidden md:block">
@@ -178,12 +164,6 @@ export default function AdminDashboard() {
                 formatNumber(stats.animes)
               )}
             </p>
-            <div className="text-xs text-green-400 flex items-center space-x-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
-              </svg>
-              <span>+12.3% este mês</span>
-            </div>
           </div>
         </div>
 
@@ -208,12 +188,6 @@ export default function AdminDashboard() {
                 formatNumber(stats.episodes)
               )}
             </p>
-            <div className="text-xs text-green-400 flex items-center space-x-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
-              </svg>
-              <span>+8.7% este mês</span>
-            </div>
           </div>
         </div>
 
@@ -238,12 +212,6 @@ export default function AdminDashboard() {
                 formatNumber(stats.seasons)
               )}
             </p>
-            <div className="text-xs text-green-400 flex items-center space-x-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
-              </svg>
-              <span>+5.4% este mês</span>
-            </div>
           </div>
         </div>
 
@@ -268,12 +236,6 @@ export default function AdminDashboard() {
                 stats.heroBanners
               )}
             </p>
-            <div className="text-xs text-green-400 flex items-center space-x-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
-              </svg>
-              <span>+2.1% este mês</span>
-            </div>
           </div>
         </div>
 
@@ -298,12 +260,7 @@ export default function AdminDashboard() {
                 formatNumber(stats.users)
               )}
             </p>
-            <div className="text-xs text-green-400 flex items-center space-x-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 14l3-3 3 3 5-5v4h4V7h-4l5 5-5-5z"/>
-              </svg>
-              <span>+15.2% este mês</span>
-            </div>
+
           </div>
         </div>
 
@@ -325,15 +282,15 @@ export default function AdminDashboard() {
               {loading ? (
                 <span className="animate-pulse">---</span>
               ) : (
-                `${stats.storage}TB`
+                `${stats.storage}.TB`
               )}
             </p>
-            <div className="text-xs text-yellow-400 flex items-center space-x-1">
+            {/* <div className="text-xs text-yellow-400 flex items-center space-x-1">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
               </svg>
-              <span>72% usado</span>
-            </div>
+              <span>0% usado</span>
+            </div> */}
           </div>
         </div>
       </div>
