@@ -135,7 +135,7 @@ export default function EpisodesPage() {
   }, [sortBy, sortOrder, searchTerm, animeFilter, seasonFilter])
 
   const formatDuration = (seconds?: number) => {
-    if (!seconds) return 'N/A'
+    if (!seconds || seconds === 0) return 'N/A'
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60

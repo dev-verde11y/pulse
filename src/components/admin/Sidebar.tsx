@@ -133,12 +133,34 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     {
       id: 'storage',
       label: 'Cloudflare R2',
-      href: '/admin/storage',
+      href: '#',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
         </svg>
-      )
+      ),
+      children: [
+        {
+          id: 'simple-upload',
+          label: 'Upload Simples',
+          href: '/admin/storage',
+          icon: (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          )
+        },
+        {
+          id: 'bulk-upload',
+          label: 'Upload em Lote',
+          href: '/admin/storage/bulk',
+          icon: (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10M17 11v6a2 2 0 01-2 2h-2m-4-6l2-2m0 0l2 2m-2-2v12" />
+            </svg>
+          )
+        }
+      ]
     },
     {
       id: 'analytics',

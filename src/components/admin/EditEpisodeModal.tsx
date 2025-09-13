@@ -12,6 +12,7 @@ interface Episode {
   thumbnailUrl?: string
   videoUrl?: string
   r2Key?: string
+  r2VideoPath?: string
   thumbnailR2Key?: string
   airDate?: string
   createdAt: string
@@ -44,10 +45,22 @@ type FormData = {
   thumbnailUrl: string
   videoUrl: string
   airDate: string
+  seasonId: string
+  r2Key: string
+  r2VideoPath: string
 }
 
 export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEpisodeModalProps) {
   const [loading, setLoading] = useState(false)
+  
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      // You could add a toast notification here
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+    }
+  }
   const [formData, setFormData] = useState<FormData>({
     episodeNumber: 1,
     title: '',
@@ -55,20 +68,26 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
     duration: '',
     thumbnailUrl: '',
     videoUrl: '',
-    airDate: ''
+    airDate: '',
+    seasonId: '',
+    r2Key: '',
+    r2VideoPath: ''
   })
 
   // Populate form when episode changes
   useEffect(() => {
     if (episode) {
       setFormData({
-        episodeNumber: episode.episodeNumber,
-        title: episode.title,
+        episodeNumber: episode.episodeNumber || 1,
+        title: episode.title || '',
         description: episode.description || '',
-        duration: episode.duration ? episode.duration.toString() : '',
+        duration: episode.duration ? Math.floor(episode.duration / 60).toString() : '',
         thumbnailUrl: episode.thumbnailUrl || episode.thumbnail || '',
         videoUrl: episode.videoUrl || '',
-        airDate: episode.airDate ? new Date(episode.airDate).toISOString().split('T')[0] : ''
+        airDate: episode.airDate ? new Date(episode.airDate).toISOString().split('T')[0] : '',
+        seasonId: episode.season?.id || '',
+        r2Key: episode.r2Key || '',
+        r2VideoPath: episode.r2VideoPath || ''
       })
     }
   }, [episode])
@@ -84,10 +103,13 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
         episodeNumber: formData.episodeNumber,
         title: formData.title,
         description: formData.description || null,
-        duration: formData.duration ? parseInt(formData.duration) : null,
+        duration: formData.duration ? parseInt(formData.duration) * 60 : null,
         thumbnailUrl: formData.thumbnailUrl || null,
         videoUrl: formData.videoUrl || null,
-        airDate: formData.airDate ? new Date(formData.airDate).toISOString() : null
+        airDate: formData.airDate ? new Date(formData.airDate).toISOString() : null,
+        seasonId: formData.seasonId || null,
+        r2Key: formData.r2Key || null,
+        r2VideoPath: formData.r2VideoPath || null
       }
 
       const response = await fetch(`/api/episodes/${episode.id}`, {
@@ -160,7 +182,7 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Duração (segundos)
+                  Duração (minutos)
                 </label>
                 <input
                   type="number"
@@ -168,11 +190,11 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
                   value={formData.duration}
                   onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none"
-                  placeholder="Ex: 1440 para 24 minutos"
+                  placeholder="Ex: 24 para 24 minutos"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   {formData.duration && !isNaN(parseInt(formData.duration)) && (
-                    <>Aprox. {Math.floor(parseInt(formData.duration) / 60)} minutos</>
+                    <>Aprox. {parseInt(formData.duration) * 60} segundos</>
                   )}
                 </p>
               </div>
@@ -215,6 +237,98 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
                 onChange={(e) => setFormData(prev => ({ ...prev, airDate: e.target.value }))}
                 className="w-full px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
               />
+            </div>
+
+            {/* Season ID Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Season ID *
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  required
+                  value={formData.seasonId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, seasonId: e.target.value }))}
+                  className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none font-mono"
+                  placeholder="ID da temporada para vincular o episódio"
+                />
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(formData.seasonId)}
+                  disabled={!formData.seasonId}
+                  className="px-3 py-2 bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-lg transition-colors border border-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Copiar Season ID"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">ID da temporada à qual este episódio pertence</p>
+            </div>
+
+            {/* R2 Fields */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-white border-b border-gray-700/50 pb-2">
+                Cloudflare R2 Storage
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    R2 Key
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={formData.r2Key}
+                      onChange={(e) => setFormData(prev => ({ ...prev, r2Key: e.target.value }))}
+                      className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none font-mono"
+                      placeholder="chave-do-arquivo-no-r2"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(formData.r2Key)}
+                      disabled={!formData.r2Key}
+                      className="px-3 py-2 bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-lg transition-colors border border-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Copiar R2 Key"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Chave do arquivo de vídeo no R2</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    R2 Video Path
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={formData.r2VideoPath}
+                      onChange={(e) => setFormData(prev => ({ ...prev, r2VideoPath: e.target.value }))}
+                      className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none font-mono"
+                      placeholder="pasta/arquivo-video.mp4"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(formData.r2VideoPath)}
+                      disabled={!formData.r2VideoPath}
+                      className="px-3 py-2 bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-lg transition-colors border border-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Copiar R2 Video Path"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Caminho do vídeo no bucket R2</p>
+                </div>
+              </div>
             </div>
 
             {/* Media URLs */}
@@ -282,7 +396,19 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-400">ID:</p>
-                  <p className="text-gray-300 font-mono">{episode.id.slice(0, 8)}...</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-gray-300 font-mono">{episode.id}</p>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(episode.id)}
+                      className="p-1 text-gray-400 hover:text-gray-300 rounded transition-colors"
+                      title="Copiar ID completo do episódio"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-gray-400">Criado em:</p>
@@ -298,7 +424,19 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
                 </div>
                 <div>
                   <p className="text-gray-400">Temporada ID:</p>
-                  <p className="text-gray-300 font-mono">{episode.season.id.slice(0, 8)}...</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-gray-300 font-mono">{episode.season.id}</p>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(episode.season.id)}
+                      className="p-1 text-gray-400 hover:text-gray-300 rounded transition-colors"
+                      title="Copiar Season ID completo"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -317,7 +455,7 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !formData.title}
+            disabled={loading || !formData.title || !formData.seasonId}
             className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 disabled:opacity-50 flex items-center space-x-2"
           >
             {loading && (
