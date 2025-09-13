@@ -381,7 +381,7 @@ export function VideoPlayer({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const videoSrc = `/api/video/${episode.id}?quality=${quality}`
+  const videoSrc = `/api/video/${episode.id}`
 
   return (
     <div 
@@ -527,8 +527,8 @@ export function VideoPlayer({
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Audio Track Selector */}
-              {audioTracks.length >= 1 && (
+              {/* Audio Track Selector - HIDDEN for v1 */}
+              {false && audioTracks.length >= 1 && (
                 <div className="relative">
                   <button
                     onClick={() => setShowAudioMenu(!showAudioMenu)}
@@ -570,20 +570,24 @@ export function VideoPlayer({
                 </div>
               )}
 
-              {/* Quality Selector */}
-              <select
-                value={quality}
-                onChange={(e) => setQuality(e.target.value)}
-                className="bg-transparent text-white text-sm border border-gray-600 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
-              >
-                <option value="720p" className="bg-gray-800">720p</option>
-                <option value="1080p" className="bg-gray-800">1080p</option>
-              </select>
+              {/* Quality Selector - HIDDEN for v1 */}
+              {false && (
+                <select
+                  value={quality}
+                  onChange={(e) => setQuality(e.target.value)}
+                  className="bg-transparent text-white text-sm border border-gray-600 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="720p" className="bg-gray-800">720p</option>
+                  <option value="1080p" className="bg-gray-800">1080p</option>
+                </select>
+              )}
 
-              {/* Settings */}
-              <button className="text-white hover:text-blue-400 transition-colors">
-                <Cog6ToothIcon className="w-5 h-5" />
-              </button>
+              {/* Settings - HIDDEN for v1 */}
+              {false && (
+                <button className="text-white hover:text-blue-400 transition-colors">
+                  <Cog6ToothIcon className="w-5 h-5" />
+                </button>
+              )}
 
               {/* Fullscreen */}
               <button
