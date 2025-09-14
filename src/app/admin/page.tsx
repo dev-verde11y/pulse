@@ -53,18 +53,22 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       // Fetch data from all APIs in parallel
-      const [animesRes, episodesRes, seasonsRes, heroBannersRes] = await Promise.all([
+      const [animesRes, episodesRes, seasonsRes, heroBannersRes, usersRes, financialRes] = await Promise.all([
         fetch('/api/animes?limit=1').catch(() => null),
         fetch('/api/episodes?limit=1').catch(() => null), 
         fetch('/api/seasons?limit=1').catch(() => null),
-        fetch('/api/hero-banners?limit=1').catch(() => null)
+        fetch('/api/hero-banners?limit=1').catch(() => null),
+        fetch('/api/admin/users?limit=1').catch(() => null),
+        fetch('/api/admin/dashboard/financial').catch(() => null)
       ])
 
-      const [animesData, episodesData, seasonsData, heroBannersData] = await Promise.all([
+      const [animesData, episodesData, seasonsData, heroBannersData, usersData, financialData] = await Promise.all([
         animesRes?.ok ? animesRes.json() : null,
         episodesRes?.ok ? episodesRes.json() : null,
         seasonsRes?.ok ? seasonsRes.json() : null,
-        heroBannersRes?.ok ? heroBannersRes.json() : null
+        heroBannersRes?.ok ? heroBannersRes.json() : null,
+        usersRes?.ok ? usersRes.json() : null,
+        financialRes?.ok ? financialRes.json() : null
       ])
 
       setStats(prev => ({
@@ -73,14 +77,39 @@ export default function AdminDashboard() {
         episodes: episodesData?.pagination?.totalItems || 0,
         seasons: seasonsData?.pagination?.totalItems || 0,
         heroBanners: heroBannersData?.pagination?.total || 0,
-        // Ajustar conforme solicitado
-        users: 0,
+        users: usersData?.pagination?.totalItems || 0,
         storage: 0,
-        totalRevenue: 0,
-        activeSubscriptions: 0,
-        pendingPayments: 0,
-        monthlyGrowth: 0
+        totalRevenue: financialData?.totalRevenue || 0,
+        activeSubscriptions: financialData?.activeSubscriptions || 0,
+        pendingPayments: financialData?.pendingPayments || 0,
+        monthlyGrowth: financialData?.monthlyGrowth || 0
       }))
+
+      // Update recent subscriptions data
+      if (financialData?.recentSubscriptions) {
+        setSubscriptions(financialData.recentSubscriptions.slice(0, 4).map((sub: any, index: number) => ({
+          id: index + 1,
+          user: sub.planName,
+          plan: sub.planName,
+          status: sub.status,
+          startDate: new Date(sub.startDate).toISOString().split('T')[0],
+          endDate: new Date(sub.endDate).toISOString().split('T')[0],
+          amount: sub.amount
+        })))
+      }
+
+      // Update recent payments data with real payment data
+      if (financialData?.recentPayments) {
+        setPayments(financialData.recentPayments.slice(0, 4).map((payment: any, index: number) => ({
+          id: index + 1,
+          user: payment.userName,
+          amount: payment.amount,
+          status: payment.status,
+          method: payment.paymentMethod,
+          date: new Date(payment.date).toISOString().split('T')[0]
+        })))
+      }
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
@@ -90,25 +119,14 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchDashboardData()
-    
-    // Simular carregamento de dados financeiros
-    const financialTimer = setTimeout(() => {
-      setPayments([
-        { id: 1, user: 'João Silva', amount: 29.90, status: 'completed', method: 'credit_card', date: '2024-03-08' },
-        
-      ])
-      
-      setSubscriptions([
-        { id: 1, user: 'João Silva', plan: 'Mega Fan', status: 'ACTIVE', startDate: '2024-02-01', endDate: '2024-03-01', amount: 29.90 }
-      ])
-      
-      setLoadingFinancials(false)
-    }, 1200)
-
-    return () => {
-      clearTimeout(financialTimer)
-    }
   }, [fetchDashboardData])
+
+  // Set loadingFinancials to false when main loading is done
+  useEffect(() => {
+    if (!loading) {
+      setLoadingFinancials(false)
+    }
+  }, [loading])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
