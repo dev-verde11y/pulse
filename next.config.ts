@@ -1,20 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Aumentar limite para uploads de vídeos (moved from experimental)
+  serverExternalPackages: ['@aws-sdk/client-s3'],
+  
   experimental: {
-    // Aumentar limite para uploads de vídeos
-    serverComponentsExternalPackages: ['@aws-sdk/client-s3'],
-  },
-  // Configurações para uploads grandes
-  api: {
-    bodyParser: {
-      sizeLimit: '5gb', // Limite de 5GB para uploads
+    // Configurações para uploads grandes
+    serverActions: {
+      bodySizeLimit: '5gb',
     },
-    responseLimit: false,
-  },
-  // Timeout para uploads longos
-  serverActions: {
-    bodySizeLimit: '5gb',
   },
 };
 
