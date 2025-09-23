@@ -21,11 +21,12 @@ const updatePlanSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const plan = await prisma.plan.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -69,8 +70,9 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const body = await request.json()
     
@@ -79,7 +81,7 @@ export async function PATCH(
     
     // Verificar se o plano existe
     const existingPlan = await prisma.plan.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
     
     if (!existingPlan) {
@@ -105,7 +107,7 @@ export async function PATCH(
     
     // Atualizar plano
     const updatedPlan = await prisma.plan.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       include: {
         _count: {
@@ -138,12 +140,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Verificar se o plano existe
     const existingPlan = await prisma.plan.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -194,7 +197,7 @@ export async function DELETE(
     
     // Excluir plano
     await prisma.plan.delete({
-      where: { id: params.id }
+      where: { id }
     })
     
     return NextResponse.json({
