@@ -3,19 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFavorites } from '@/hooks/useFavorites'
+import { useNotifications } from '@/hooks/useNotifications'
 import { Button } from '@/components/ui/Button'
 import { SearchBar } from '@/components/ui/SearchBar'
+import { NotificationItem } from '@/components/ui/NotificationItem'
 import Image from "next/image"
 import Link from "next/link"
-
-interface Notification {
-  id: number
-  type: 'new_episode' | 'new_season' | 'recommendation' | 'system'
-  title: string
-  message: string
-  time: string
-  read: boolean
-}
 
 // Helper function to format plan names for display
 const formatPlanName = (planType: string | undefined): string => {
@@ -44,70 +37,10 @@ export function Header() {
   
   const { user, logout } = useAuth()
   const { favoritesCount, loading: favoritesLoading } = useFavorites()
+  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, loading: notificationsLoading } = useNotifications()
   const userMenuRef = useRef<HTMLDivElement>(null)
   const categoriesRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
-
-  // Mock notifications data
-  const [mockNotifications, setMockNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: 'new_episode',
-      title: 'Novo episódio disponível!',
-      message: 'Dr. Stone - Episódio 24 "Science Future" já está disponível.',
-      time: '2 min atrás',
-      read: false
-    },
-    {
-      id: 2,
-      type: 'new_season',
-      title: 'Nova temporada lançada!',
-      message: 'One Piece - Temporada 21 "Wano Arc" acaba de ser lançada.',
-      time: '1 hora atrás',
-      read: false
-    },
-    {
-      id: 3,
-      type: 'recommendation',
-      title: 'Recomendação para você',
-      message: 'Com base no que você assistiu, recomendamos "Attack on Titan".',
-      time: '3 horas atrás',
-      read: false
-    },
-    {
-      id: 4,
-      type: 'system',
-      title: 'Conta Premium ativada',
-      message: 'Sua conta Premium foi ativada com sucesso. Aproveite!',
-      time: '1 dia atrás',
-      read: true
-    },
-    {
-      id: 5,
-      type: 'new_episode',
-      title: 'Episódio adicionado à sua lista',
-      message: 'Chainsaw Man - Episódio 12 foi adicionado à sua lista.',
-      time: '2 dias atrás',
-      read: true
-    }
-  ])
-
-  // Functions for notifications
-  const markAsRead = (notificationId: number) => {
-    setMockNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true }
-          : notification
-      )
-    )
-  }
-
-  const markAllAsRead = () => {
-    setMockNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    )
-  }
 
   // Carregar gêneros quando abrir dropdown de categorias
   const loadGenres = async () => {
@@ -360,9 +293,9 @@ export function Header() {
                       <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                         <path fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z" clipRule="evenodd" />
                       </svg>
-                      {mockNotifications.filter(n => !n.read).length > 0 && (
+                      {unreadCount > 0 && (
                         <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-                          <span className="text-xs font-bold text-white">{mockNotifications.filter(n => !n.read).length}</span>
+                          <span className="text-xs font-bold text-white">{unreadCount}</span>
                         </div>
                       )}
                     </button>
@@ -383,39 +316,19 @@ export function Header() {
                         </div>
                         
                         <div className="max-h-96 overflow-y-auto">
-                          {mockNotifications.length > 0 ? (
-                            mockNotifications.map((notification) => (
-                              <div
+                          {notificationsLoading ? (
+                            <div className="p-8 text-center">
+                              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                              <p className="text-gray-400">Carregando notificações...</p>
+                            </div>
+                          ) : notifications.length > 0 ? (
+                            notifications.map((notification) => (
+                              <NotificationItem
                                 key={notification.id}
-                                className={`p-4 border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer ${
-                                  !notification.read ? 'bg-blue-600/10' : ''
-                                }`}
-                                onClick={() => markAsRead(notification.id)}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${
-                                    !notification.read ? 'bg-blue-500' : 'bg-gray-600'
-                                  }`} />
-                                  <div className="flex-1">
-                                    <h4 className="text-sm font-medium text-white mb-1">{notification.title}</h4>
-                                    <p className="text-sm text-gray-300 mb-2">{notification.message}</p>
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-xs text-gray-500">{notification.time}</span>
-                                      <span className={`text-xs px-2 py-1 rounded-full ${
-                                        notification.type === 'new_episode' ? 'bg-green-600/20 text-green-400' :
-                                        notification.type === 'new_season' ? 'bg-blue-600/20 text-blue-400' :
-                                        notification.type === 'recommendation' ? 'bg-purple-600/20 text-purple-400' :
-                                        'bg-gray-600/20 text-gray-400'
-                                      }`}>
-                                        {notification.type === 'new_episode' ? 'Novo Episódio' :
-                                         notification.type === 'new_season' ? 'Nova Temporada' :
-                                         notification.type === 'recommendation' ? 'Recomendação' :
-                                         'Sistema'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                                notification={notification}
+                                onMarkAsRead={markAsRead}
+                                onRemove={removeNotification}
+                              />
                             ))
                           ) : (
                             <div className="p-8 text-center">

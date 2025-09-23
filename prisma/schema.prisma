@@ -75,6 +75,7 @@ model User {
   watchHistory      WatchHistory[]
   favorites         Favorite[]
   checkoutSessions  CheckoutSession[]
+  notifications     Notification[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -278,6 +279,14 @@ enum VideoQuality {
   ULTRA_HD_4K
 }
 
+enum NotificationType {
+  NEW_EPISODE
+  NEW_SEASON
+  RECOMMENDATION
+  SYSTEM
+  WATCH_REMINDER
+}
+
 model Anime {
   id            String       @id @default(uuid())
   title         String
@@ -428,4 +437,33 @@ model HeroBanner {
   updatedAt     DateTime @updatedAt
   
   @@map("hero_banners")
+}
+
+model Notification {
+  id          Int              @id @default(autoincrement())
+  userId      String
+
+  // Notification content
+  type        NotificationType
+  title       String           @db.VarChar(200)
+  message     String           @db.VarChar(1000)
+
+  // Optional fields
+  actionUrl   String?          // URL to redirect when clicked
+  imageUrl    String?          // Image/thumbnail for the notification
+  data        Json?            // Additional structured data
+
+  // Status
+  read        Boolean          @default(false)
+  readAt      DateTime?
+
+  // Relations
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
