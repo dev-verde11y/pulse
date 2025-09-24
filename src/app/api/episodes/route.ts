@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sanitizeEpisodesArray, logRequestContext } from '@/lib/apiSecurity'
 
 const createEpisodeSchema = z.object({
   seasonId: z.string().uuid(),
@@ -17,8 +18,11 @@ const createEpisodeSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    // 🔍 Log do contexto da requisição
+    logRequestContext(request, 'EPISODES')
+
     const { searchParams } = new URL(request.url)
-    
+
     // Pagination
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -91,8 +95,8 @@ export async function GET(request: NextRequest) {
         orderBy = { episodeNumber: sortOrder }
     }
 
-    // Get episodes with pagination
-    const [episodes, totalCount] = await Promise.all([
+    // 🔓 Get episodes with ALL fields (será sanitizado por contexto depois)
+    const [rawEpisodes, totalCount] = await Promise.all([
       prisma.episode.findMany({
         where,
         include: {
@@ -115,6 +119,9 @@ export async function GET(request: NextRequest) {
       }),
       prisma.episode.count({ where })
     ])
+
+    // 🛡️ Sanitizar episódios baseado no contexto (público vs admin)
+    const episodes = sanitizeEpisodesArray(rawEpisodes, request)
 
     // Calculate pagination info
     const totalPages = Math.ceil(totalCount / limit)

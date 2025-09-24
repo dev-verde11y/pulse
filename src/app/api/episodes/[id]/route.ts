@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sanitizeEpisodeByContext, sanitizeEpisodesArray, logRequestContext } from '@/lib/apiSecurity'
 
 const updateEpisodeSchema = z.object({
   episodeNumber: z.number().int().positive().optional(),
@@ -20,8 +21,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    
-    const episode = await prisma.episode.findUnique({
+
+    // 🔍 Log do contexto da requisição
+    logRequestContext(request, 'EPISODE DETAIL')
+
+    const rawEpisode = await prisma.episode.findUnique({
       where: { id },
       include: {
         season: {
@@ -32,6 +36,7 @@ export async function GET(
                   include: {
                     episodes: {
                       orderBy: { episodeNumber: 'asc' }
+                      // 🔓 Buscar TODOS os campos (será sanitizado depois)
                     }
                   },
                   orderBy: { seasonNumber: 'asc' }
@@ -43,17 +48,35 @@ export async function GET(
       }
     })
 
-    if (!episode) {
+    if (!rawEpisode) {
       return NextResponse.json(
         { error: 'Episode not found' },
         { status: 404 }
       )
     }
 
+    // 🛡️ Sanitizar episódio principal baseado no contexto
+    const sanitizedMainEpisode = sanitizeEpisodeByContext(rawEpisode, request)
+
+    // 🛡️ Sanitizar lista de episódios do anime também
+    const episode = {
+      ...sanitizedMainEpisode,
+      season: {
+        ...sanitizedMainEpisode.season,
+        anime: {
+          ...sanitizedMainEpisode.season.anime,
+          seasons: sanitizedMainEpisode.season.anime.seasons.map(season => ({
+            ...season,
+            episodes: sanitizeEpisodesArray(season.episodes, request)
+          }))
+        }
+      }
+    }
+
     // Adicionar seasonNumber ao episódio para facilitar o uso no frontend
     const episodeWithSeason = {
       ...episode,
-      seasonNumber: episode.season.seasonNumber
+      seasonNumber: rawEpisode.season.seasonNumber
     }
 
     return NextResponse.json(episodeWithSeason)
@@ -138,7 +161,9 @@ export async function PUT(
       }
     })
     
-    return NextResponse.json(updatedEpisode)
+    // 🛡️ Sanitizar resposta baseado no contexto
+    const sanitizedResponse = sanitizeEpisodeByContext(updatedEpisode, request)
+    return NextResponse.json(sanitizedResponse)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

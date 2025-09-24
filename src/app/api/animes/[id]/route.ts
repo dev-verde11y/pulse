@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sanitizeEpisodesArray, logRequestContext } from '@/lib/apiSecurity'
 
 const updateAnimeSchema = z.object({
   title: z.string().min(1).optional(),
@@ -35,7 +36,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const anime = await prisma.anime.findUnique({
+
+    // 🔍 Log do contexto da requisição
+    logRequestContext(request, 'ANIME')
+
+    const rawAnime = await prisma.anime.findUnique({
       where: { id },
       include: {
         seasons: {
@@ -43,6 +48,7 @@ export async function GET(
           include: {
             episodes: {
               orderBy: { episodeNumber: 'asc' }
+              // 🔓 Buscar TODOS os campos (será sanitizado depois)
             }
           }
         },
@@ -55,13 +61,21 @@ export async function GET(
       }
     })
 
-    if (!anime) {
+    if (!rawAnime) {
       return NextResponse.json(
         { error: 'Anime not found' },
         { status: 404 }
       )
     }
 
+    // 🛡️ Sanitizar episódios em cada temporada baseado no contexto
+    const anime = {
+      ...rawAnime,
+      seasons: rawAnime.seasons.map(season => ({
+        ...season,
+        episodes: sanitizeEpisodesArray(season.episodes, request)
+      }))
+    }
 
     return NextResponse.json(anime)
   } catch (error) {
@@ -122,7 +136,21 @@ export async function PUT(
           orderBy: { seasonNumber: 'asc' },
           include: {
             episodes: {
-              orderBy: { episodeNumber: 'asc' }
+              orderBy: { episodeNumber: 'asc' },
+              select: {
+                id: true,
+                episodeNumber: true,
+                title: true,
+                description: true,
+                duration: true,
+                thumbnailUrl: true,
+                // ❌ REMOVIDO: videoUrl (URL sensível do R2)
+                // ❌ REMOVIDO: r2Key (chave interna)
+                // ❌ REMOVIDO: thumbnailR2Key
+                airDate: true,
+                createdAt: true,
+                updatedAt: true
+              }
             }
           }
         },

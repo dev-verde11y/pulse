@@ -6,6 +6,86 @@ import path from 'path'
 // Configuração do diretório local dos vídeos
 const VIDEO_BASE_PATH = 'E:\\animes\\Kaiju.No.8.S01.1080p'
 
+// Função helper para proxificar vídeo do R2
+async function proxyVideoFromR2(r2Url: string, request: NextRequest) {
+  try {
+    const range = request.headers.get('range')
+    console.log(`📡 [R2 PROXY] Range request: ${range || 'none'}`)
+
+    const headers: Record<string, string> = {
+      'Accept': 'video/*',
+      'User-Agent': 'VideoPlayer/1.0'
+    }
+
+    if (range) {
+      headers['Range'] = range
+    }
+
+    console.log(`📡 [R2 PROXY] Fazendo request para: ${r2Url}`)
+
+    const r2Response = await fetch(r2Url, {
+      method: 'GET',
+      headers,
+      cache: 'no-store'
+    })
+
+    if (!r2Response.ok) {
+      console.error(`❌ [R2 PROXY] Erro do R2: ${r2Response.status}`)
+      return NextResponse.json(
+        { error: 'Failed to fetch from R2' },
+        { status: r2Response.status }
+      )
+    }
+
+    console.log(`✅ [R2 PROXY] Response status: ${r2Response.status}`)
+
+    // Get the response body as a stream
+    const stream = r2Response.body
+
+    if (!stream) {
+      return NextResponse.json(
+        { error: 'No stream from R2' },
+        { status: 500 }
+      )
+    }
+
+    // Prepare headers for the response
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': 'video/mp4',
+      'Accept-Ranges': 'bytes',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Range, Content-Type',
+      'Cache-Control': 'public, max-age=3600'
+    }
+
+    // Copy important headers from R2 response
+    if (r2Response.headers.get('content-length')) {
+      responseHeaders['Content-Length'] = r2Response.headers.get('content-length')!
+    }
+
+    if (r2Response.headers.get('content-range')) {
+      responseHeaders['Content-Range'] = r2Response.headers.get('content-range')!
+    }
+
+    const status = r2Response.status === 206 ? 206 : 200
+
+    console.log(`📤 [R2 PROXY] Enviando response com status ${status}`)
+
+    return new Response(stream, {
+      status,
+      headers: responseHeaders
+    })
+
+  } catch (error) {
+    console.error('❌ [R2 PROXY] Erro:', error)
+    return NextResponse.json(
+      { error: 'Proxy error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}
+
 // Função helper para servir arquivos de vídeo
 function serveVideoFile(videoPath: string, request: NextRequest) {
   // Obter informações do arquivo
@@ -28,8 +108,11 @@ function serveVideoFile(videoPath: string, request: NextRequest) {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunkSize.toString(),
-        'Content-Type': 'video/x-matroska',
-        'Cache-Control': 'public, max-age=3600'
+        'Content-Type': 'video/mp4',
+        'Cache-Control': 'public, max-age=3600',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': 'Range, Content-Type'
       }
     })
   } else {
@@ -40,9 +123,12 @@ function serveVideoFile(videoPath: string, request: NextRequest) {
       status: 200,
       headers: {
         'Content-Length': fileSize.toString(),
-        'Content-Type': 'video/x-matroska',
+        'Content-Type': 'video/mp4',
         'Accept-Ranges': 'bytes',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'public, max-age=3600',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': 'Range, Content-Type'
       }
     })
   }
@@ -57,6 +143,39 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const quality = searchParams.get('quality') || '1080p'
 
+    console.log(`🎬 [VIDEO API] Solicitação para episódio: ${id}`)
+    console.log(`🎬 [VIDEO API] Quality solicitada: ${quality}`)
+
+    // 🛡️ VALIDAÇÃO DE SEGURANÇA
+    const referer = request.headers.get('referer')
+    const origin = request.headers.get('origin')
+
+    // Verificar se vem do nosso domínio
+    const allowedOrigins = [
+      'http://localhost:3004',
+      'http://localhost:3000',
+      process.env.NEXT_PUBLIC_APP_URL
+    ].filter(Boolean)
+
+    if (origin && !allowedOrigins.includes(origin)) {
+      console.log(`🚫 [SECURITY] Origin não autorizado: ${origin}`)
+      return NextResponse.json(
+        { error: 'Origin not allowed' },
+        { status: 403 }
+      )
+    }
+
+    // Rate limiting básico por IP
+    const clientIP = request.ip ||
+                     request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown'
+
+    console.log(`🔍 [SECURITY] Request de IP: ${clientIP}`)
+
+    // TODO: Implementar rate limiting mais robusto com Redis
+    // Por enquanto só logamos para monitoramento
+
     // Buscar episódio no banco
     const episode = await prisma.episode.findUnique({
       where: { id },
@@ -70,16 +189,19 @@ export async function GET(
     })
 
     if (!episode) {
+      console.log(`❌ [VIDEO API] Episódio não encontrado: ${id}`)
       return NextResponse.json(
         { error: 'Episode not found' },
         { status: 404 }
       )
     }
 
+    console.log(`✅ [VIDEO API] Episódio encontrado: ${episode.title} - ${episode.season.anime.title}`)
+
     // Prioridade 1: Verificar se tem videoUrl do Cloudflare R2
     if (episode.videoUrl) {
-      // Se tem URL do vídeo no R2, redirecionar para lá
-      return NextResponse.redirect(episode.videoUrl)
+      console.log(`🔗 [VIDEO API] Proxificando vídeo do R2: ${episode.videoUrl}`)
+      return proxyVideoFromR2(episode.videoUrl, request)
     }
 
     // Prioridade 2: Para Kaiju No. 8, mapear episódios para arquivos locais (fallback)
@@ -88,14 +210,18 @@ export async function GET(
       const filename = `Kaiju.No.8.S01E${episodeNumber}.1080p.CR.WEB-DL.AAC2.0.H.264.DUAL-Anitsu.mkv`
       const videoPath = path.join(VIDEO_BASE_PATH, filename)
 
+      console.log(`📁 [VIDEO API] Tentando arquivo local: ${videoPath}`)
+
       // Verificar se arquivo existe
       if (!fs.existsSync(videoPath)) {
+        console.log(`❌ [VIDEO API] Arquivo não encontrado: ${videoPath}`)
         return NextResponse.json(
-          { error: 'Video file not found' },
+          { error: 'Video file not found', path: videoPath },
           { status: 404 }
         )
       }
 
+      console.log(`✅ [VIDEO API] Servindo arquivo local: ${filename}`)
       return serveVideoFile(videoPath, request)
     }
 
@@ -122,4 +248,15 @@ export async function GET(
       { status: 500 }
     )
   }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Range, Content-Type'
+    }
+  })
 }

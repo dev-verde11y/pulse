@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { episodeId: string; 'language.vtt': string } }
+  { params }: { params: Promise<{ episodeId: string; 'language.vtt': string }> }
 ) {
-  const episodeId = params.episodeId
-  const languageFile = params['language.vtt'] // "pt-br.vtt" ou "en.vtt"
-  const language = languageFile.replace('.vtt', '') // "pt-br" ou "en"
+  const resolvedParams = await params
+  const episodeId = resolvedParams.episodeId
+  const languageFile = resolvedParams['language.vtt'] // "pt-br.vtt" ou "en.vtt"
+  const language = languageFile?.replace('.vtt', '') || 'unknown' // "pt-br" ou "en"
 
   console.log(`🔍 Solicitação de legenda: episodeId=${episodeId}, language=${language}`)
 

@@ -75,7 +75,7 @@ export default function WatchV2Page() {
       // Procurar próximo episódio disponível
       for (let i = currentEpisodeIndex + 1; i < allEpisodes.length; i++) {
         const nextEpisode = allEpisodes[i]
-        if (nextEpisode.videoUrl || nextEpisode.r2Key) {
+        if (nextEpisode.duration && nextEpisode.title && nextEpisode.id) {
           router.push(`/watchV2/${nextEpisode.id}`)
           return
         }
@@ -89,7 +89,7 @@ export default function WatchV2Page() {
       // Procurar episódio anterior disponível
       for (let i = currentEpisodeIndex - 1; i >= 0; i--) {
         const previousEpisode = allEpisodes[i]
-        if (previousEpisode.videoUrl || previousEpisode.r2Key) {
+        if (previousEpisode.duration && previousEpisode.title && previousEpisode.id) {
           router.push(`/watchV2/${previousEpisode.id}`)
           return
         }
@@ -101,7 +101,7 @@ export default function WatchV2Page() {
   // Helper functions to check if navigation is available
   const hasNextAvailableEpisode = () => {
     for (let i = currentEpisodeIndex + 1; i < allEpisodes.length; i++) {
-      if (allEpisodes[i].videoUrl || allEpisodes[i].r2Key) {
+      if (allEpisodes[i].duration && allEpisodes[i].title && allEpisodes[i].id) {
         return true
       }
     }
@@ -110,7 +110,7 @@ export default function WatchV2Page() {
 
   const hasPreviousAvailableEpisode = () => {
     for (let i = currentEpisodeIndex - 1; i >= 0; i--) {
-      if (allEpisodes[i].videoUrl || allEpisodes[i].r2Key) {
+      if (allEpisodes[i].duration && allEpisodes[i].title && allEpisodes[i].id) {
         return true
       }
     }
@@ -496,7 +496,7 @@ export default function WatchV2Page() {
                     {allEpisodes.map((ep, index) => {
                       const isCurrentEpisode = ep.id === episodeId
                       const isWatched = index < currentEpisodeIndex
-                      const isAvailable = ep.videoUrl || ep.r2Key
+                      const isAvailable = ep.duration && ep.title && ep.id
                       
                       return (
                         <button

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { 
-  PlayIcon, 
-  PauseIcon, 
-  SpeakerWaveIcon, 
+import {
+  PlayIcon,
+  PauseIcon,
+  SpeakerWaveIcon,
   SpeakerXMarkIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
@@ -12,11 +12,15 @@ import {
   ForwardIcon,
   LanguageIcon,
   ChatBubbleBottomCenterTextIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  RectangleStackIcon,
+  ComputerDesktopIcon,
+  TvIcon
 } from '@heroicons/react/24/solid'
 import { Episode } from '@/types/anime'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import Hls from 'hls.js'
 
 // Tipos para trilhas de áudio nativas do HTML5
 interface AudioTrackAPI {
@@ -24,6 +28,13 @@ interface AudioTrackAPI {
   label: string
   language: string
   enabled: boolean
+}
+
+// Global Chrome types
+declare global {
+  interface Window {
+    chrome: any
+  }
 }
 
 interface AudioTrackList extends EventTarget {
@@ -63,6 +74,17 @@ interface VideoPlayerV2Props {
   subtitles?: SubtitleTrack[]
 }
 
+// Configurações de qualidade
+interface QualityLevel {
+  height: number
+  bitrate: number
+  label: string
+  url?: string
+}
+
+// Playback speeds
+const PLAYBACK_SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+
 export function VideoPlayerV2({ 
   episode, 
   onNextEpisode, 
@@ -95,7 +117,20 @@ export function VideoPlayerV2({
   const [showSubtitleMenu, setShowSubtitleMenu] = useState(false)
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
 
+  // Estados para streaming avançado
+  const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([])
+  const [selectedQuality, setSelectedQuality] = useState<number>(-1) // -1 = auto
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1)
+  const [showQualityMenu, setShowQualityMenu] = useState(false)
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
+  const [isPictureInPicture, setIsPictureInPicture] = useState(false)
+  const [isHlsSupported, setIsHlsSupported] = useState(false)
+  const [skipDuration, setSkipDuration] = useState<number>(10)
+  const [showSkipMenu, setShowSkipMenu] = useState(false)
+  const [isCastSupported, setIsCastSupported] = useState(false)
+
   const [lastProgressUpdate, setLastProgressUpdate] = useState(0)
+  const hlsRef = useRef<Hls | null>(null)
   
   const { user } = useAuth()
 
@@ -187,6 +222,9 @@ export function VideoPlayerV2({
         setShowAudioMenu(false)
         setShowSubtitleMenu(false)
         setShowSettingsMenu(false)
+        setShowQualityMenu(false)
+        setShowSpeedMenu(false)
+        setShowSkipMenu(false)
       }
     }
 
@@ -224,26 +262,161 @@ export function VideoPlayerV2({
     }
   }
 
+  // Initialize HLS and advanced features
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check HLS support
+      setIsHlsSupported(Hls.isSupported())
+
+      // Check Picture-in-Picture support
+      setIsPictureInPicture(document.pictureInPictureEnabled || false)
+
+      // Check Chromecast support
+      setIsCastSupported(!!window.chrome && !!window.chrome.cast)
+    }
+  }, [])
+
+
+  // Initialize video with HLS or fallback
+  const initializeVideo = (videoSrc: string) => {
+    const video = videoRef.current
+    if (!video) return
+
+    console.log('🎬 Inicializando vídeo:', videoSrc)
+
+    // Clean up existing HLS instance
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+      hlsRef.current = null
+    }
+
+    // Set video source directly - let the browser handle redirects
+    console.log('📹 Configurando source direto no elemento video')
+    video.src = videoSrc
+
+    // Force load
+    video.load()
+
+    console.log('📹 Video.src configurado:', video.src)
+    console.log('📹 Video canPlayType mp4:', video.canPlayType('video/mp4'))
+
+    // Add event listeners for better debugging
+    video.addEventListener('error', (e) => {
+      console.error('❌ Erro no elemento de vídeo:', e)
+      console.error('❌ Tipo do erro:', e.type)
+      console.error('❌ Target:', e.target)
+
+      if (video.error) {
+        console.error('❌ Video.error code:', video.error.code)
+        console.error('❌ Video.error message:', video.error.message)
+
+        // Traduzir códigos de erro
+        const errorMessages = {
+          1: 'MEDIA_ERR_ABORTED - Download foi abortado',
+          2: 'MEDIA_ERR_NETWORK - Erro de rede durante download',
+          3: 'MEDIA_ERR_DECODE - Erro ao decodificar o vídeo',
+          4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Formato não suportado ou fonte inválida'
+        }
+
+        console.error('❌ Erro traduzido:', errorMessages[video.error.code as keyof typeof errorMessages] || 'Erro desconhecido')
+      } else {
+        console.error('❌ Nenhum erro específico do vídeo disponível')
+      }
+
+      console.error('❌ Video src atual:', video.src)
+      console.error('❌ Video currentSrc:', video.currentSrc)
+      console.error('❌ Video readyState:', video.readyState)
+      console.error('❌ Video networkState:', video.networkState)
+
+      setLoading(false)
+    })
+
+    video.addEventListener('loadstart', () => {
+      console.log('▶️ Iniciando carregamento do vídeo')
+      setLoading(true)
+    })
+
+    video.addEventListener('loadedmetadata', () => {
+      console.log('📊 Metadados carregados')
+    })
+
+    video.addEventListener('canplay', () => {
+      console.log('✅ Vídeo pronto para reprodução')
+      setLoading(false)
+    })
+
+    video.addEventListener('canplaythrough', () => {
+      console.log('🚀 Vídeo completamente carregado')
+    })
+
+    // Setup mock quality levels for now
+    setQualityLevels([
+      {height: 0, bitrate: 0, label: 'Auto'},
+      {height: 1080, bitrate: 8000, label: '1080p (8M)'},
+      {height: 720, bitrate: 4000, label: '720p (4M)'},
+      {height: 480, bitrate: 2000, label: '480p (2M)'},
+      {height: 360, bitrate: 1000, label: '360p (1M)'}
+    ])
+    setSelectedQuality(0) // Auto by default
+
+    // HLS logic for when streams are available:
+    /*
+    if (Hls.isSupported() && videoSrc.includes('.m3u8')) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90
+      })
+
+      hlsRef.current = hls
+      hls.loadSource(videoSrc)
+      hls.attachMedia(video)
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log('🎬 HLS manifest loaded')
+        const levels = hls.levels.map((level, index) => ({
+          height: level.height,
+          bitrate: level.bitrate,
+          label: `${level.height}p (${Math.round(level.bitrate / 1000)}k)`
+        }))
+        setQualityLevels([{height: 0, bitrate: 0, label: 'Auto'}, ...levels])
+        setSelectedQuality(-1)
+      })
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error('🚨 HLS Error:', data)
+        if (data.fatal) {
+          video.src = videoSrc.replace('.m3u8', '.mp4')
+        }
+      })
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoSrc
+    } else {
+      video.src = videoSrc
+    }
+    */
+  }
+
   // Detectar trilhas de áudio disponíveis
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
       setLoading(false)
-      
+
       const video = videoRef.current
-      
+
       // Aguardar carregamento das trilhas de áudio
       setTimeout(() => {
         const tracks: AudioTrack[] = []
-        
+
         if (video.audioTracks && video.audioTracks.length > 0) {
           for (let i = 0; i < video.audioTracks.length; i++) {
             const track = video.audioTracks[i]
-            
+
             // Detectar idioma baseado no label ou usar padrão
             let label = track.label || `Trilha ${i + 1}`
             let language = track.language || 'unknown'
-            
+
             // Mapeamento comum de idiomas
             if (label.toLowerCase().includes('japanese') || label.toLowerCase().includes('jpn') || language === 'ja') {
               label = '🇯🇵 Japonês (Original)'
@@ -255,19 +428,19 @@ export function VideoPlayerV2({
               label = '🇺🇸 Inglês (Dublado)'
               language = 'en'
             }
-            
+
             tracks.push({
               id: i,
               label,
               language,
               enabled: track.enabled
             })
-            
+
             if (track.enabled) {
               setSelectedAudioTrack(i)
             }
           }
-          
+
           // Listener para mudanças de trilha
           video.audioTracks.addEventListener('change', () => {
             for (let i = 0; i < video.audioTracks!.length; i++) {
@@ -286,16 +459,75 @@ export function VideoPlayerV2({
             enabled: true
           })
         }
-        
+
         setAudioTracks(tracks)
         console.log('🎵 Trilhas de áudio detectadas:', tracks)
       }, 1000)
 
-      // Configurar legendas apenas se fornecidas externamente
-      // Para evitar 404s desnecessários, não carregar legendas automáticas por padrão
-      console.log('🎵 Legendas disponíveis:', subtitles.length)
+      // Quality levels are now set in initializeVideo
+
+      console.log('🎵 Legendas fornecidas:', subtitles.length)
+      console.log('📹 Vídeo provavelmente tem legendas embutidas (nenhuma externa necessária)')
     }
   }
+
+  // Simplified subtitle handling - only use provided external subtitles
+  const setupSubtitles = () => {
+    console.log('📝 Configurando legendas fornecidas:', subtitles.length)
+    setSubtitleTracks(subtitles)
+  }
+
+  // Get secure video URL
+  const getSecureVideoUrl = async (episodeId: string, quality: string = '1080p'): Promise<string> => {
+    try {
+      console.log('🔐 Solicitando token seguro para:', episodeId, quality)
+
+      const response = await fetch(`/api/video/${episodeId}/token?quality=${quality}`, {
+        method: 'GET',
+        credentials: 'same-origin'
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log('✅ Token obtido, válido por:', data.expiresInMinutes, 'minutos')
+
+      return data.videoUrl
+
+    } catch (error) {
+      console.error('❌ Erro ao obter URL segura:', error)
+      // Fallback para URL direta (menos segura)
+      return `/api/video/${episodeId}`
+    }
+  }
+
+  // Initialize video on mount
+  useEffect(() => {
+    if (episode.id) {
+      // 🔐 Usar URL segura com token temporário
+      getSecureVideoUrl(episode.id)
+        .then(secureUrl => {
+          console.log('🎬 Usando URL segura:', secureUrl.substring(0, 50) + '...')
+          initializeVideo(secureUrl)
+        })
+        .catch(() => {
+          // Fallback para método anterior
+          console.log('⚠️ Fallback para URL direta')
+          initializeVideo(`/api/video/${episode.id}`)
+        })
+
+      setupSubtitles() // Only setup provided external subtitles
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy()
+        hlsRef.current = null
+      }
+    }
+  }, [episode.id, isHlsSupported, subtitles])
 
   // Trocar trilha de áudio
   const handleAudioTrackChange = (trackId: number) => {
@@ -392,10 +624,76 @@ export function VideoPlayerV2({
     }
   }
 
-  const skipTime = (seconds: number) => {
+  const skipTime = (seconds: number = skipDuration) => {
     if (videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, Math.min(duration, currentTime + seconds))
+      const oldTime = videoRef.current.currentTime
+      const newTime = Math.max(0, Math.min(duration, oldTime + seconds))
+      videoRef.current.currentTime = newTime
+      console.log(`⏭️ Skip: ${seconds}s | ${oldTime.toFixed(1)}s → ${newTime.toFixed(1)}s`)
     }
+  }
+
+  // Quality change handler
+  const handleQualityChange = (qualityIndex: number) => {
+    console.log(`📺 Mudando qualidade: ${qualityLevels[selectedQuality]?.label || 'N/A'} → ${qualityLevels[qualityIndex]?.label || 'N/A'}`)
+
+    if (hlsRef.current) {
+      if (qualityIndex === 0) {
+        hlsRef.current.currentLevel = -1 // Auto
+        console.log('📺 HLS: Configurado para Auto')
+      } else {
+        hlsRef.current.currentLevel = qualityIndex - 1 // Adjust for 'Auto' option
+        console.log(`📺 HLS: Configurado para nível ${qualityIndex - 1}`)
+      }
+    } else {
+      console.log('📺 HLS não disponível - mudança de qualidade é apenas visual')
+      // Para vídeos MP4 normais, a mudança é apenas visual por enquanto
+      // No futuro, aqui seria feita a troca da URL do vídeo para uma qualidade diferente
+    }
+
+    setSelectedQuality(qualityIndex)
+    setShowQualityMenu(false)
+  }
+
+  // Speed change handler
+  const handleSpeedChange = (speed: number) => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = speed
+    }
+    setPlaybackSpeed(speed)
+    setShowSpeedMenu(false)
+  }
+
+  // Picture-in-Picture toggle
+  const togglePictureInPicture = async () => {
+    if (!videoRef.current) return
+
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture()
+        setIsPictureInPicture(false)
+      } else {
+        await videoRef.current.requestPictureInPicture()
+        setIsPictureInPicture(true)
+      }
+    } catch (error) {
+      console.error('Picture-in-Picture error:', error)
+    }
+  }
+
+  // Chromecast handler
+  const handleChromecast = () => {
+    if (window.chrome && window.chrome.cast) {
+      console.log('🖥️ Iniciando Chromecast...')
+      // Implementation would go here
+    }
+  }
+
+  // Custom skip duration handler
+  const handleSkipDurationChange = (newDuration: number) => {
+    console.log(`⏱️ Mudando duração do pulo: ${skipDuration}s → ${newDuration}s`)
+    setSkipDuration(newDuration)
+    setShowSkipMenu(false)
   }
 
   // Keyboard shortcuts
@@ -410,19 +708,47 @@ export function VideoPlayerV2({
           break
         case 'ArrowLeft':
           e.preventDefault()
-          skipTime(-10)
+          skipTime(-skipDuration)
           break
         case 'ArrowRight':
           e.preventDefault()
-          skipTime(10)
+          skipTime(skipDuration)
+          break
+        case 'KeyJ':
+          e.preventDefault()
+          skipTime(-skipDuration)
+          break
+        case 'KeyL':
+          e.preventDefault()
+          skipTime(skipDuration)
+          break
+        case 'KeyK':
+          e.preventDefault()
+          handlePlay()
+          break
+        case 'KeyI':
+          e.preventDefault()
+          togglePictureInPicture()
           break
         case 'ArrowUp':
           e.preventDefault()
-          setVolume(prev => Math.min(1, prev + 0.1))
+          setVolume(prev => {
+            const newVolume = Math.min(1, prev + 0.1)
+            if (videoRef.current) {
+              videoRef.current.volume = newVolume
+            }
+            return newVolume
+          })
           break
         case 'ArrowDown':
           e.preventDefault()
-          setVolume(prev => Math.max(0, prev - 0.1))
+          setVolume(prev => {
+            const newVolume = Math.max(0, prev - 0.1)
+            if (videoRef.current) {
+              videoRef.current.volume = newVolume
+            }
+            return newVolume
+          })
           break
         case 'KeyM':
           e.preventDefault()
@@ -437,15 +763,13 @@ export function VideoPlayerV2({
 
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
-  }, [currentTime, duration])
+  }, [currentTime, duration, skipDuration])
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
-
-  const videoSrc = `/api/video/${episode.id}`
 
   return (
     <div 
@@ -464,9 +788,12 @@ export function VideoPlayerV2({
         onWaiting={() => setLoading(true)}
         onCanPlay={() => setLoading(false)}
         onClick={handlePlay}
+        preload="metadata"
+        crossOrigin="anonymous"
+        controls={false}
+        playsInline
+        muted={false}
       >
-        <source src={videoSrc} type="video/mp4" />
-        
         {/* Legendas Externas */}
         {subtitleTracks.map((subtitle) => (
           <track
@@ -478,7 +805,7 @@ export function VideoPlayerV2({
             default={subtitle.id === 'pt-br'}
           />
         ))}
-        
+
         Seu navegador não suporta o elemento de vídeo.
       </video>
 
@@ -490,9 +817,9 @@ export function VideoPlayerV2({
       )}
 
       {/* Version Badge */}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex gap-2">
         <span className="px-2 py-1 bg-blue-600/80 text-white text-xs rounded font-bold backdrop-blur-sm">
-          V2 HYBRID
+          V2 PRO
         </span>
       </div>
 
@@ -609,7 +936,131 @@ export function VideoPlayerV2({
               </span>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              {/* Quality Selector */}
+              {qualityLevels.length > 0 && (
+                <div className="relative">
+                  {/* <button
+                    onClick={() => setShowQualityMenu(!showQualityMenu)}
+                    className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm px-2 py-1 rounded bg-black/30 backdrop-blur-sm"
+                  >
+                    <RectangleStackIcon className="w-4 h-4" />
+                    <span>{selectedQuality === -1 || selectedQuality === 0 ? 'Auto' : qualityLevels[selectedQuality]?.label}</span>
+                  </button> */}
+
+                  {showQualityMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-32 z-50">
+                      <div className="p-2">
+                        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
+                          Qualidade
+                        </div>
+                        {qualityLevels.map((quality, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleQualityChange(index)}
+                            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                              selectedQuality === index
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                            }`}
+                          >
+                            {quality.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Speed Control */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                  className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm px-2 py-1 rounded bg-black/30 backdrop-blur-sm"
+                >
+                  <span>{playbackSpeed}x</span>
+                </button>
+
+                {showSpeedMenu && (
+                  <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-20 z-50">
+                    <div className="p-2">
+                      <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
+                        Velocidade
+                      </div>
+                      {PLAYBACK_SPEEDS.map((speed) => (
+                        <button
+                          key={speed}
+                          onClick={() => handleSpeedChange(speed)}
+                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                            playbackSpeed === speed
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                          }`}
+                        >
+                          {speed}x
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Skip Duration Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSkipMenu(!showSkipMenu)}
+                  className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm px-2 py-1 rounded bg-black/30 backdrop-blur-sm"
+                >
+                  <span>{skipDuration}s</span>
+                </button>
+
+                {showSkipMenu && (
+                  <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-20 z-50">
+                    <div className="p-2">
+                      <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
+                        Pulo
+                      </div>
+                      {[5, 10, 15, 30, 60].map((duration) => (
+                        <button
+                          key={duration}
+                          onClick={() => handleSkipDurationChange(duration)}
+                          className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                            skipDuration === duration
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                          }`}
+                        >
+                          {duration}s
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Picture-in-Picture */}
+              {document.pictureInPictureEnabled && (
+                <button
+                  onClick={togglePictureInPicture}
+                  className="text-white hover:text-blue-400 transition-colors"
+                  title="Picture-in-Picture (I)"
+                >
+                  <ComputerDesktopIcon className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Chromecast */}
+              {isCastSupported && (
+                <button
+                  onClick={handleChromecast}
+                  className="text-white hover:text-blue-400 transition-colors"
+                  title="Transmitir para TV"
+                >
+                  <TvIcon className="w-5 h-5" />
+                </button>
+              )}
+
               {/* Audio Track Selector */}
               {audioTracks.length > 1 && (
                 <div className="relative">
@@ -651,54 +1102,56 @@ export function VideoPlayerV2({
                 </div>
               )}
 
-              {/* Subtitle Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowSubtitleMenu(!showSubtitleMenu)}
-                  className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm px-2 py-1 rounded bg-black/30 backdrop-blur-sm"
-                >
-                  <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
-                  <span>CC</span>
-                </button>
-                
-                {showSubtitleMenu && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-48 z-50">
-                    <div className="p-2">
-                      <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
-                        Legendas
-                      </div>
-                      <button
-                        onClick={() => handleSubtitleChange('none')}
-                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                          selectedSubtitle === 'none'
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                        }`}
-                      >
-                        Desativado
-                      </button>
-                      {subtitleTracks.map((subtitle) => (
+              {/* Subtitle Selector - Only show if external subtitles provided */}
+              {subtitleTracks.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSubtitleMenu(!showSubtitleMenu)}
+                    className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm px-2 py-1 rounded bg-black/30 backdrop-blur-sm"
+                  >
+                    <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
+                    <span>CC</span>
+                  </button>
+
+                  {showSubtitleMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-48 z-50">
+                      <div className="p-2">
+                        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
+                          Legendas Externas
+                        </div>
                         <button
-                          key={subtitle.id}
-                          onClick={() => handleSubtitleChange(subtitle.id)}
+                          onClick={() => handleSubtitleChange('none')}
                           className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                            selectedSubtitle === subtitle.id
+                            selectedSubtitle === 'none'
                               ? 'bg-blue-600 text-white'
                               : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <span>{subtitle.label}</span>
-                            <span className="text-xs text-gray-400 uppercase">
-                              {subtitle.language}
-                            </span>
-                          </div>
+                          Usar Legendas Embutidas
                         </button>
-                      ))}
+                        {subtitleTracks.map((subtitle) => (
+                          <button
+                            key={subtitle.id}
+                            onClick={() => handleSubtitleChange(subtitle.id)}
+                            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                              selectedSubtitle === subtitle.id
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>{subtitle.label}</span>
+                              <span className="text-xs text-gray-400 uppercase">
+                                {subtitle.language}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* Settings */}
               <div className="relative">
@@ -717,10 +1170,16 @@ export function VideoPlayerV2({
                       </div>
                       <div className="text-sm text-gray-300 space-y-2">
                         <div>🎵 Trilhas de áudio: {audioTracks.length}</div>
-                        <div>💬 Legendas: {subtitleTracks.length}</div>
-                        <div>📺 Resolução: Auto</div>
+                        <div>💬 Legendas externas: {subtitleTracks.length}</div>
+                        <div>📽️ Legendas embutidas: ✅</div>
+                        <div>📺 Qualidade: {selectedQuality === -1 || selectedQuality === 0 ? 'Auto' : qualityLevels[selectedQuality]?.label || 'N/A'}</div>
+                        <div>⏱️ Velocidade: {playbackSpeed}x</div>
+                        <div>⏭️ Pulo: {skipDuration}s</div>
                         <div className="border-t border-gray-700 pt-2 mt-2">
-                          <span className="text-xs text-blue-400">VideoPlayer V2 Hybrid</span>
+                          <div className="text-xs text-blue-400">VideoPlayer V2 Pro</div>
+                          <div className="text-xs text-green-400">Streaming Otimizado</div>
+                          {document.pictureInPictureEnabled && <div className="text-xs text-purple-400">Picture-in-Picture</div>}
+                          {isCastSupported && <div className="text-xs text-orange-400">Chromecast Ready</div>}
                         </div>
                       </div>
                     </div>
