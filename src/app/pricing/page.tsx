@@ -259,7 +259,7 @@ export default function PricingPage() {
           {/* Pricing Cards - Clean & Modern */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {plans.map((plan, index) => {
-              const pricing = formatPrice(plan.price, plan.billingCycle)
+              const pricing = formatPrice(plan.price.toNumber(), plan.billingCycle)
               const isPopular = plan.popular
               
               return (

@@ -93,9 +93,9 @@ export async function GET(request: NextRequest) {
     
     // Filtro por range de anos
     if (yearFrom || yearTo) {
-      where.year = {}
-      if (yearFrom) where.year.gte = yearFrom
-      if (yearTo) where.year.lte = yearTo
+      where.year = {} as { gte?: number; lte?: number }
+      if (yearFrom) (where.year as { gte?: number; lte?: number }).gte = yearFrom
+      if (yearTo) (where.year as { gte?: number; lte?: number }).lte = yearTo
     }
     
     // Filtro por status

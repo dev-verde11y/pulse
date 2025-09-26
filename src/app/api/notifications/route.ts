@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         message: validatedData.message,
         actionUrl: validatedData.actionUrl,
         imageUrl: validatedData.imageUrl,
-        data: validatedData.data as Record<string, unknown>,
+        data: validatedData.data ? JSON.parse(JSON.stringify(validatedData.data)) : null,
         userId,
         read: false
       }))

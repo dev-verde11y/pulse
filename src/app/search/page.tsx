@@ -103,10 +103,10 @@ export default function SearchPage() {
         search: shouldShowAll ? undefined : (query.trim() || undefined),
         genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined, // API só suporta 1 gênero por vez
         rating: selectedRating || undefined,
-        status: selectedStatus as string || undefined,
-        type: selectedType as string || undefined,
-        sortBy: sortField as string,
-        sortOrder: sortOrder as string,
+        status: selectedStatus as "completed" | "ongoing" | "upcoming" | undefined,
+        type: selectedType as "tv" | "movie" | "ova" | "special" | undefined,
+        sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
+        sortOrder: sortOrder as "asc" | "desc",
         page,
         limit: 20
       }
@@ -178,10 +178,10 @@ export default function SearchPage() {
           search: shouldShowAll ? undefined : (query.trim() || undefined),
           genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined,
           rating: selectedRating || undefined,
-          status: selectedStatus as string || undefined,
-          type: selectedType as string || undefined,
-          sortBy: sortField as string,
-          sortOrder: sortOrder as string,
+          status: selectedStatus as "completed" | "ongoing" | "upcoming" | undefined,
+          type: selectedType as "tv" | "movie" | "ova" | "special" | undefined,
+          sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
+          sortOrder: sortOrder as "asc" | "desc",
           page: currentPage,
           limit: 20
         }

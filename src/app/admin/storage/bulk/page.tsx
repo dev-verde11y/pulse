@@ -14,6 +14,9 @@ interface UploadFile {
     url?: string
     key?: string
     message?: string
+    file?: {
+      url?: string
+    }
   }
   error?: string
 }

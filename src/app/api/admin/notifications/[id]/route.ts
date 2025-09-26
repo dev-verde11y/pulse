@@ -56,12 +56,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Atualizar a notificação
+    const updateData = {
+      ...validatedData,
+      data: validatedData.data ? JSON.parse(JSON.stringify(validatedData.data)) : undefined
+    }
+
     const updatedNotification = await prisma.notification.update({
       where: { id: notificationId },
-      data: {
-        ...validatedData,
-        data: validatedData.data as Record<string, unknown>
-      },
+      data: updateData,
       include: {
         user: {
           select: {

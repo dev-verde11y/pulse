@@ -166,8 +166,7 @@ export async function GET(
     }
 
     // Rate limiting básico por IP
-    const clientIP = request.ip ||
-                     request.headers.get('x-forwarded-for') ||
+    const clientIP = request.headers.get('x-forwarded-for') ||
                      request.headers.get('x-real-ip') ||
                      'unknown'
 

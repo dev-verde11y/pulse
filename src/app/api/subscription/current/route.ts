@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       status: user.subscriptionStatus.toLowerCase(), // Convert to lowercase for consistency
       currentPeriodStart: currentPeriodStart,
       currentPeriodEnd: currentPeriodEnd,
-      cancelAt: user.subscriptionStatus === 'CANCELLED' ? user.subscriptionExpiry : null,
+      cancelAt: (user.subscriptionStatus as string) === 'CANCELLED' ? user.subscriptionExpiry : null,
       canceledAt: null,
       externalId: null,
       plan: {

@@ -61,16 +61,16 @@ export async function GET(
     // 🛡️ Sanitizar lista de episódios do anime também
     const episode = {
       ...sanitizedMainEpisode,
-      season: {
-        ...sanitizedMainEpisode.season,
-        anime: {
-          ...sanitizedMainEpisode.season.anime,
-          seasons: sanitizedMainEpisode.season.anime.seasons.map(season => ({
+      season: sanitizedMainEpisode.season ? {
+        ...(sanitizedMainEpisode.season as Record<string, unknown>),
+        anime: (sanitizedMainEpisode.season as Record<string, unknown>)?.anime ? {
+          ...((sanitizedMainEpisode.season as Record<string, unknown>).anime as Record<string, unknown>),
+          seasons: (((sanitizedMainEpisode.season as Record<string, unknown>).anime as Record<string, unknown>).seasons as Array<Record<string, unknown>> || []).map((season: Record<string, unknown>) => ({
             ...season,
-            episodes: sanitizeEpisodesArray(season.episodes, request)
+            episodes: sanitizeEpisodesArray(season.episodes as Array<Record<string, unknown>>, request)
           }))
-        }
-      }
+        } : undefined
+      } : undefined
     }
 
     // Adicionar seasonNumber ao episódio para facilitar o uso no frontend

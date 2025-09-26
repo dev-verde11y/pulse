@@ -140,7 +140,7 @@ export default function WatchV2Page() {
 
   // Legendas de exemplo (desabilitadas por padrão para evitar 404s)
   // Para habilitar, descomente e configure o servidor de legendas
-  const testSubtitles: Array<{ id: string; label: string; src: string }> = []
+  const testSubtitles: Array<{ id: string; label: string; src: string; language: string; enabled: boolean }> = []
   
   // Exemplo de como configurar legendas quando disponíveis:
   // const testSubtitles = [

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Process payment (mock implementation)
     // In production, integrate with Stripe, PagarMe, etc.
     const paymentResult = await processPayment({
-      amount: plan.price,
+      amount: plan.price.toNumber(),
       currency: plan.currency,
       method: paymentMethod,
       token: paymentToken,

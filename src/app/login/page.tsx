@@ -3,12 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AuthResponse, SubscriptionInfo } from '@/types/auth'
 import '@/styles/login-animations.css'
+
+interface Plan {
+  id: string
+  name: string
+  price: number
+  description?: string
+  billingCycle?: string
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -477,22 +483,25 @@ export default function LoginPage() {
                     <div className="mt-6">
                       <h4 className="text-white font-semibold mb-3 text-sm">Planos Disponíveis:</h4>
                       <div className="space-y-2">
-                        {renewalInfo.availablePlans.slice(0, 2).map((plan: { id: string; name: string; price: number }) => (
-                          <div key={plan.id} className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
+                        {renewalInfo.availablePlans.slice(0, 2).map((plan) => {
+                          const typedPlan = plan as unknown as Plan
+                          return (
+                          <div key={typedPlan.id} className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
                             <div className="flex justify-between items-center">
                               <div>
-                                <span className="text-white font-medium text-sm">{plan.name}</span>
-                                <div className="text-xs text-gray-400">{plan.description}</div>
+                                <span className="text-white font-medium text-sm">{typedPlan.name}</span>
+                                <div className="text-xs text-gray-400">{typedPlan.description}</div>
                               </div>
                               <div className="text-right">
-                                <div className="text-white font-bold text-sm">R$ {plan.price}</div>
+                                <div className="text-white font-bold text-sm">R$ {typedPlan.price}</div>
                                 <div className="text-xs text-gray-400">
-                                  {plan.billingCycle === 'MONTHLY' ? '/mês' : '/ano'}
+                                  {typedPlan.billingCycle === 'MONTHLY' ? '/mês' : '/ano'}
                                 </div>
                               </div>
                             </div>
                           </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   )}

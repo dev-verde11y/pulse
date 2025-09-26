@@ -140,11 +140,11 @@ export default function PWATestPage() {
                 <div className="flex justify-between">
                   <span>Estado:</span>
                   <span className="text-gray-600 dark:text-gray-300">
-                    {swInfo?.state || 'N/A'}
+                    {String(swInfo?.state) || 'N/A'}
                   </span>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Scope: {swInfo?.scope || 'N/A'}
+                  Scope: {String(swInfo?.scope) || 'N/A'}
                 </div>
               </div>
             </div>
@@ -159,10 +159,10 @@ export default function PWATestPage() {
               {cacheInfo.map((cache, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <span className="font-mono text-blue-600 dark:text-blue-400">
-                    {cache.name}
+                    {String(cache.name)}
                   </span>
                   <span className="text-gray-600 dark:text-gray-300">
-                    {cache.itemCount} itens
+                    {String(cache.itemCount)} itens
                   </span>
                 </div>
               ))}
