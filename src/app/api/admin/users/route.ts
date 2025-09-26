@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
     
-    const where: any = {}
+    const where: Record<string, unknown> = {}
     
     // Filtro por papel
     if (role) {
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const orderBy: any = {}
+    const orderBy: Record<string, string> = {}
     switch (sortBy) {
       case 'email':
         orderBy.email = sortOrder

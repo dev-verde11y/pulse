@@ -10,7 +10,11 @@ interface UploadFile {
   uploadType: 'video' | 'thumbnail'
   status: 'pending' | 'uploading' | 'completed' | 'error'
   progress: number
-  result?: any
+  result?: {
+    url?: string
+    key?: string
+    message?: string
+  }
   error?: string
 }
 

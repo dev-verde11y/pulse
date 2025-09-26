@@ -21,11 +21,13 @@ const updateHeroBannerSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const heroBanner = await prisma.heroBanner.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         anime: {
           select: {
@@ -57,15 +59,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    
+
     const validatedData = updateHeroBannerSchema.parse(body);
 
     const existingBanner = await prisma.heroBanner.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingBanner) {
@@ -78,7 +81,7 @@ export async function PUT(
     const updateData = validatedData;
 
     const heroBanner = await prisma.heroBanner.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         anime: {
@@ -112,11 +115,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const existingBanner = await prisma.heroBanner.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingBanner) {
@@ -127,7 +132,7 @@ export async function DELETE(
     }
 
     await prisma.heroBanner.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'Hero banner excluído com sucesso' });

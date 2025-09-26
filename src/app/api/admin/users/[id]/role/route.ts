@@ -11,17 +11,18 @@ const updateRoleSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
-    
+
     // Validar dados de entrada
     const { role } = updateRoleSchema.parse(body)
-    
+
     // Verificar se o usuário existe
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -52,7 +53,7 @@ export async function PATCH(
 
     // Atualizar papel do usuário
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { 
         role,
         // Atualizar campos relacionados baseado no papel

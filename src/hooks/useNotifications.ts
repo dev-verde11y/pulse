@@ -13,7 +13,7 @@ export interface Notification {
   userId?: string
   actionUrl?: string
   imageUrl?: string
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 }
 
 interface UseNotificationsReturn {

@@ -32,7 +32,7 @@ export function getRequestContext(request: NextRequest) {
 /**
  * 🛡️ Remove campos sensíveis baseado no contexto
  */
-export function sanitizeEpisodeByContext(episode: any, request: NextRequest) {
+export function sanitizeEpisodeByContext(episode: Record<string, unknown>, request: NextRequest) {
   const context = getRequestContext(request)
 
   // Se é contexto admin ou interno, retorna tudo
@@ -56,7 +56,7 @@ export function sanitizeEpisodeByContext(episode: any, request: NextRequest) {
 /**
  * 🔍 Sanitiza array de episódios
  */
-export function sanitizeEpisodesArray(episodes: any[], request: NextRequest) {
+export function sanitizeEpisodesArray(episodes: Array<Record<string, unknown>>, request: NextRequest) {
   return episodes.map(episode => sanitizeEpisodeByContext(episode, request))
 }
 

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId: session.user.id
     }
 

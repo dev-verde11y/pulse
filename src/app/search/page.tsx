@@ -103,10 +103,10 @@ export default function SearchPage() {
         search: shouldShowAll ? undefined : (query.trim() || undefined),
         genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined, // API só suporta 1 gênero por vez
         rating: selectedRating || undefined,
-        status: selectedStatus as any || undefined,
-        type: selectedType as any || undefined,
-        sortBy: sortField as any,
-        sortOrder: sortOrder as any,
+        status: selectedStatus as string || undefined,
+        type: selectedType as string || undefined,
+        sortBy: sortField as string,
+        sortOrder: sortOrder as string,
         page,
         limit: 20
       }
@@ -178,10 +178,10 @@ export default function SearchPage() {
           search: shouldShowAll ? undefined : (query.trim() || undefined),
           genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined,
           rating: selectedRating || undefined,
-          status: selectedStatus as any || undefined,
-          type: selectedType as any || undefined,
-          sortBy: sortField as any,
-          sortOrder: sortOrder as any,
+          status: selectedStatus as string || undefined,
+          type: selectedType as string || undefined,
+          sortBy: sortField as string,
+          sortOrder: sortOrder as string,
           page: currentPage,
           limit: 20
         }

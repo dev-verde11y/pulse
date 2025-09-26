@@ -107,7 +107,7 @@ const pwaConfig = withPWA({
     },
     // Cache de páginas
     {
-      urlPattern: ({ request }) => request.destination === 'document',
+      urlPattern: ({ request }: { request: Request }) => request.destination === 'document',
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages-cache',

@@ -40,7 +40,7 @@ export interface SubscriptionInfo {
   gracePeriodWarning?: string
   graceDaysLeft?: number
   showRenewalModal?: boolean
-  availablePlans?: any[]
+  availablePlans?: Array<Record<string, unknown>>
 }
 
 export interface AuthResponse {

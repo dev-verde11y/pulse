@@ -29,7 +29,7 @@ export class PaymentManager {
         currency: sessionData.currency?.toUpperCase() || 'BRL',
         successUrl: sessionData.success_url,
         cancelUrl: sessionData.cancel_url,
-        stripeData: sessionData as any,
+        stripeData: sessionData as Record<string, unknown>,
         expiresAt: sessionData.expires_at ? new Date(sessionData.expires_at * 1000) : null
       }
     })
@@ -82,7 +82,7 @@ export class PaymentManager {
         stripeStatus: session.status || 'complete',
         paymentStatus: session.payment_status || 'paid',
         completedAt: new Date(),
-        stripeData: session as any
+        stripeData: session as Record<string, unknown>
       }
     })
     console.log('✅ Checkout session updated')
@@ -159,7 +159,7 @@ export class PaymentManager {
       where: { id: subscription.id },
       data: {
         externalId: stripeSubscription.id,
-        externalData: stripeSubscription as any,
+        externalData: stripeSubscription as Record<string, unknown>,
         transactionId: stripeSubscription.id
       }
     })
@@ -297,7 +297,7 @@ export class PaymentManager {
           where: { id: session.id },
           data: {
             stripeStatus: stripeSession.status || 'expired',
-            stripeData: stripeSession as any
+            stripeData: stripeSession as Record<string, unknown>
           }
         })
       } catch (error) {

@@ -12,11 +12,13 @@ const updateSubscriptionSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const subscription = await prisma.subscription.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -74,17 +76,18 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
-    
+
     // Validar dados de entrada
     const validatedData = updateSubscriptionSchema.parse(body)
-    
+
     // Verificar se a assinatura existe
     const existingSubscription = await prisma.subscription.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
     
     if (!existingSubscription) {
@@ -96,7 +99,7 @@ export async function PATCH(
     
     // Atualizar assinatura
     const updatedSubscription = await prisma.subscription.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       include: {
         user: {
@@ -140,12 +143,14 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     // Verificar se a assinatura existe
     const existingSubscription = await prisma.subscription.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -164,7 +169,7 @@ export async function DELETE(
 
     // Excluir assinatura (cascade delete vai cuidar dos payments)
     await prisma.subscription.delete({
-      where: { id: params.id }
+      where: { id }
     })
     
     return NextResponse.json({

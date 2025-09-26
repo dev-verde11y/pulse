@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId: session.user.id
     }
 
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         message: validatedData.message,
         actionUrl: validatedData.actionUrl,
         imageUrl: validatedData.imageUrl,
-        data: validatedData.data as any,
+        data: validatedData.data as Record<string, unknown>,
         userId,
         read: false
       }))

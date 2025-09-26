@@ -125,7 +125,7 @@ export const api = {
   },
 
   // Hero Banners
-  async getHeroBanners(): Promise<any[]> {
+  async getHeroBanners(): Promise<unknown[]> {
     const response = await fetch('/api/hero-banners?isActive=true&limit=10')
 
     if (!response.ok) {

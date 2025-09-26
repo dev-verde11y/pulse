@@ -6,7 +6,7 @@ import { Notification } from '@/hooks/useNotifications'
 
 interface NotificationFormProps {
   notification?: Notification
-  onSubmit: (data: any) => Promise<void>
+  onSubmit: (data: Omit<Notification, 'id' | 'timestamp' | 'time'>) => Promise<void>
   onCancel: () => void
 }
 
@@ -66,7 +66,7 @@ export function NotificationForm({ notification, onSubmit, onCancel }: Notificat
     setLoading(true)
 
     try {
-      let submitData: any = {
+      const submitData: Omit<Notification, 'id' | 'timestamp' | 'time'> = {
         type: formData.type,
         title: formData.title,
         message: formData.message

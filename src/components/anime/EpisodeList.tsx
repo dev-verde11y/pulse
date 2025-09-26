@@ -19,7 +19,7 @@ interface EpisodeListProps {
 export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: EpisodeListProps) {
   const router = useRouter()
   const { user } = useAuth()
-  const [watchHistory, setWatchHistory] = useState<any[]>([])
+  const [watchHistory, setWatchHistory] = useState<Array<{ episodeId: string; progress: number; completed: boolean }>>([])
   const [loading, setLoading] = useState(false)
   
   // Buscar temporada selecionada
@@ -43,7 +43,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
       setLoading(true)
       try {
         const history = await api.getWatchHistory(1, 100) // Buscar histórico
-        const animeHistory = history.history.filter((h: any) => h.animeId === anime.id)
+        const animeHistory = history.history.filter((h: { animeId: string }) => h.animeId === anime.id)
         setWatchHistory(animeHistory)
       } catch (error) {
         console.error('Erro ao carregar histórico:', error)

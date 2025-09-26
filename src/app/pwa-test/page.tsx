@@ -10,8 +10,8 @@ export default function PWATestPage() {
   const { isInstalled, isInstallable, installPWA } = usePWA();
   const pushManager = usePushNotifications();
 
-  const [cacheInfo, setCacheInfo] = useState<any[]>([]);
-  const [swInfo, setSwInfo] = useState<any>(null);
+  const [cacheInfo, setCacheInfo] = useState<Array<Record<string, unknown>>>([]);
+  const [swInfo, setSwInfo] = useState<Record<string, unknown> | null>(null);
   const [networkStatus, setNetworkStatus] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -211,10 +211,10 @@ export default function PWATestPage() {
               📋 Como Testar
             </h3>
             <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-              <p><strong>1. Instalação:</strong> Se aparecer o prompt, clique "Instalar"</p>
-              <p><strong>2. Offline:</strong> DevTools → Network → "Offline" → Recarregue</p>
-              <p><strong>3. Notificações:</strong> Clique "Testar Notificação" acima</p>
-              <p><strong>4. Cache:</strong> Clique "Testar Cache" para verificar se funciona</p>
+              <p><strong>1. Instalação:</strong> Se aparecer o prompt, clique &quot;Instalar&quot;</p>
+              <p><strong>2. Offline:</strong> DevTools → Network → &quot;Offline&quot; → Recarregue</p>
+              <p><strong>3. Notificações:</strong> Clique &quot;Testar Notificação&quot; acima</p>
+              <p><strong>4. Cache:</strong> Clique &quot;Testar Cache&quot; para verificar se funciona</p>
               <p><strong>5. Manifest:</strong> DevTools → Application → Manifest</p>
             </div>
           </div>

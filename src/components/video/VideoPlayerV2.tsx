@@ -33,7 +33,7 @@ interface AudioTrackAPI {
 // Global Chrome types
 declare global {
   interface Window {
-    chrome: any
+    chrome: { cast?: { isAvailable?: boolean } }
   }
 }
 

@@ -17,7 +17,7 @@ interface SmallCardCarouselProps {
 function ContinueWatchingSmallCard({ anime }: { anime: Anime }) {
   const router = useRouter()
   const { user } = useAuth()
-  const [watchHistory, setWatchHistory] = useState<any>(null)
+  const [watchHistory, setWatchHistory] = useState<{ episodeId: string; progress: number } | null>(null)
   const [loading, setLoading] = useState(false)
 
   // Carregar histórico de visualização
@@ -28,7 +28,7 @@ function ContinueWatchingSmallCard({ anime }: { anime: Anime }) {
       setLoading(true)
       try {
         const allHistory = await api.getWatchHistory(1, 50)
-        const animeHistory = allHistory.history?.filter((h: any) => h.animeId === anime.id) || []
+        const animeHistory = allHistory.history?.filter((h: { animeId: string }) => h.animeId === anime.id) || []
         
         if (animeHistory.length > 0) {
           setWatchHistory(animeHistory[0]) // Mais recente
@@ -49,7 +49,7 @@ function ContinueWatchingSmallCard({ anime }: { anime: Anime }) {
     
     // Procurar o episódio nos seasons
     for (const season of anime.seasons || []) {
-      const episode = season.episodes?.find((ep: any) => ep.id === watchHistory.episodeId)
+      const episode = season.episodes?.find((ep: { id: string }) => ep.id === watchHistory.episodeId)
       if (episode) {
         return {
           ...episode,

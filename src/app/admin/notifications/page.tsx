@@ -42,7 +42,7 @@ export default function NotificationsPage() {
     fetchAllNotifications()
   }, [])
 
-  const handleCreateNotification = async (notificationData: any) => {
+  const handleCreateNotification = async (notificationData: Omit<Notification, 'id' | 'timestamp' | 'time'>) => {
     try {
       const response = await fetch('/api/notifications', {
         method: 'POST',
@@ -64,7 +64,7 @@ export default function NotificationsPage() {
     }
   }
 
-  const handleEditNotification = async (id: number, notificationData: any) => {
+  const handleEditNotification = async (id: number, notificationData: Partial<Omit<Notification, 'id' | 'timestamp'>>) => {
     try {
       const response = await fetch(`/api/admin/notifications/${id}`, {
         method: 'PUT',

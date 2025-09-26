@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       where: { id: notificationId },
       data: {
         ...validatedData,
-        data: validatedData.data as any
+        data: validatedData.data as Record<string, unknown>
       },
       include: {
         user: {

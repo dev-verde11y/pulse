@@ -21,7 +21,7 @@ export function usePWA() {
       }
 
       // iOS Safari standalone
-      if ((window.navigator as any).standalone === true) {
+      if ((window.navigator as Navigator & { standalone?: boolean }).standalone === true) {
         return true;
       }
 

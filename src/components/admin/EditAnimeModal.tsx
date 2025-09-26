@@ -295,7 +295,7 @@ export function EditAnimeModal({ anime, isOpen, onClose, onSuccess }: EditAnimeM
                 <select
                   required
                   value={formData.status}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as string }))}
                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
                 >
                   <option value="ONGOING">Em Andamento</option>
@@ -312,7 +312,7 @@ export function EditAnimeModal({ anime, isOpen, onClose, onSuccess }: EditAnimeM
                 <select
                   required
                   value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as string }))}
                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
                 >
                   <option value="ANIME">Anime</option>

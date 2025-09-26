@@ -8,17 +8,18 @@ const cancelSubscriptionSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
-    
+
     // Validar dados de entrada
     const { cancellationReason } = cancelSubscriptionSchema.parse(body)
-    
+
     // Verificar se a assinatura existe
     const existingSubscription = await prisma.subscription.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -55,7 +56,7 @@ export async function PATCH(
     const cancelledSubscription = await prisma.$transaction(async (tx) => {
       // Atualizar assinatura
       const updatedSubscription = await tx.subscription.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: 'CANCELLED',
           cancelledAt: new Date(),

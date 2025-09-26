@@ -3,12 +3,14 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     // Verificar se a assinatura existe
     const existingSubscription = await prisma.subscription.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -60,7 +62,7 @@ export async function PATCH(
     const reactivatedSubscription = await prisma.$transaction(async (tx) => {
       // Atualizar assinatura
       const updatedSubscription = await tx.subscription.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: 'ACTIVE',
           cancelledAt: null,

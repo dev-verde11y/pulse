@@ -100,27 +100,21 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Anime-inspired Background */}
+      {/* Professional Background */}
       <div className="absolute inset-0">
         {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-indigo-950/30 to-purple-950/20"></div>
-        
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 via-transparent to-cyan-500/10 animate-pulse"></div>
-        
-        {/* Floating anime-style elements */}
-        <div className="absolute top-20 left-20 w-2 h-2 bg-blue-400 rounded-full opacity-60 animate-bounce delay-700"></div>
-        <div className="absolute top-40 right-32 w-1 h-1 bg-cyan-400 rounded-full opacity-80 animate-bounce delay-1000"></div>
-        <div className="absolute bottom-32 left-16 w-3 h-3 bg-purple-400 rounded-full opacity-40 animate-bounce delay-500"></div>
-        <div className="absolute bottom-20 right-20 w-2 h-2 bg-pink-400 rounded-full opacity-50 animate-bounce delay-300"></div>
-        
-        {/* Large animated orbs */}
-        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/5 to-cyan-600/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-gradient-to-l from-purple-600/5 to-pink-600/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        
-        {/* Geometric patterns */}
-        <div className="absolute top-1/4 right-1/3 w-32 h-32 border border-blue-500/10 rotate-45 animate-spin-slow"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-24 h-24 border border-cyan-500/10 rotate-12 animate-spin-slow-reverse"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-gray-900"></div>
+
+        {/* Subtle overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-gray-900/20 via-transparent to-gray-800/20"></div>
+
+        {/* Minimalist geometric elements */}
+        <div className="absolute top-1/4 right-1/3 w-32 h-32 border border-gray-700/20 rotate-45"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-24 h-24 border border-gray-600/15 rotate-12"></div>
+
+        {/* Large subtle orbs */}
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-gradient-to-r from-gray-700/5 to-gray-600/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-gradient-to-l from-gray-800/5 to-gray-700/5 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex">
@@ -139,50 +133,45 @@ export default function LoginPage() {
                     className="rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
                 </div>
-                <span className="text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 animate-gradient-x">
+                <span className="text-6xl font-black tracking-tight text-white">
                   PULSE
                 </span>
               </Link>
-              
+
               <div className="space-y-4">
-                <h1 className="text-5xl font-bold leading-tight">
-                  O futuro do{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 animate-gradient-x">
-                    anime streaming
+                <h1 className="text-5xl font-bold leading-tight text-white">
+                  Plataforma de{' '}
+                  <span className="text-gray-300">
+                    streaming
                   </span>
                 </h1>
-                
-                <p className="text-xl text-gray-300 leading-relaxed">
-                  Mergulhe em mundos extraordinários com a melhor qualidade e experiência imersiva do universo anime.
+
+                <p className="text-xl text-gray-400 leading-relaxed">
+                  Acesse conteúdo premium com qualidade profissional e experiência superior.
                 </p>
               </div>
             </div>
 
-            {/* Modern Features Grid */}
+            {/* Professional Features Grid */}
             <div className="grid grid-cols-2 gap-6 pt-8">
-              <div className="group bg-gradient-to-br from-blue-900/20 to-cyan-900/20 backdrop-blur-md border border-blue-500/20 rounded-2xl p-6 text-center hover:border-blue-400/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">15K+</div>
-                <div className="text-sm text-gray-300 font-semibold">Episódios de Anime</div>
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black text-white mb-2">15K+</div>
+                <div className="text-sm text-gray-300 font-semibold">Títulos Disponíveis</div>
               </div>
-              <div className="group bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-md border border-purple-500/20 rounded-2xl p-6 text-center hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">4K</div>
-                <div className="text-sm text-gray-300 font-semibold">Ultra HD</div>
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black text-white mb-2">HD+</div>
+                <div className="text-sm text-gray-300 font-semibold">Alta Qualidade</div>
               </div>
-              <div className="group bg-gradient-to-br from-green-900/20 to-emerald-900/20 backdrop-blur-md border border-green-500/20 rounded-2xl p-6 text-center hover:border-green-400/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-2">∞</div>
-                <div className="text-sm text-gray-300 font-semibold">Acesso Ilimitado</div>
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black text-white mb-2">∞</div>
+                <div className="text-sm text-gray-300 font-semibold">Acesso Completo</div>
               </div>
-              <div className="group bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md border border-orange-500/20 rounded-2xl p-6 text-center hover:border-orange-400/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-2">24/7</div>
-                <div className="text-sm text-gray-300 font-semibold">Sempre Online</div>
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black text-white mb-2">24/7</div>
+                <div className="text-sm text-gray-300 font-semibold">Disponível</div>
               </div>
-            </div>
-
-            {/* Anime Characters Silhouettes */}
-            <div className="absolute -right-20 top-0 opacity-5 pointer-events-none">
-              <div className="w-64 h-96 bg-gradient-to-b from-blue-500 to-transparent transform rotate-12"></div>
             </div>
           </div>
         </div>
@@ -202,26 +191,26 @@ export default function LoginPage() {
                     className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
                 </div>
-                <span className="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400">
+                <span className="text-4xl font-black tracking-tight text-white">
                   PULSE
                 </span>
               </Link>
-              <p className="text-sm text-gray-400 mt-2">O futuro do anime streaming</p>
+              <p className="text-sm text-gray-400 mt-2">Plataforma de streaming</p>
             </div>
 
             {/* Login Card */}
             <div className="bg-gray-900/50 backdrop-blur-2xl border border-gray-700/50 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden">
               {/* Card glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-cyan-600/5 rounded-3xl"></div>
-              
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-800/5 via-gray-700/5 to-gray-600/5 rounded-3xl"></div>
+
               <div className="relative z-10">
                 <div className="text-center mb-6 sm:mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-cyan-100 mb-2">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
                     Bem-vindo de volta!
                   </h2>
-                  <p className="text-gray-300 text-sm sm:text-base">Entre no seu mundo de aventuras épicas</p>
+                  <p className="text-gray-300 text-sm sm:text-base">Acesse sua conta</p>
                 </div>
 
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
@@ -231,7 +220,7 @@ export default function LoginPage() {
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-gray-400 group-focus-within:text-gray-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                       </svg>
                     </div>
@@ -242,7 +231,7 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       autoComplete="email"
-                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   {errors.email && (
@@ -261,7 +250,7 @@ export default function LoginPage() {
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-gray-400 group-focus-within:text-gray-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
@@ -272,7 +261,7 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Sua senha"
                       autoComplete="current-password"
-                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   {errors.password && (
@@ -290,7 +279,7 @@ export default function LoginPage() {
                     <input type="checkbox" className="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700 mr-2" />
                     Lembrar de mim
                   </label>
-                  <Link href="/forgot-password" className="text-blue-400 hover:text-blue-300 transition-colors">
+                  <Link href="/forgot-password" className="text-gray-400 hover:text-gray-300 transition-colors">
                     Esqueceu a senha?
                   </Link>
                 </div>
@@ -307,10 +296,10 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLogging}
-                  className="relative w-full bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 hover:from-blue-500 hover:via-purple-500 hover:to-cyan-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
+                  className="relative w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-gray-600/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
                 >
                   {/* Button glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-600 to-gray-700 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
                   
                   {isLogging ? (
                     <>
@@ -322,7 +311,7 @@ export default function LoginPage() {
                     </>
                   ) : (
                     <>
-                      <span className="text-base sm:text-lg font-black relative z-10">Entrar no Pulse ✨</span>
+                      <span className="text-base sm:text-lg font-black relative z-10">Entrar</span>
                     </>
                   )}
                 </button>
@@ -332,31 +321,17 @@ export default function LoginPage() {
               <div className="mt-6 sm:mt-8 text-center space-y-4">
                 <p className="text-gray-300 text-sm">
                   Não tem uma conta?{' '}
-                  <Link href="/register" className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-300 hover:to-cyan-300 font-bold transition-all duration-300 hover:underline">
-                    Cadastre-se gratuitamente
+                  <Link href="/register" className="text-gray-400 hover:text-gray-300 font-bold transition-all duration-300 hover:underline">
+                    Cadastre-se
                   </Link>
                 </p>
-                
-                {/* Social proof */}
-                <div className="flex items-center justify-center space-x-4 pt-4 border-t border-gray-700/50">
-                  <div className="flex items-center space-x-2 text-xs text-gray-400">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span>500K+ usuários ativos</span>
-                  </div>
-                  <div className="w-1 h-4 bg-gray-600"></div>
-                  <div className="flex items-center space-x-2 text-xs text-gray-400">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-500"></div>
-                    <span>Certificado SSL</span>
-                  </div>
-                </div>
               </div>
               </div>
             </div>
 
             {/* Footer */}
             <div className="text-center text-xs text-gray-500 space-y-2">
-              <p>© {new Date().getFullYear()} Pulse Streaming. Todos os direitos reservados.</p>
-              <p className="text-gray-600">Feito com ❤️ para otakus do mundo todo</p>
+              <p>© {new Date().getFullYear()} Pulse. Todos os direitos reservados.</p>
             </div>
           </div>
         </div>
@@ -417,7 +392,7 @@ export default function LoginPage() {
                 <>
                   {/* Mensagem de Contato */}
                   <div className="text-center mb-6">
-                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-4">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center mb-4">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -427,26 +402,9 @@ export default function LoginPage() {
                     </h3>
                     <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
                       <p className="text-gray-300 text-sm mb-3">
-                        Para renovar sua assinatura, entre em contato conosco:
+                        Para renovar sua assinatura, entre em contato conosco através dos canais oficiais.
                       </p>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center space-x-2">
-                          <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-cyan-400 font-semibold text-sm">suporte@pulse.com</span>
-                        </div>
-                        <div className="flex items-center justify-center space-x-2">
-                          <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <span className="text-green-400 font-semibold text-sm">(11) 99999-9999</span>
-                        </div>
-                      </div>
                     </div>
-                    <p className="text-gray-400 text-xs">
-                      Nossa equipe responderá em até 24 horas úteis
-                    </p>
                   </div>
                 </>
               )}
@@ -487,7 +445,7 @@ export default function LoginPage() {
                       onClick={() => {
                         setShowContactMessage(true)
                       }}
-                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
+                      className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
                     >
                       Renovar Assinatura
                     </button>
@@ -519,7 +477,7 @@ export default function LoginPage() {
                     <div className="mt-6">
                       <h4 className="text-white font-semibold mb-3 text-sm">Planos Disponíveis:</h4>
                       <div className="space-y-2">
-                        {renewalInfo.availablePlans.slice(0, 2).map((plan: any) => (
+                        {renewalInfo.availablePlans.slice(0, 2).map((plan: { id: string; name: string; price: number }) => (
                           <div key={plan.id} className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
                             <div className="flex justify-between items-center">
                               <div>
@@ -546,7 +504,7 @@ export default function LoginPage() {
                       setShowRenewalModal(false)
                       logout()
                     }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
+                    className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
                   >
                     Fechar
                   </button>

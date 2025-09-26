@@ -77,10 +77,10 @@ export default function ProfilePage() {
       setSuccessMessage('Perfil atualizado com sucesso!')
       
       setTimeout(() => setSuccessMessage(''), 3000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar perfil:', error)
       setProfileErrors({ 
-        general: error.message || 'Erro ao atualizar perfil' 
+        general: error instanceof Error ? error.message : 'Erro ao atualizar perfil' 
       })
     } finally {
       setSaving(false)
@@ -124,10 +124,10 @@ export default function ProfilePage() {
       setSuccessMessage('Senha alterada com sucesso!')
       
       setTimeout(() => setSuccessMessage(''), 3000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao alterar senha:', error)
       setPasswordErrors({ 
-        general: error.message || 'Erro ao alterar senha' 
+        general: error instanceof Error ? error.message : 'Erro ao alterar senha' 
       })
     } finally {
       setSaving(false)

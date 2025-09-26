@@ -17,11 +17,13 @@ const updateUserSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -73,17 +75,18 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
-    
+
     // Validar dados de entrada
     const validatedData = updateUserSchema.parse(body)
-    
+
     // Verificar se o usuário existe
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
     
     if (!existingUser) {
@@ -95,7 +98,7 @@ export async function PATCH(
     
     // Atualizar usuário
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       select: {
         id: true,
@@ -146,12 +149,14 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     // Verificar se o usuário existe
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -189,7 +194,7 @@ export async function DELETE(
     
     // Excluir usuário (cascade delete vai cuidar das relações)
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id }
     })
     
     return NextResponse.json({

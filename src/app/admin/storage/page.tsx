@@ -5,7 +5,12 @@ import { useState } from 'react'
 interface UploadResult {
   success: boolean
   message?: string
-  data?: any
+  data?: {
+    url?: string
+    key?: string
+    fileName?: string
+    fileSize?: number
+  }
   error?: string
 }
 
@@ -312,7 +317,7 @@ export default function StoragePage() {
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-gray-400">type:</span>
-              <span className="text-blue-400">"video" ou "thumbnail"</span>
+              <span className="text-blue-400">&quot;video&quot; ou &quot;thumbnail&quot;</span>
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-gray-400">animeId:</span>

@@ -15,6 +15,22 @@ interface DashboardStats {
   monthlyGrowth: number
 }
 
+interface RecentSubscription {
+  planName: string
+  status: string
+  startDate: string
+  endDate: string
+  amount: number
+}
+
+interface RecentPayment {
+  userName: string
+  amount: number
+  status: string
+  paymentMethod: string
+  date: string
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     animes: 0,
@@ -87,7 +103,7 @@ export default function AdminDashboard() {
 
       // Update recent subscriptions data
       if (financialData?.recentSubscriptions) {
-        setSubscriptions(financialData.recentSubscriptions.slice(0, 4).map((sub: any, index: number) => ({
+        setSubscriptions(financialData.recentSubscriptions.slice(0, 4).map((sub: RecentSubscription, index: number) => ({
           id: index + 1,
           user: sub.planName,
           plan: sub.planName,
@@ -100,7 +116,7 @@ export default function AdminDashboard() {
 
       // Update recent payments data with real payment data
       if (financialData?.recentPayments) {
-        setPayments(financialData.recentPayments.slice(0, 4).map((payment: any, index: number) => ({
+        setPayments(financialData.recentPayments.slice(0, 4).map((payment: RecentPayment, index: number) => ({
           id: index + 1,
           user: payment.userName,
           amount: payment.amount,

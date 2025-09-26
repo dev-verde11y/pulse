@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { Plan, PlanType } from "@prisma/client"
 
 
-function formatPrice(price: any, billingCycle: any) {
+function formatPrice(price: string | number, billingCycle: string) {
   const numPrice = typeof price === 'string' ? parseFloat(price) : Number(price)
   const formatted = `R$ ${numPrice.toFixed(2).replace('.', ',')}`
   

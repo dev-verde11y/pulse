@@ -17,7 +17,7 @@ interface AnimeDetailBannerProps {
 export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   const router = useRouter()
   const { user } = useAuth()
-  const [watchHistory, setWatchHistory] = useState<any>(null)
+  const [watchHistory, setWatchHistory] = useState<{ episodeId: string; progress: number } | null>(null)
   const [loading, setLoading] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
@@ -40,7 +40,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
         console.log('All History Debug:', {
           totalRecords: allHistory.history?.length,
           currentAnimeId: anime.id,
-          allRecords: allHistory.history?.map((h: any) => ({
+          allRecords: allHistory.history?.map((h: { id: string; animeId: string; episodeId: string; progress: number; completed: boolean }) => ({
             id: h.id,
             animeId: h.animeId,
             episodeId: h.episodeId,
@@ -49,7 +49,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
           }))
         })
         
-        const animeHistory = allHistory.history?.filter((h: any) => h.animeId === anime.id) || []
+        const animeHistory = allHistory.history?.filter((h: { animeId: string }) => h.animeId === anime.id) || []
         console.log('Filtered History:', animeHistory)
         
         if (animeHistory.length === 0) {
@@ -168,8 +168,8 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     
     // Organizar todos os episódios por temporada e número
     const allEpisodes: Episode[] = []
-    anime.seasons?.forEach((season: any) => {
-      season.episodes?.forEach((ep: any) => {
+    anime.seasons?.forEach((season: { episodes?: Array<{ id: string }> }) => {
+      season.episodes?.forEach((ep: { id: string }) => {
         allEpisodes.push({ ...ep, seasonNumber: season.seasonNumber })
       })
     })

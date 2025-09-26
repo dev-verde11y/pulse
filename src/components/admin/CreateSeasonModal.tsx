@@ -338,7 +338,7 @@ export function CreateSeasonModal({ isOpen, onClose, onSuccess }: CreateSeasonMo
               </h4>
               <ul className="text-sm text-blue-300 space-y-1">
                 <li>• O número da temporada deve ser único para cada anime</li>
-                <li>• Use títulos descritivos como "Segunda Temporada", "Final Season", etc.</li>
+                <li>• Use títulos descritivos como &quot;Segunda Temporada&quot;, &quot;Final Season&quot;, etc.</li>
                 <li>• Banner deve ser uma imagem widescreen (16:9 recomendado)</li>
                 <li>• O caminho R2 ajuda na organização dos arquivos de vídeo</li>
                 <li>• Deixe a data de término vazia para temporadas em andamento</li>

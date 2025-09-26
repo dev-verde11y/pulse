@@ -40,8 +40,8 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   const swiperRef = useRef<SwiperRef | null>(null)
   const { user } = useAuth()
   const router = useRouter()
-  const [watchHistoryMap, setWatchHistoryMap] = useState<Record<string, any>>({})
-  const [heroBanners, setHeroBanners] = useState<any[]>([])
+  const [watchHistoryMap, setWatchHistoryMap] = useState<Record<string, Array<{ animeId: string }>>>({})
+  const [heroBanners, setHeroBanners] = useState<Array<Record<string, unknown>>>([])
   const [bannersLoading, setBannersLoading] = useState(true)
   const [imagesLoaded, setImagesLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -125,10 +125,10 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
       setLoading(true)
       try {
         const allHistory = await api.getWatchHistory(1, 100)
-        const historyMap: Record<string, any> = {}
+        const historyMap: Record<string, Array<{ animeId: string }>> = {}
         
         // Mapear histórico por anime
-        allHistory.history?.forEach((h: any) => {
+        allHistory.history?.forEach((h: { animeId: string }) => {
           if (!historyMap[h.animeId]) {
             historyMap[h.animeId] = []
           }
@@ -204,7 +204,7 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   }
 
   // Determinar estado do botão e próximo episódio
-  const getButtonState = (content: any) => {
+  const getButtonState = (content: { anime?: unknown; animeId?: string }) => {
     // Se o conteúdo tem anime associado, usar lógica de histórico
     if (!content.anime && content.animeId) {
       return {
@@ -252,8 +252,8 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
     
     // Organizar todos os episódios por temporada e número
     const allEpisodes: Episode[] = []
-    anime.seasons?.forEach((season: any) => {
-      season.episodes?.forEach((ep: any) => {
+    anime.seasons?.forEach((season: { seasonNumber: number; episodes?: Array<unknown> }) => {
+      season.episodes?.forEach((ep: unknown) => {
         allEpisodes.push({ ...ep, seasonNumber: season.seasonNumber })
       })
     })
