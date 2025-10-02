@@ -5,11 +5,12 @@ interface AnimeFilters {
   limit?: number
   genre?: string
   year?: number
-  status?: 'ongoing' | 'completed' | 'upcoming'
-  type?: 'tv' | 'movie' | 'ova' | 'special'
+  status?: 'FINISHED' | 'ONGOING' | 'UPCOMING' | 'CANCELLED'
+  type?: 'ANIME' | 'FILME' | 'SERIE'
   search?: string
   sortBy?: 'title' | 'year' | 'rating' | 'createdAt'
   sortOrder?: 'asc' | 'desc'
+  rating?: string
 }
 
 interface PaginationInfo {
@@ -28,20 +29,47 @@ interface AnimeResponse {
 export const api = {
   async getAnimes(filters: AnimeFilters = {}): Promise<AnimeResponse> {
     const params = new URLSearchParams()
-    
+
+    // Filtrar valores undefined, null e strings vazias
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+      if (value !== undefined && value !== null && value !== '') {
         params.append(key, value.toString())
       }
     })
 
-    const response = await fetch(`/api/animes?${params}`)
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch animes')
+    const url = `/api/animes?${params.toString()}`
+    console.log('Fetching animes with filters:', filters)
+    console.log('URL:', url)
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      console.log('Response status:', response.status, response.statusText)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error Response (raw):', errorText)
+
+        let errorData = {}
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          // Não é JSON
+        }
+
+        console.error('API Error Response:', { status: response.status, statusText: response.statusText, errorData })
+        throw new Error(`Failed to fetch animes: ${response.status} ${response.statusText}`)
+      }
+
+      return response.json()
+    } catch (error) {
+      console.error('Fetch error in getAnimes:', error)
+      throw error
     }
-    
-    return response.json()
   },
 
   async getAnime(id: string) {

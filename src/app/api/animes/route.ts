@@ -53,7 +53,22 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams)
-    
+
+    console.log('API /animes - Received params:', params)
+
+    const validationResult = animesQuerySchema.safeParse(params)
+
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error)
+      return NextResponse.json(
+        {
+          error: 'Invalid query parameters',
+          details: validationResult.error.errors
+        },
+        { status: 400 }
+      )
+    }
+
     const {
       page,
       limit,
@@ -68,7 +83,7 @@ export async function GET(request: NextRequest) {
       search,
       sortBy,
       sortOrder
-    } = animesQuerySchema.parse(params)
+    } = validationResult.data
 
     const skip = (page - 1) * limit
     
@@ -155,6 +170,8 @@ export async function GET(request: NextRequest) {
         break
     }
 
+    console.log('Prisma query params:', { where, skip, take: limit, orderBy })
+
     const [animes, total] = await Promise.all([
       prisma.anime.findMany({
         where,
@@ -173,6 +190,8 @@ export async function GET(request: NextRequest) {
       prisma.anime.count({ where })
     ])
 
+    console.log('Query successful. Found:', total, 'animes')
+
     const totalPages = Math.ceil(total / limit)
 
     return NextResponse.json({
@@ -187,8 +206,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching animes:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

@@ -103,8 +103,8 @@ function SearchPageContent() {
         search: shouldShowAll ? undefined : (query.trim() || undefined),
         genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined, // API só suporta 1 gênero por vez
         rating: selectedRating || undefined,
-        status: selectedStatus as "completed" | "ongoing" | "upcoming" | undefined,
-        type: selectedType as "tv" | "movie" | "ova" | "special" | undefined,
+        status: selectedStatus as "FINISHED" | "ONGOING" | "UPCOMING" | "CANCELLED" | undefined,
+        type: selectedType as "ANIME" | "FILME" | "SERIE" | undefined,
         sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
         sortOrder: sortOrder as "asc" | "desc",
         page,
@@ -165,27 +165,27 @@ function SearchPageContent() {
       }
 
       setLoading(true)
-      
-      try {
-        const [sortField, sortOrder] = sortBy.includes('-desc') 
-          ? [sortBy.replace('-desc', ''), 'desc'] 
-          : sortBy.includes('-asc')
-          ? [sortBy.replace('-asc', ''), 'asc']
-          : [sortBy, 'asc']
 
-        const filters = {
+      const [sortField, sortOrder] = sortBy.includes('-desc')
+        ? [sortBy.replace('-desc', ''), 'desc']
+        : sortBy.includes('-asc')
+        ? [sortBy.replace('-asc', ''), 'asc']
+        : [sortBy, 'asc']
+
+      const filters = {
           // Se for *, não enviar parâmetro de busca para retornar todos
           search: shouldShowAll ? undefined : (query.trim() || undefined),
           genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined,
           rating: selectedRating || undefined,
-          status: selectedStatus as "completed" | "ongoing" | "upcoming" | undefined,
-          type: selectedType as "tv" | "movie" | "ova" | "special" | undefined,
+          status: selectedStatus as "FINISHED" | "ONGOING" | "UPCOMING" | "CANCELLED" | undefined,
+          type: selectedType as "ANIME" | "FILME" | "SERIE" | undefined,
           sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
           sortOrder: sortOrder as "asc" | "desc",
           page: currentPage,
           limit: 20
         }
 
+      try {
         const response = await api.getAnimes(filters)
         
         // Filter on frontend if needed
@@ -212,6 +212,14 @@ function SearchPageContent() {
         setTotalPages(response.pagination.totalPages)
       } catch (error) {
         console.error('Search error:', error)
+        console.error('Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          filters,
+          query,
+          selectedGenres,
+          selectedStatus,
+          selectedType
+        })
         setAnimes([])
         setTotalResults(0)
       } finally {
