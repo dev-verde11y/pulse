@@ -5,6 +5,15 @@ import { PlanType } from '@prisma/client'
 import { getPlanByPriceId, LEGACY_PRICE_MAPPING } from './plan-config'
 import Stripe from 'stripe'
 
+type StripeSubscriptionExtended = Stripe.Subscription & {
+  current_period_start?: number
+  current_period_end?: number
+}
+
+type StripeInvoiceExtended = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription
+}
+
 export class PaymentManager {
   /**
    * Create checkout session record in database
@@ -29,7 +38,7 @@ export class PaymentManager {
         currency: sessionData.currency?.toUpperCase() || 'BRL',
         successUrl: sessionData.success_url,
         cancelUrl: sessionData.cancel_url,
-        stripeData: sessionData as Record<string, unknown>,
+        stripeData: JSON.parse(JSON.stringify(sessionData)),
         expiresAt: sessionData.expires_at ? new Date(sessionData.expires_at * 1000) : null
       }
     })
@@ -82,7 +91,7 @@ export class PaymentManager {
         stripeStatus: session.status || 'complete',
         paymentStatus: session.payment_status || 'paid',
         completedAt: new Date(),
-        stripeData: session as Record<string, unknown>
+        stripeData: JSON.parse(JSON.stringify(session))
       }
     })
     console.log('✅ Checkout session updated')
@@ -90,7 +99,7 @@ export class PaymentManager {
     // Handle subscription creation
     if (session.mode === 'subscription' && session.subscription) {
       console.log('🚀 Processing subscription creation...')
-      const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription as string)
+      const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription as string) as unknown as StripeSubscriptionExtended
       console.log('📋 Stripe subscription details:', {
         id: stripeSubscription.id,
         status: stripeSubscription.status,
@@ -98,7 +107,7 @@ export class PaymentManager {
         current_period_start: stripeSubscription.current_period_start,
         current_period_end: stripeSubscription.current_period_end
       })
-      
+
       await this.processSubscriptionFromCheckout(stripeSubscription, dbSession.userId, dbSession.id)
     } else {
       console.log('ℹ️ Not a subscription or no subscription ID found')
@@ -159,7 +168,7 @@ export class PaymentManager {
       where: { id: subscription.id },
       data: {
         externalId: stripeSubscription.id,
-        externalData: stripeSubscription as Record<string, unknown>,
+        externalData: JSON.parse(JSON.stringify(stripeSubscription)),
         transactionId: stripeSubscription.id
       }
     })
@@ -214,7 +223,7 @@ export class PaymentManager {
   /**
    * Handle payment succeeded (renewals)
    */
-  static async handlePaymentSucceeded(invoice: Stripe.Invoice) {
+  static async handlePaymentSucceeded(invoice: StripeInvoiceExtended) {
     const subscriptionId = invoice.subscription as string | null
     
     if (!subscriptionId) return
@@ -249,7 +258,7 @@ export class PaymentManager {
   /**
    * Handle payment failed
    */
-  static async handlePaymentFailed(invoice: Stripe.Invoice) {
+  static async handlePaymentFailed(invoice: StripeInvoiceExtended) {
     const subscriptionId = invoice.subscription as string | null
     
     if (!subscriptionId) return
@@ -297,7 +306,7 @@ export class PaymentManager {
           where: { id: session.id },
           data: {
             stripeStatus: stripeSession.status || 'expired',
-            stripeData: stripeSession as Record<string, unknown>
+            stripeData: JSON.parse(JSON.stringify(stripeSession))
           }
         })
       } catch (error) {

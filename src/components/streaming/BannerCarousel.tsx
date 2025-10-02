@@ -102,7 +102,7 @@ export function BannerCarousel({ title, animes }: BannerCarouselProps) {
                 <span className="text-lg font-semibold">{currentAnime.year}</span>
                 <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                 <span className="text-lg">
-                  {currentAnime.episodes > 1 ? `${currentAnime.episodes} episódios` : 'Filme'}
+                  {currentAnime.totalEpisodes && currentAnime.totalEpisodes > 1 ? `${currentAnime.totalEpisodes} episódios` : 'Filme'}
                 </span>
               </div>
             </div>

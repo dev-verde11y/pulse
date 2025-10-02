@@ -8,21 +8,41 @@ interface CreateAnimeModalProps {
   onSuccess: () => void
 }
 
+type FormData = {
+  title: string
+  description: string
+  year: number
+  status: 'FINISHED' | 'ONGOING' | 'UPCOMING' | 'CANCELLED'
+  type: 'ANIME' | 'FILME' | 'SERIE'
+  rating: string
+  genres: string[]
+  slug: string
+  totalEpisodes: string
+  isSubbed: boolean
+  isDubbed: boolean
+  tags: string[]
+  director: string
+  studio: string
+  posterUrl: string
+  bannerUrl: string
+  logoUrl: string
+}
+
 export function CreateAnimeModal({ isOpen, onClose, onSuccess }: CreateAnimeModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
     year: new Date().getFullYear(),
-    status: 'ONGOING' as const,
-    type: 'ANIME' as const,
+    status: 'ONGOING',
+    type: 'ANIME',
     rating: '',
-    genres: [] as string[],
+    genres: [],
     slug: '',
     totalEpisodes: '',
     isSubbed: true,
     isDubbed: false,
-    tags: [] as string[],
+    tags: [],
     director: '',
     studio: '',
     posterUrl: '',
@@ -246,7 +266,7 @@ export function CreateAnimeModal({ isOpen, onClose, onSuccess }: CreateAnimeModa
                 <select
                   required
                   value={formData.status}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'FINISHED' | 'ONGOING' | 'UPCOMING' | 'CANCELLED' }))}
                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
                 >
                   <option value="ONGOING">Em Andamento</option>
@@ -263,7 +283,7 @@ export function CreateAnimeModal({ isOpen, onClose, onSuccess }: CreateAnimeModa
                 <select
                   required
                   value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'ANIME' | 'FILME' | 'SERIE' }))}
                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
                 >
                   <option value="ANIME">Anime</option>

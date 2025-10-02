@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { mockAnimes } from '@/data/mockData'
-import type { Anime } from '@/types/anime'
+import { mockAnimes, type Anime } from '@/data/mockData'
 
 interface SearchBarProps {
   className?: string
@@ -23,7 +22,7 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
     if (query.length > 1) {
       const filteredResults = mockAnimes.filter(anime =>
         anime.title.toLowerCase().includes(query.toLowerCase()) ||
-        anime.genres?.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
+        anime.genre?.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
         anime.description.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 6)
       
@@ -172,19 +171,19 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
                   index === selectedIndex ? 'bg-gray-700' : ''
                 }`}
               >
-                <div 
+                <div
                   className="w-12 h-16 bg-gray-700 rounded-md flex-shrink-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${anime.posterUrl || anime.thumbnail || '/images/anime-placeholder.svg'})` }}
+                  style={{ backgroundImage: `url(${anime.thumbnail || '/images/anime-placeholder.svg'})` }}
                 />
                 <div className="ml-3 flex-grow min-w-0">
                   <div className="text-sm font-medium text-white truncate">
                     {highlightText(anime.title, query)}
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
-                    {anime.year} • {(anime.totalEpisodes || 1) > 1 ? `${anime.totalEpisodes} eps` : 'Filme'}
+                    {anime.year} • {(anime.episodes || 1) > 1 ? `${anime.episodes} eps` : 'Filme'}
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {anime.genres?.slice(0, 3).map((g, i) => (
+                    {anime.genre?.slice(0, 3).map((g, i) => (
                       <span key={i} className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
                         {g}
                       </span>

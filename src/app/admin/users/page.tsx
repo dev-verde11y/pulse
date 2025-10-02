@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 interface User {
   id: string
@@ -418,12 +419,13 @@ export default function UsersPage() {
                   <tr key={user.id} className={`border-t border-gray-700/50 hover:bg-gray-800/30 transition-colors ${index % 2 === 0 ? 'bg-gray-800/20' : ''}`}>
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                        <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden relative">
                           {user.avatar ? (
-                            <img 
-                              src={user.avatar} 
-                              alt={user.name || user.email} 
-                              className="w-full h-full object-cover" 
+                            <Image
+                              src={user.avatar}
+                              alt={user.name || user.email}
+                              fill
+                              className="object-cover"
                             />
                           ) : (
                             <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

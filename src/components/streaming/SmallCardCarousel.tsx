@@ -17,7 +17,7 @@ interface SmallCardCarouselProps {
 function ContinueWatchingSmallCard({ anime }: { anime: Anime }) {
   const router = useRouter()
   const { user } = useAuth()
-  const [watchHistory, setWatchHistory] = useState<{ episodeId: string; progress: number } | null>(null)
+  const [watchHistory, setWatchHistory] = useState<{ episodeId: string; progress: number; completed?: boolean } | null>(null)
   const [loading, setLoading] = useState(false)
 
   // Carregar histórico de visualização

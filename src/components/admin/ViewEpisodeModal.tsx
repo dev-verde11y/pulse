@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 interface Episode {
   id: string
   episodeNumber: number
@@ -98,18 +100,19 @@ export function ViewEpisodeModal({ episode, isOpen, onClose }: ViewEpisodeModalP
             <div className="bg-gradient-to-br from-blue-600/10 via-blue-700/5 to-blue-800/5 border border-blue-500/20 rounded-xl p-6">
               <div className="flex items-start space-x-6">
                 {/* Thumbnail */}
-                <div className="w-48 h-28 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-                  {episode.thumbnailUrl || episode.thumbnail ? (
-                    <img 
-                      src={episode.thumbnailUrl || episode.thumbnail} 
+                <div className="w-48 h-28 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 relative">
+                  {(episode.thumbnailUrl || episode.thumbnail) ? (
+                    <Image
+                      src={(episode.thumbnailUrl || episode.thumbnail)!}
                       alt={episode.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-700">
                       <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
+                        </svg>
                     </div>
                   )}
                 </div>
@@ -237,12 +240,13 @@ export function ViewEpisodeModal({ episode, isOpen, onClose }: ViewEpisodeModalP
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-20 bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                    {episode.season.anime.posterUrl || episode.season.anime.thumbnail ? (
-                      <img 
-                        src={episode.season.anime.posterUrl || episode.season.anime.thumbnail} 
+                  <div className="w-16 h-20 bg-gray-700 rounded overflow-hidden flex-shrink-0 relative">
+                    {(episode.season.anime.posterUrl || episode.season.anime.thumbnail) ? (
+                      <Image
+                        src={(episode.season.anime.posterUrl || episode.season.anime.thumbnail)!}
                         alt={episode.season.anime.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-700">

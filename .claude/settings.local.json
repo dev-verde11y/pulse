@@ -15,7 +15,15 @@
       "Read(/E:\\www\\pulse\\src\\contexts/**)",
       "Read(/E:\\www\\pulse\\prisma/**)",
       "Read(/E:\\www\\pulse\\src\\components\\anime/**)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(awk:*)",
+      "Bash(for file in \"src/app/admin/seasons/page.tsx\" \"src/app/admin/users/page.tsx\")",
+      "Bash(do)",
+      "Bash(if ! grep -q \"import Image from ''next/image''\" \"c:/www/pulse/$file\")",
+      "Bash(then)",
+      "Bash(echo \"Adding Image import to $file\")",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

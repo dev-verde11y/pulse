@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 interface Season {
   id: string
   animeId: string
@@ -98,12 +100,13 @@ export function ViewSeasonModal({ season, isOpen, onClose }: ViewSeasonModalProp
             <div className="bg-gradient-to-br from-purple-600/10 via-purple-700/5 to-purple-800/5 border border-purple-500/20 rounded-xl p-6">
               <div className="flex items-start space-x-6">
                 {/* Season Banner or Anime Poster */}
-                <div className="w-48 h-28 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-                  {season.bannerUrl || season.anime.posterUrl || season.anime.thumbnail ? (
-                    <img 
-                      src={season.bannerUrl || season.anime.posterUrl || season.anime.thumbnail} 
+                <div className="w-48 h-28 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 relative">
+                  {(season.bannerUrl || season.anime.posterUrl || season.anime.thumbnail) ? (
+                    <Image
+                      src={(season.bannerUrl || season.anime.posterUrl || season.anime.thumbnail)!}
                       alt={season.title || `Temporada ${season.seasonNumber}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-700">
@@ -216,12 +219,13 @@ export function ViewSeasonModal({ season, isOpen, onClose }: ViewSeasonModalProp
               </h4>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-20 bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                    {season.anime.posterUrl || season.anime.thumbnail ? (
-                      <img 
-                        src={season.anime.posterUrl || season.anime.thumbnail} 
+                  <div className="w-16 h-20 bg-gray-700 rounded overflow-hidden flex-shrink-0 relative">
+                    {(season.anime.posterUrl || season.anime.thumbnail) ? (
+                      <Image
+                        src={(season.anime.posterUrl || season.anime.thumbnail)!}
                         alt={season.anime.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-700">

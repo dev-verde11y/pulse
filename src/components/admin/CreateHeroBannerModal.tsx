@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface CreateHeroBannerModalProps {
   isOpen: boolean
@@ -269,21 +270,12 @@ export function CreateHeroBannerModal({ isOpen, onClose, onSuccess }: CreateHero
               {formData.backgroundImage && (
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-300 mb-2">Preview da Imagem</p>
-                  <div className="w-full max-w-md h-40 bg-gray-700 rounded-lg overflow-hidden">
-                    <img 
-                      src={formData.backgroundImage} 
+                  <div className="w-full max-w-md h-40 bg-gray-700 rounded-lg overflow-hidden relative">
+                    <Image
+                      src={formData.backgroundImage}
                       alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                        e.currentTarget.parentElement!.innerHTML = `
-                          <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-400">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </div>
-                        `
-                      }}
+                      fill
+                      className="object-cover"
                     />
                   </div>
                 </div>
@@ -490,12 +482,13 @@ export function CreateHeroBannerModal({ isOpen, onClose, onSuccess }: CreateHero
               <div className="bg-gradient-to-br from-orange-600/10 via-orange-700/5 to-orange-800/5 border border-orange-500/20 rounded-xl p-4">
                 <h4 className="text-sm font-medium text-orange-400 mb-3">Anime Selecionado</h4>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-16 bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                    {selectedAnime.posterUrl || selectedAnime.thumbnail ? (
-                      <img 
-                        src={selectedAnime.posterUrl || selectedAnime.thumbnail} 
+                  <div className="w-12 h-16 bg-gray-700 rounded overflow-hidden flex-shrink-0 relative">
+                    {(selectedAnime.posterUrl || selectedAnime.thumbnail) ? (
+                      <Image
+                        src={(selectedAnime.posterUrl || selectedAnime.thumbnail)!}
                         alt={selectedAnime.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-700">

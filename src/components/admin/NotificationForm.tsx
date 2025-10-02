@@ -31,9 +31,21 @@ const planTypes = [
   { value: 'MEGA_FAN_ANNUAL', label: 'Mega Fan Anual' }
 ]
 
+type FormData = {
+  type: 'NEW_EPISODE' | 'NEW_SEASON' | 'RECOMMENDATION' | 'SYSTEM' | 'WATCH_REMINDER'
+  title: string
+  message: string
+  actionUrl: string
+  imageUrl: string
+  targetType: string
+  specificUserIds: string
+  targetPlans: string[]
+  data: string
+}
+
 export function NotificationForm({ notification, onSubmit, onCancel }: NotificationFormProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     type: 'SYSTEM',
     title: '',
     message: '',
@@ -41,7 +53,7 @@ export function NotificationForm({ notification, onSubmit, onCancel }: Notificat
     imageUrl: '',
     targetType: 'all',
     specificUserIds: '',
-    targetPlans: [] as string[],
+    targetPlans: [],
     data: '{}'
   })
 
@@ -66,10 +78,11 @@ export function NotificationForm({ notification, onSubmit, onCancel }: Notificat
     setLoading(true)
 
     try {
-      const submitData: Omit<Notification, 'id' | 'timestamp' | 'time'> = {
+      const submitData: Record<string, unknown> = {
         type: formData.type,
         title: formData.title,
-        message: formData.message
+        message: formData.message,
+        read: false
       }
 
       if (formData.actionUrl) submitData.actionUrl = formData.actionUrl
@@ -110,7 +123,7 @@ export function NotificationForm({ notification, onSubmit, onCancel }: Notificat
         }
       }
 
-      await onSubmit(submitData)
+      await onSubmit(submitData as Omit<Notification, 'id' | 'timestamp' | 'time'>)
     } catch (error) {
       console.error('Erro ao salvar:', error)
       alert('Erro ao salvar notificação')
@@ -137,7 +150,7 @@ export function NotificationForm({ notification, onSubmit, onCancel }: Notificat
         </label>
         <select
           value={formData.type}
-          onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'NEW_EPISODE' | 'NEW_SEASON' | 'RECOMMENDATION' | 'SYSTEM' | 'WATCH_REMINDER' }))}
           className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           required
         >

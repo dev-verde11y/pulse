@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { CreateEpisodeModal } from '@/components/admin/CreateEpisodeModal'
 import { ViewEpisodeModal } from '@/components/admin/ViewEpisodeModal'
 import { EditEpisodeModal } from '@/components/admin/EditEpisodeModal'
@@ -340,12 +341,13 @@ export default function EpisodesPage() {
                   <tr key={episode.id} className="hover:bg-gray-800/30 transition-colors">
                     <td className="px-4 py-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-8 bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                          {episode.thumbnailUrl || episode.thumbnail ? (
-                            <img 
-                              src={episode.thumbnailUrl || episode.thumbnail} 
+                        <div className="w-12 h-8 bg-gray-700 rounded overflow-hidden flex-shrink-0 relative">
+                          {(episode.thumbnailUrl || episode.thumbnail) ? (
+                            <Image
+                              src={(episode.thumbnailUrl || episode.thumbnail)!}
                               alt={episode.title}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gray-700">

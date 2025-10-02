@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -8,7 +8,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { MediumAnimeCard } from '@/components/streaming/AnimeCards'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
-import { 
+import {
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
@@ -52,7 +52,7 @@ const SORT_OPTIONS = [
   { value: 'rating', label: 'Classificação' }
 ]
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -615,5 +615,13 @@ export default function SearchPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <SearchPageContent />
+    </Suspense>
   )
 }

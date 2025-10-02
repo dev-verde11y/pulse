@@ -9,6 +9,8 @@ export interface Anime {
   rating: string // "Livre", "10+", "12+", "14+", "16+", "18+"
   totalEpisodes?: number | null
   genres: string[]
+  isSubbed?: boolean
+  isDubbed?: boolean
   createdAt: Date | string
   updatedAt: Date | string
   

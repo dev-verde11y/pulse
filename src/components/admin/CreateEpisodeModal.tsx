@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface CreateEpisodeModalProps {
   isOpen: boolean
@@ -314,11 +315,12 @@ export function CreateEpisodeModal({ isOpen, onClose, onSuccess }: CreateEpisode
               {formData.thumbnailUrl && (
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-300 mb-2">Preview da Thumbnail</p>
-                  <div className="w-48 h-28 bg-gray-700 rounded-lg overflow-hidden">
-                    <img 
-                      src={formData.thumbnailUrl} 
+                  <div className="w-48 h-28 bg-gray-700 rounded-lg overflow-hidden relative">
+                    <Image
+                      src={formData.thumbnailUrl}
                       alt="Preview"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
                         e.currentTarget.parentElement!.innerHTML = `

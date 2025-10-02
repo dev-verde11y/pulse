@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { CreateHeroBannerModal } from '@/components/admin/CreateHeroBannerModal'
 import { EditHeroBannerModal } from '@/components/admin/EditHeroBannerModal'
 
@@ -345,11 +346,12 @@ export default function HeroBannersPage() {
                   <tr key={banner.id} className="hover:bg-gray-800/30 transition-colors">
                     <td className="px-4 py-4">
                       <div className="flex items-center space-x-4">
-                        <div className="w-20 h-12 bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                          <img 
-                            src={banner.backgroundImage} 
+                        <div className="w-20 h-12 bg-gray-700 rounded overflow-hidden flex-shrink-0 relative">
+                          <Image
+                            src={banner.backgroundImage}
                             alt={banner.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none'
                               e.currentTarget.parentElement!.innerHTML = `
@@ -390,12 +392,13 @@ export default function HeroBannersPage() {
                     <td className="px-4 py-4">
                       {banner.anime ? (
                         <div className="flex items-center space-x-2">
-                          <div className="w-8 h-10 bg-gray-700 rounded overflow-hidden flex-shrink-0">
-                            {banner.anime.posterUrl || banner.anime.thumbnail ? (
-                              <img 
-                                src={banner.anime.posterUrl || banner.anime.thumbnail} 
+                          <div className="w-8 h-10 bg-gray-700 rounded overflow-hidden flex-shrink-0 relative">
+                            {(banner.anime.posterUrl || banner.anime.thumbnail) ? (
+                              <Image
+                                src={(banner.anime.posterUrl || banner.anime.thumbnail)!}
                                 alt={banner.anime.title}
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">

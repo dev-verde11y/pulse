@@ -40,7 +40,7 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   const swiperRef = useRef<SwiperRef | null>(null)
   const { user } = useAuth()
   const router = useRouter()
-  const [watchHistoryMap, setWatchHistoryMap] = useState<Record<string, Array<{ animeId: string }>>>({})
+  const [watchHistoryMap, setWatchHistoryMap] = useState<Record<string, Array<{ animeId: string; episodeId?: string; completed?: boolean; progress?: number }>>>({})
   const [heroBanners, setHeroBanners] = useState<Array<Record<string, unknown>>>([])
   const [bannersLoading, setBannersLoading] = useState(true)
   const [imagesLoaded, setImagesLoaded] = useState(false)
@@ -82,11 +82,18 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
       
       try {
         const banners = await api.getHeroBanners()
-        
+
         if (banners && banners.length > 0) {
+          type BannerType = {
+            backgroundImage?: string
+            bannerUrl?: string
+            banner?: string
+            posterUrl?: string
+            thumbnail?: string
+          }
           // Extrair todas as URLs de imagem dos banners
-          const imageUrls = banners.map(banner => 
-            banner.backgroundImage || banner.bannerUrl || banner.banner || 
+          const imageUrls = (banners as BannerType[]).map((banner) =>
+            banner.backgroundImage || banner.bannerUrl || banner.banner ||
             banner.posterUrl || banner.thumbnail || '/images/anime-placeholder.svg'
           ).filter(Boolean)
           
@@ -99,7 +106,7 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
             setImagesLoaded(true) // Continuar mesmo com falha
           }
           
-          setHeroBanners(banners)
+          setHeroBanners(banners as Array<Record<string, unknown>>)
         } else {
           // Se não há banners da API, não exibir nada
           setHeroBanners([])
@@ -204,7 +211,7 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   }
 
   // Determinar estado do botão e próximo episódio
-  const getButtonState = (content: { anime?: unknown; animeId?: string }) => {
+  const getButtonState = (content: { anime?: Anime; animeId?: string }) => {
     // Se o conteúdo tem anime associado, usar lógica de histórico
     if (!content.anime && content.animeId) {
       return {
@@ -252,8 +259,8 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
     
     // Organizar todos os episódios por temporada e número
     const allEpisodes: Episode[] = []
-    anime.seasons?.forEach((season: { seasonNumber: number; episodes?: Array<unknown> }) => {
-      season.episodes?.forEach((ep: unknown) => {
+    anime.seasons?.forEach((season: { seasonNumber: number; episodes?: Episode[] }) => {
+      season.episodes?.forEach((ep: Episode) => {
         allEpisodes.push({ ...ep, seasonNumber: season.seasonNumber })
       })
     })
@@ -323,14 +330,15 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   }
 
   // Usar apenas banners da API - sem fallback para mock data
-  const contentToShow = (!bannersLoading && imagesLoaded && heroBanners.length > 0) ? heroBanners.map(banner => ({
-    ...banner,
+  const contentToShow = (!bannersLoading && imagesLoaded && heroBanners.length > 0) ? heroBanners.map(banner => {
+    const result: Record<string, unknown> = { ...banner }
     // Se tem anime associado, usar dados do anime para lógica de histórico
-    ...(banner.anime && { 
-      seasons: banner.anime.seasons,
-      id: banner.anime.id 
-    })
-  })) : []
+    if (banner.anime && typeof banner.anime === 'object' && banner.anime !== null) {
+      result.seasons = (banner.anime as Anime).seasons
+      result.id = (banner.anime as Anime).id
+    }
+    return result
+  }) : []
   
   // Exibir loading skeleton se banners estão carregando ou imagens não foram precarregadas
   if (bannersLoading || !imagesLoaded) {
@@ -384,25 +392,33 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
           '--swiper-pagination-color': '#2563eb' 
         } as React.CSSProperties}
       >
-        {contentToShow.map((content, index) => (
+        {contentToShow.map((content, index) => {
+          const episodeText = content.episode && (typeof content.episode === 'string' || typeof content.episode === 'number') ? String(content.episode) : null
+          const title = String(content.title || '')
+          const subtitle = String(content.subtitle || '')
+          const description = typeof content.description === 'string' ? content.description : ''
+          const rating = String(content.rating || '16')
+          const year = typeof content.year === 'number' ? content.year : new Date().getFullYear()
+          const genres = Array.isArray(content.genres) ? content.genres : ['Ação', 'Aventura', 'Anime']
+          return (
           <SwiperSlide key={`${content.id}-${index}`}>
             <div className="relative h-full w-full">
               {/* Background Image with Parallax Effect */}
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 transition-transform duration-[8000ms]"
                 style={{ backgroundImage: `url(${content.backgroundImage || content.bannerUrl || content.banner || content.posterUrl || content.thumbnail || '/images/anime-placeholder.svg'})` }}
               />
-              
+
               {/* Advanced Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
               <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
-              
+
               {/* Main Content Container */}
               <div className="absolute inset-0 flex items-center pb-4 sm:pb-6 md:pb-8 lg:pb-10 xl:pb-12 z-20">
                 <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 ml-0 sm:ml-4 lg:ml-8 xl:ml-16">
                   <div className="max-w-xl sm:max-w-2xl">
-                    
+
                     {/* Main Content */}
                     <div className="space-y-2 sm:space-y-3 md:space-y-4 animate-fadeIn">
                       {/* Type Badge */}
@@ -410,9 +426,9 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
                         <div className="px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider backdrop-blur-sm bg-blue-600/90 text-white">
                           ANIME
                         </div>
-                        {content.episode && (
+                        {episodeText && (
                           <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs md:text-sm font-medium text-white">
-                            {content.episode}
+                            {episodeText}
                           </div>
                         )}
                       </div>
@@ -420,10 +436,10 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
                       {/* Title with Enhanced Typography */}
                       <div className="space-y-0.5 sm:space-y-1 md:space-y-2">
                         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-[0.9] sm:leading-[0.85] text-white drop-shadow-2xl tracking-tight">
-                          {content.title}
+                          {title}
                         </h1>
                         <h2 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-blue-300 font-medium max-w-xs sm:max-w-sm md:max-w-lg leading-relaxed">
-                          {content.subtitle || content.description?.slice(0, 60) + '...' || 'Descrição não disponível'}
+                          {subtitle || (description ? description.slice(0, 60) + '...' : 'Descrição não disponível')}
                         </h2>
                       </div>
 
@@ -431,9 +447,9 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs md:text-sm text-white/90">
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 bg-blue-600 rounded flex items-center justify-center">
-                            <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-white">{content.rating || '16'}+</span>
+                            <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-white">{rating}+</span>
                           </div>
-                          <span className="font-medium">{content.year || new Date().getFullYear()}</span>
+                          <span className="font-medium">{year}</span>
                         </div>
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-white/60 rounded-full"></div>
@@ -447,16 +463,16 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
 
                       {/* Genres as Pills */}
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                        {(content.genres || ['Ação', 'Aventura', 'Anime']).slice(0, 3).map((genre: string) => (
-                          <span key={genre} className="bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs md:text-sm text-white/90 hover:bg-blue-500/30 transition-colors cursor-pointer">
-                            {genre}
+                        {genres.slice(0, 3).map((genre: unknown) => (
+                          <span key={String(genre)} className="bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs md:text-sm text-white/90 hover:bg-blue-500/30 transition-colors cursor-pointer">
+                            {String(genre)}
                           </span>
                         ))}
                       </div>
 
                       {/* Description */}
                       <p className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed text-white/80 max-w-xs sm:max-w-sm md:max-w-xl line-clamp-2 hidden sm:block">
-                        {content.description || 'Uma aventura épica cheia de ação e emoção que irá te manter na borda do assento.'}
+                        {description || 'Uma aventura épica cheia de ação e emoção que irá te manter na borda do assento.'}
                       </p>
 
                       {/* Action Buttons */}
@@ -479,10 +495,9 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
                         
                         <button 
                           onClick={() => {
-                            if (content.animeId) {
-                              router.push(`/anime/${content.animeId}`)
-                            } else if (content.anime?.id) {
-                              router.push(`/anime/${content.anime.id}`)
+                            const animeId = content.animeId || (content.anime && typeof content.anime === 'object' && 'id' in content.anime ? (content.anime as { id: string }).id : null)
+                            if (animeId) {
+                              router.push(`/anime/${animeId}`)
                             }
                           }}
                           className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 hover:border-blue-300/50 text-white font-semibold py-2 sm:py-2.5 md:py-3 px-3 sm:px-4 md:px-5 rounded-md sm:rounded-lg transition-all duration-300 flex items-center justify-center group min-h-[40px] sm:min-h-[44px]"
@@ -494,9 +509,9 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
                         </button>
 
                         {(() => {
-                          const animeId = content.animeId || content.anime?.id
+                          const animeId = String(content.animeId || (content.anime && typeof content.anime === 'object' && 'id' in content.anime ? (content.anime as { id: string }).id : null) || '')
                           if (!animeId) return null
-                          
+
                           const isFavorite = favorites.includes(animeId)
                           const isLoading = favoriteLoading.includes(animeId)
                           
@@ -534,7 +549,7 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
               </div>
             </div>
           </SwiperSlide>
-        ))}
+        )})}
       </Swiper>
 
       {/* Custom Navigation Buttons */}
