@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
@@ -142,13 +143,11 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
             
             {/* Episode Thumbnail */}
             <div className="relative flex-shrink-0 w-40 h-24 bg-gray-800 rounded-lg overflow-hidden">
-              <img
-                src={episode.thumbnailUrl || episode.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
+              <Image
+                src={(episode.thumbnailUrl || episode.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg')!}
                 alt={episode.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = '/images/episode-placeholder.svg'
-                }}
+                fill
+                className="object-cover"
               />
               
               {/* Play Button Overlay */}
@@ -245,13 +244,11 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
         >
           {/* Episode Thumbnail */}
           <div className="relative aspect-video bg-gray-800">
-            <img
-              src={episode.thumbnailUrl || episode.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
+            <Image
+              src={(episode.thumbnailUrl || episode.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg')!}
               alt={episode.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = '/images/episode-placeholder.svg'
-              }}
+              fill
+              className="object-cover"
             />
             
             {/* Play Button Overlay */}

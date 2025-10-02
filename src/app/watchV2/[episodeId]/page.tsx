@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
 import { VideoPlayerV2 } from '@/components/video/VideoPlayerV2'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
@@ -184,24 +185,13 @@ export default function WatchV2Page() {
                 className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200"
                 title="Voltar ao Dashboard"
               >
-                <img 
-                  src="/images/logo.png" 
-                  alt="Pulse" 
+                <Image
+                  src="/images/logo.png"
+                  alt="Pulse"
+                  width={120}
+                  height={32}
                   className="h-8 w-auto"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement
-                    if (nextElement) {
-                      nextElement.style.display = 'block'
-                    }
-                  }}
                 />
-                <span 
-                  className="hidden text-xl font-bold text-white"
-                  style={{ display: 'none' }}
-                >
-                  PULSE
-                </span>
               </button>
 
               {/* V2 Badge */}
@@ -447,11 +437,12 @@ export default function WatchV2Page() {
                   Sobre o Anime
                 </h3>
                 <div className="flex items-start space-x-6">
-                  <div className="flex-shrink-0">
-                    <img
-                      src={anime.thumbnail || '/images/episode-placeholder.svg'}
+                  <div className="flex-shrink-0 relative w-28 h-40">
+                    <Image
+                      src={(anime.thumbnail || '/images/episode-placeholder.svg')!}
                       alt={anime.title}
-                      className="w-28 h-40 object-cover rounded-xl shadow-lg"
+                      fill
+                      className="object-cover rounded-xl shadow-lg"
                     />
                   </div>
                   <div className="flex-grow">
@@ -515,14 +506,12 @@ export default function WatchV2Page() {
                         >
                           <div className="flex items-center space-x-4">
                             {/* Episode Thumbnail */}
-                            <div className="flex-shrink-0 relative">
-                              <img
-                                src={ep.thumbnailUrl || ep.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
+                            <div className="flex-shrink-0 relative w-20 h-12">
+                              <Image
+                                src={(ep.thumbnailUrl || ep.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg')!}
                                 alt={ep.title}
-                                className="w-20 h-12 bg-gray-700 rounded-lg object-cover transition-transform group-hover:scale-105"
-                                onError={(e) => {
-                                  e.currentTarget.src = '/images/episode-placeholder.svg'
-                                }}
+                                fill
+                                className="bg-gray-700 rounded-lg object-cover transition-transform group-hover:scale-105"
                               />
                               
                               {/* Status Indicators */}
@@ -605,14 +594,12 @@ export default function WatchV2Page() {
                         }`}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="relative">
-                            <img
-                              src={ep.thumbnailUrl || ep.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'}
+                          <div className="relative w-16 h-10">
+                            <Image
+                              src={(ep.thumbnailUrl || ep.thumbnail || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg')!}
                               alt={ep.title}
-                              className="w-16 h-10 bg-gray-700 rounded object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src = '/images/episode-placeholder.svg'
-                              }}
+                              fill
+                              className="bg-gray-700 rounded object-cover"
                             />
                             
                             {/* Status Indicators */}

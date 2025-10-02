@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, PlusIcon} from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
@@ -282,11 +283,12 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
           
           {/* Poster */}
           {/* TODO: 💤✨ dormir!!! voltar aqui para ver esse detalhe! */}
-          <div className="flex-shrink-0">
-            <img
-              src={anime.thumbnail || anime.banner || '/images/episode-placeholder.svg'}
+          <div className="flex-shrink-0 relative w-72 h-96">
+            <Image
+              src={(anime.thumbnail || anime.banner || '/images/episode-placeholder.svg')!}
               alt={anime.title}
-              className="w-72 h-96 object-cover rounded-xl shadow-2xl"
+              fill
+              className="object-cover rounded-xl shadow-2xl"
             />
           </div>
           
