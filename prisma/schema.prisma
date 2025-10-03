@@ -48,7 +48,7 @@ model User {
   name      String?
   avatar    String?
   role      UserRole @default(USER)
-  
+
   // Subscription related
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
   currentPlan        PlanType          @default(FREE)
@@ -57,15 +57,19 @@ model User {
   offlineViewing     Boolean           @default(false)
   gameVaultAccess    Boolean           @default(false)
   adFree            Boolean           @default(false)
-  
+
   // Billing
   lastPaymentDate   DateTime?
   nextBillingDate   DateTime?
   autoRenewal       Boolean           @default(true)
-  
+
   // Grace period (5 days after expiry)
   gracePeriodEnd    DateTime?
-  
+
+  // Password reset
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+
   // Preferences
   language          String            @default("pt-BR")
   emailNotifications Boolean          @default(true)

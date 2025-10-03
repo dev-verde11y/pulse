@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AuthResponse, SubscriptionInfo } from '@/types/auth'
-import '@/styles/login-animations.css'
 
 interface Plan {
   id: string
@@ -17,18 +16,49 @@ interface Plan {
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  // Inicializa email com valor do localStorage se existir
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('rememberedEmail') || ''
+    }
+    return ''
+  })
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('rememberedEmail')
+    }
+    return false
+  })
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [isLogging, setIsLogging] = useState(false)
   const [showRenewalModal, setShowRenewalModal] = useState(false)
   const [renewalInfo, setRenewalInfo] = useState<SubscriptionInfo | null>(null)
   const [showContactMessage, setShowContactMessage] = useState(false)
-  
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+
   const { login, logout, loading, error, user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Redireciona se já estiver logado (mas não se o modal de renovação estiver aberto)
+  // Verifica se veio da página de registro ou reset de senha
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setShowSuccessMessage(true)
+      setTimeout(() => {
+        setShowSuccessMessage(false)
+      }, 5000)
+    }
+
+    if (searchParams.get('reset') === 'success') {
+      setShowSuccessMessage(true)
+      setTimeout(() => {
+        setShowSuccessMessage(false)
+      }, 5000)
+    }
+  }, [searchParams])
+
+  // Redireciona se já estiver logado
   useEffect(() => {
     if (user && !loading && !showRenewalModal) {
       router.push('/dashboard')
@@ -58,35 +88,40 @@ export default function LoginPage() {
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {}
-    
+
     if (!email) {
       newErrors.email = 'Email é obrigatório'
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Email inválido'
     }
-    
+
     if (!password) {
       newErrors.password = 'Senha é obrigatória'
-    } else if (password.length < 12) {
-      newErrors.password = 'Senha deve ter pelo menos 12 caracteres'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
-    
+
     setIsLogging(true)
-    
+
     try {
       const response: AuthResponse = await login(email, password)
-      
+
+      // Salva ou remove email do localStorage baseado em "Lembrar-me"
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email)
+      } else {
+        localStorage.removeItem('rememberedEmail')
+      }
+
       // Verifica se precisa mostrar modal de renovação
       if (response.subscriptionInfo?.showRenewalModal) {
         setRenewalInfo(response.subscriptionInfo)
@@ -108,19 +143,12 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Professional Background */}
       <div className="absolute inset-0">
-        {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-gray-900"></div>
-
-        {/* Subtle overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-gray-900/20 via-transparent to-gray-800/20"></div>
 
-        {/* Minimalist geometric elements */}
-        <div className="absolute top-1/4 right-1/3 w-32 h-32 border border-gray-700/20 rotate-45"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-24 h-24 border border-gray-600/15 rotate-12"></div>
-
-        {/* Large subtle orbs */}
-        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-gradient-to-r from-gray-700/5 to-gray-600/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-gradient-to-l from-gray-800/5 to-gray-700/5 rounded-full blur-3xl"></div>
+        {/* Animated gradient orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-orange-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-purple-600/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex">
@@ -139,9 +167,9 @@ export default function LoginPage() {
                     className="rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
                 </div>
-                <span className="text-6xl font-black tracking-tight text-white">
+                <span className="text-6xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
                   PULSE
                 </span>
               </Link>
@@ -149,7 +177,7 @@ export default function LoginPage() {
               <div className="space-y-4">
                 <h1 className="text-5xl font-bold leading-tight text-white">
                   Plataforma de{' '}
-                  <span className="text-gray-300">
+                  <span className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent">
                     streaming
                   </span>
                 </h1>
@@ -162,19 +190,19 @@ export default function LoginPage() {
 
             {/* Professional Features Grid */}
             <div className="grid grid-cols-2 gap-6 pt-8">
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
                 <div className="text-3xl font-black text-white mb-2">15K+</div>
                 <div className="text-sm text-gray-300 font-semibold">Títulos Disponíveis</div>
               </div>
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
                 <div className="text-3xl font-black text-white mb-2">HD+</div>
                 <div className="text-sm text-gray-300 font-semibold">Alta Qualidade</div>
               </div>
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
                 <div className="text-3xl font-black text-white mb-2">∞</div>
                 <div className="text-sm text-gray-300 font-semibold">Acesso Completo</div>
               </div>
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-gray-500/50 transition-all duration-300 hover:scale-105">
+              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
                 <div className="text-3xl font-black text-white mb-2">24/7</div>
                 <div className="text-sm text-gray-300 font-semibold">Disponível</div>
               </div>
@@ -197,19 +225,41 @@ export default function LoginPage() {
                     className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
                 </div>
-                <span className="text-4xl font-black tracking-tight text-white">
+                <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
                   PULSE
                 </span>
               </Link>
               <p className="text-sm text-gray-400 mt-2">Plataforma de streaming</p>
             </div>
 
+            {/* Success Message */}
+            {showSuccessMessage && (
+              <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-xl flex items-center animate-fade-in">
+                <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div className="text-sm">
+                  {searchParams.get('registered') === 'true' ? (
+                    <>
+                      <p className="font-semibold">Conta criada com sucesso!</p>
+                      <p className="text-green-400/80 text-xs mt-0.5">Você ganhou 7 dias de acesso gratuito. Faça login para começar.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold">Senha redefinida com sucesso!</p>
+                      <p className="text-green-400/80 text-xs mt-0.5">Faça login com sua nova senha.</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Login Card */}
             <div className="bg-gray-900/50 backdrop-blur-2xl border border-gray-700/50 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden">
               {/* Card glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-800/5 via-gray-700/5 to-gray-600/5 rounded-3xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-pink-500/5 to-purple-500/5 rounded-3xl"></div>
 
               <div className="relative z-10">
                 <div className="text-center mb-6 sm:mb-8">
@@ -237,7 +287,7 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       autoComplete="email"
-                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   {errors.email && (
@@ -267,7 +317,7 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Sua senha"
                       autoComplete="current-password"
-                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   {errors.password && (
@@ -281,8 +331,13 @@ export default function LoginPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center text-gray-400">
-                    <input type="checkbox" className="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700 mr-2" />
+                  <label className="flex items-center text-gray-400 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="rounded border-gray-600 text-orange-500 focus:ring-orange-500 bg-gray-700 mr-2 cursor-pointer"
+                    />
                     Lembrar de mim
                   </label>
                   <Link href="/forgot-password" className="text-gray-400 hover:text-gray-300 transition-colors">
@@ -302,10 +357,10 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLogging}
-                  className="relative w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-gray-600/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
+                  className="relative w-full bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
                 >
                   {/* Button glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-600 to-gray-700 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
                   
                   {isLogging ? (
                     <>
@@ -327,10 +382,20 @@ export default function LoginPage() {
               <div className="mt-6 sm:mt-8 text-center space-y-4">
                 <p className="text-gray-300 text-sm">
                   Não tem uma conta?{' '}
-                  <Link href="/register" className="text-gray-400 hover:text-gray-300 font-bold transition-all duration-300 hover:underline">
+                  <Link href="/register" className="text-orange-500 hover:text-orange-400 font-bold transition-all duration-300 hover:underline">
                     Cadastre-se
                   </Link>
                 </p>
+
+                {/* Trial Info */}
+                <div className="bg-orange-900/20 border border-orange-700/30 rounded-xl p-3 text-xs text-gray-300">
+                  <div className="flex items-center justify-center">
+                    <svg className="w-4 h-4 text-orange-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <span>Novos usuários ganham <strong className="text-orange-400">7 dias grátis</strong> ao se cadastrar</span>
+                  </div>
+                </div>
               </div>
               </div>
             </div>

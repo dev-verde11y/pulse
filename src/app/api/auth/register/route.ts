@@ -69,17 +69,31 @@ export async function POST(request: NextRequest) {
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Cria o usuário
+    // Calcula data de expiração do trial (7 dias a partir de agora)
+    const trialExpiry = new Date()
+    trialExpiry.setDate(trialExpiry.getDate() + 7)
+
+    // Cria o usuário com trial de 7 dias FREE
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name: name || null
+        name: name || null,
+        currentPlan: 'FREE',
+        subscriptionStatus: 'ACTIVE',
+        subscriptionExpiry: trialExpiry,
+        adFree: true, // Durante trial, sem anúncios
+        maxScreens: 1,
+        offlineViewing: false,
+        gameVaultAccess: false
       },
       select: {
         id: true,
         email: true,
         name: true,
+        currentPlan: true,
+        subscriptionStatus: true,
+        subscriptionExpiry: true,
         createdAt: true
       }
     })

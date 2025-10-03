@@ -23,7 +23,8 @@
       "Bash(then)",
       "Bash(echo \"Adding Image import to $file\")",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
