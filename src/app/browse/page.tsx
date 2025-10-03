@@ -94,16 +94,22 @@ export default function BrowsePage() {
 
             <div className="flex items-center gap-4">
               <Link
+                href="/plans"
+                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+              >
+                Planos
+              </Link>
+              <Link
                 href="/login"
                 className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
               >
                 Entrar
               </Link>
               <Link
-                href="/register"
-                className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 rounded-lg transition-all"
+                href="/plans"
+                className="px-6 py-2 text-sm font-bold bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 rounded-lg transition-all"
               >
-                Cadastrar
+                Assinar Agora
               </Link>
             </div>
           </div>

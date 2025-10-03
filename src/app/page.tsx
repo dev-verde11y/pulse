@@ -1,11 +1,34 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { StripeCheckoutButton } from '@/components/payments/stripe-checkout-button'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
+  const router = useRouter()
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      setIsAuthenticated(response.ok)
+    } catch (error) {
+      setIsAuthenticated(false)
+    }
+  }
+
+  const handleSelectPlan = (planType: string) => {
+    if (isAuthenticated) {
+      router.push(`/checkout?plan=${planType}`)
+    } else {
+      router.push(`/register?plan=${planType}&redirect=checkout`)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -190,12 +213,16 @@ export default function LandingPage() {
                 </li>
               </ul>
 
-              <StripeCheckoutButton
-                priceId="price_1S5nLD91l9itSVBOCQpvSL1R"
-                planName="The Arcane"
-                mode="subscription"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleSelectPlan('FAN')
+                }}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-all"
-              />
+              >
+                Assinar Agora
+              </button>
             </div>
 
             {/* The Sorcerer - Full Moon - Popular */}
@@ -242,12 +269,16 @@ export default function LandingPage() {
                 </li>
               </ul>
 
-              <StripeCheckoutButton
-                priceId="price_1S5rQZ91l9itSVBOIF3iJBPH"
-                planName="The Sorcerer"
-                mode="subscription"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleSelectPlan('MEGA_FAN')
+                }}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-3 rounded-full transition-all"
-              />
+              >
+                Assinar Agora
+              </button>
             </div>
 
             {/* The Sage - Waning Moon */}
@@ -286,12 +317,16 @@ export default function LandingPage() {
                 </li>
               </ul>
 
-              <StripeCheckoutButton
-                priceId="price_1S5nOM91l9itSVBOqsJ2vJQU"
-                planName="The Sage"
-                mode="subscription"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleSelectPlan('MEGA_FAN_ANNUAL')
+                }}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-full transition-all"
-              />
+              >
+                Assinar Agora
+              </button>
             </div>
           </div>
 

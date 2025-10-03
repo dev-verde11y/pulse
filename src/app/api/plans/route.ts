@@ -9,10 +9,30 @@ export async function GET() {
       },
       orderBy: {
         displayOrder: 'asc'
-      }
+      },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        billingCycle: true,
+        price: true,
+        description: true,
+        features: true,
+        popular: true,
+        maxScreens: true,
+        offlineViewing: true,
+        gameVaultAccess: true,
+        adFree: true,
+      },
     })
-    
-    return NextResponse.json(plans)
+
+    // Converte Decimal para number
+    const formattedPlans = plans.map(plan => ({
+      ...plan,
+      price: Number(plan.price),
+    }))
+
+    return NextResponse.json({ plans: formattedPlans })
   } catch (error) {
     console.error('Erro ao buscar planos:', error)
     return NextResponse.json(

@@ -98,6 +98,8 @@ export async function POST(request: NextRequest) {
             currentPlan: plan.type,
             subscriptionExpiry: expiryDate,
             gracePeriodEnd: gracePeriodEnd,
+            lastPaymentDate: now,
+            nextBillingDate: expiryDate,
             stripeCustomerId: session.customer as string || undefined,
             stripeSubscriptionId: session.subscription as string || undefined,
 
@@ -106,8 +108,6 @@ export async function POST(request: NextRequest) {
             offlineViewing: plan.offlineViewing,
             gameVaultAccess: plan.gameVaultAccess,
             maxScreens: plan.maxScreens,
-            maxDownloads: plan.maxDownloads,
-            videoQuality: plan.videoQuality,
           },
         })
 
@@ -117,12 +117,48 @@ export async function POST(request: NextRequest) {
         console.log('New Expiry:', updatedUser.subscriptionExpiry)
         console.log('New Plan:', updatedUser.currentPlan)
 
+        // Cria registro de Subscription
+        const subscription = await prisma.subscription.create({
+          data: {
+            userId: userId,
+            planId: planId,
+            status: 'ACTIVE',
+            startDate: now,
+            endDate: expiryDate,
+            amount: plan.price,
+            currency: 'BRL',
+            paymentMethod: 'credit_card',
+            transactionId: session.payment_intent as string || undefined,
+            externalId: session.subscription as string || undefined,
+            externalData: session as any,
+            nextBillingDate: expiryDate,
+          },
+        })
+
+        console.log('✅ SUBSCRIPTION RECORD CREATED:', subscription.id)
+
+        // Cria registro de Payment
+        const payment = await prisma.payment.create({
+          data: {
+            subscriptionId: subscription.id,
+            amount: plan.price,
+            currency: 'BRL',
+            status: 'completed',
+            paymentMethod: 'credit_card',
+            externalId: session.payment_intent as string || undefined,
+            paidAt: now,
+          },
+        })
+
+        console.log('✅ PAYMENT RECORD CREATED:', payment.id)
+
         // Atualiza a sessão de checkout
         await prisma.checkoutSession.updateMany({
           where: { stripeSessionId: session.id },
           data: {
             stripeStatus: 'complete',
             paymentStatus: session.payment_status,
+            subscriptionId: subscription.id,
           },
         })
 
@@ -151,6 +187,8 @@ export async function POST(request: NextRequest) {
               currentPlan: plan.type,
               subscriptionExpiry: expiryDate,
               gracePeriodEnd: gracePeriodEnd,
+              lastPaymentDate: now,
+              nextBillingDate: expiryDate,
               stripeCustomerId: session.customer as string || undefined,
               stripeSubscriptionId: session.subscription as string || undefined,
 
@@ -158,25 +196,59 @@ export async function POST(request: NextRequest) {
               offlineViewing: plan.offlineViewing,
               gameVaultAccess: plan.gameVaultAccess,
               maxScreens: plan.maxScreens,
-              maxDownloads: plan.maxDownloads,
-              videoQuality: plan.videoQuality,
             },
           })
 
           console.log('✅ EXISTING USER UPDATED')
           console.log('Email:', user.email)
+
+          // Cria registro de Subscription
+          const subscription = await prisma.subscription.create({
+            data: {
+              userId: user.id,
+              planId: planId,
+              status: 'ACTIVE',
+              startDate: now,
+              endDate: expiryDate,
+              amount: plan.price,
+              currency: 'BRL',
+              paymentMethod: 'credit_card',
+              transactionId: session.payment_intent as string || undefined,
+              externalId: session.subscription as string || undefined,
+              externalData: session as any,
+              nextBillingDate: expiryDate,
+            },
+          })
+
+          console.log('✅ SUBSCRIPTION RECORD CREATED:', subscription.id)
+
+          // Cria registro de Payment
+          const payment = await prisma.payment.create({
+            data: {
+              subscriptionId: subscription.id,
+              amount: plan.price,
+              currency: 'BRL',
+              status: 'completed',
+              paymentMethod: 'credit_card',
+              externalId: session.payment_intent as string || undefined,
+              paidAt: now,
+            },
+          })
+
+          console.log('✅ PAYMENT RECORD CREATED:', payment.id)
+
+          // Atualiza a sessão de checkout
+          await prisma.checkoutSession.updateMany({
+            where: { stripeSessionId: session.id },
+            data: {
+              stripeStatus: 'complete',
+              paymentStatus: session.payment_status,
+              subscriptionId: subscription.id,
+            },
+          })
         } else {
           console.log('⚠️ User not found for email:', customerEmail)
         }
-
-        // Atualiza a sessão de checkout
-        await prisma.checkoutSession.updateMany({
-          where: { stripeSessionId: session.id },
-          data: {
-            stripeStatus: 'complete',
-            paymentStatus: session.payment_status,
-          },
-        })
       }
     }
 

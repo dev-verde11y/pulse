@@ -210,6 +210,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null)
   }
 
+  // Função para atualizar dados do usuário
+  const refreshUser = async () => {
+    if (!token) return
+
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error)
+    }
+  }
+
   const value: AuthContextType = {
     user,
     token,
@@ -217,6 +238,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     updateUser,
     logout,
+    refreshUser,
     loading,
     error,
     subscriptionInfo,

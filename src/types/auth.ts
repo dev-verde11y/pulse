@@ -17,6 +17,7 @@ export interface AuthContextType {
   register: (email: string, password: string, name?: string) => Promise<void>
   updateUser: (userData: Partial<User>) => void
   logout: () => void
+  refreshUser?: () => Promise<void>
   loading: boolean
   error: string | null
   subscriptionInfo: SubscriptionInfo | null

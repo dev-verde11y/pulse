@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -79,11 +80,25 @@ function formatStatus(status: string) {
   return statusMap[status as keyof typeof statusMap] || status
 }
 
+interface Plan {
+  id: string
+  name: string
+  type: string
+  billingCycle: string
+  price: number
+  description: string
+  features: string[]
+  popular: boolean
+}
+
 export default function SubscriptionDashboard() {
   const { user } = useAuth()
+  const router = useRouter()
   const [subscription, setSubscription] = useState<UserSubscription | null>(null)
   const [payments, setPayments] = useState<PaymentHistory[]>([])
   const [loading, setLoading] = useState(true)
+  const [availablePlans, setAvailablePlans] = useState<Plan[]>([])
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadSubscriptionData() {
@@ -103,6 +118,14 @@ export default function SubscriptionDashboard() {
           const payData = await payResponse.json()
           setPayments(payData.payments || [])
         }
+
+        // Load available plans (excluindo FREE)
+        const plansResponse = await fetch('/api/plans')
+        if (plansResponse.ok) {
+          const plansData = await plansResponse.json()
+          const paidPlans = (plansData.plans || []).filter((p: Plan) => p.type !== 'FREE')
+          setAvailablePlans(paidPlans)
+        }
       } catch (error) {
         console.error('Erro ao carregar dados da assinatura:', error)
       } finally {
@@ -112,6 +135,33 @@ export default function SubscriptionDashboard() {
 
     loadSubscriptionData()
   }, [user])
+
+  const handleSubscribeToPlan = async (planId: string) => {
+    setProcessingPlan(planId)
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao criar checkout')
+      }
+
+      // Redireciona para Stripe
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      }
+    } catch (error) {
+      console.error('Erro ao processar assinatura:', error)
+      alert('Erro ao processar assinatura. Tente novamente.')
+      setProcessingPlan(null)
+    }
+  }
 
   if (!user) {
     return (
@@ -236,9 +286,6 @@ export default function SubscriptionDashboard() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">
-                <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500">
-                  Alterar Plano
-                </Button>
                 <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
                   Gerenciar Pagamento
                 </Button>
@@ -250,16 +297,85 @@ export default function SubscriptionDashboard() {
               </div>
             </div>
           ) : (
-            // No Subscription State
+            // No Subscription State (FREE users)
             <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8 text-center">
               <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 rounded-2xl flex items-center justify-center">
                 <span className="text-4xl">🌙</span>
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Nenhuma Assinatura Ativa</h2>
-              <p className="text-gray-400 mb-6">Escolha uma fase da lua para começar sua jornada</p>
-              <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500">
-                Ver Planos Disponíveis
-              </Button>
+              <p className="text-gray-400">Escolha uma fase da lua para começar sua jornada</p>
+            </div>
+          )}
+
+          {/* Available Plans Section - Sempre visível para FREE */}
+          {!subscription && availablePlans.length > 0 && (
+            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Planos Disponíveis</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {availablePlans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`relative bg-white/[0.02] border rounded-xl p-4 transition-all hover:scale-[1.02] ${
+                      plan.popular
+                        ? 'border-orange-500 shadow-lg shadow-orange-500/20'
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-pink-600 px-3 py-0.5 rounded-full text-xs font-bold">
+                        MAIS POPULAR
+                      </div>
+                    )}
+
+                    <div className="text-center mb-3">
+                      <h4 className="text-lg font-bold text-white mb-1">{plan.name}</h4>
+                      <p className="text-gray-400 text-xs mb-3">{plan.description}</p>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                          R$ {Number(plan.price).toFixed(2)}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          /{plan.billingCycle === 'MONTHLY' ? 'mês' : 'ano'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <ul className="space-y-1.5 mb-4">
+                      {plan.features.slice(0, 4).map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2 text-xs">
+                          <svg className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-gray-300">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSubscribeToPlan(plan.id)}
+                      disabled={processingPlan === plan.id}
+                      className={`w-full py-2.5 rounded-lg font-bold text-sm transition-all ${
+                        plan.popular
+                          ? 'bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90'
+                          : 'bg-gray-700 hover:bg-gray-600'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {processingPlan === plan.id ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processando...
+                        </span>
+                      ) : (
+                        'Assinar Agora'
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

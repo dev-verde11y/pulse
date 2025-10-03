@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
 import Link from 'next/link'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,6 +17,11 @@ export default function RegisterPage() {
 
   const { user, loading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Captura query params
+  const selectedPlan = searchParams.get('plan')
+  const shouldRedirectToCheckout = searchParams.get('redirect') === 'checkout'
 
   // Redireciona se já estiver logado
   useEffect(() => {
@@ -93,8 +98,24 @@ export default function RegisterPage() {
         return
       }
 
-      // Sucesso - redireciona para login com mensagem
-      router.push('/login?registered=true')
+      // Sucesso - redireciona conforme configuração
+      if (shouldRedirectToCheckout && selectedPlan) {
+        // Faz login automático e redireciona para checkout
+        const loginResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim(), password }),
+        })
+
+        if (loginResponse.ok) {
+          router.push(`/checkout?plan=${selectedPlan}`)
+        } else {
+          router.push(`/login?registered=true&plan=${selectedPlan}`)
+        }
+      } else {
+        // Fluxo normal - redireciona para login
+        router.push('/login?registered=true')
+      }
     } catch (error) {
       console.error('Registration error:', error)
       setErrors({ general: 'Erro ao conectar com o servidor' })
@@ -218,10 +239,14 @@ export default function RegisterPage() {
               <div className="relative z-10">
                 <div className="text-center mb-6 sm:mb-8">
                   <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                    Crie sua conta
+                    {selectedPlan ? 'Quase lá!' : 'Crie sua conta'}
                   </h2>
                   <p className="text-gray-300 text-sm sm:text-base">
-                    Comece agora com <span className="font-bold text-orange-400">7 dias grátis</span>
+                    {selectedPlan ? (
+                      <>Crie sua conta para continuar com o pagamento</>
+                    ) : (
+                      <>Comece agora com <span className="font-bold text-orange-400">7 dias grátis</span></>
+                    )}
                   </p>
                 </div>
 
@@ -396,7 +421,9 @@ export default function RegisterPage() {
                         <span className="text-base">Criando conta...</span>
                       </>
                     ) : (
-                      <span className="text-base sm:text-lg font-black relative z-10">Começar 7 Dias Grátis</span>
+                      <span className="text-base sm:text-lg font-black relative z-10">
+                        {selectedPlan ? 'Criar Conta e Continuar' : 'Começar 7 Dias Grátis'}
+                      </span>
                     )}
                   </button>
                 </form>
@@ -426,5 +453,17 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Carregando...</div>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   )
 }
