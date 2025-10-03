@@ -50,7 +50,12 @@ export function sanitizeEpisodeByContext(episode: Record<string, unknown>, reque
     r2ThumbnailPath,
     ...sanitized
   } = episode
-  return sanitized
+
+  // Adicionar flag de disponibilidade sem expor a URL
+  return {
+    ...sanitized,
+    hasVideo: !!videoUrl
+  }
 }
 
 /**

@@ -14,15 +14,15 @@ const nextConfig: NextConfig = {
 
   // Configuração de imagens
   images: {
-    domains: [
-      'localhost',
-      'picsum.photos',
-      'images.unsplash.com',
-      'cdn.myanimelist.net',
-      'media.kitsu.io',
-      'static.crunchyroll.com',
-      'img1.ak.crunchyroll.com',
-      'funimation.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
     ],
   },
 };

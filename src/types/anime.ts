@@ -50,13 +50,16 @@ export interface Episode {
   thumbnail?: string | null
   airDate?: Date | string | null
   seasonNumber?: number
-  
+
   // Cloudflare R2 fields
   videoUrl?: string | null
   r2Key?: string | null
   thumbnailUrl?: string | null
   thumbnailR2Key?: string | null
-  
+
+  // Flag de disponibilidade (adicionado pela API em contexto público)
+  hasVideo?: boolean
+
   season?: {
     animeId: string
     seasonNumber: number

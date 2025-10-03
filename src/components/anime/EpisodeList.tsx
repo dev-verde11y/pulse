@@ -29,11 +29,12 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
   // Episódios da temporada selecionada
   const episodes: Episode[] = selectedSeason?.episodes || []
   
-  // Verificar disponibilidade do episódio baseado em duração e título
+  // Verificar disponibilidade do episódio baseado em videoUrl ou hasVideo
   const isEpisodeAvailable = (episode: Episode) => {
-    // Se tem duração e título, consideramos disponível
-    // (campos sensíveis foram removidos da API pública por segurança)
-    return !!(episode.duration && episode.title && episode.id)
+    // Episódio só está disponível se tiver o vídeo carregado
+    // Em contexto público: usa hasVideo (flag adicionada pela API)
+    // Em contexto admin: usa videoUrl diretamente
+    return !!((episode.videoUrl || episode.hasVideo) && episode.title && episode.id)
   }
 
   // Carregar histórico do usuário
