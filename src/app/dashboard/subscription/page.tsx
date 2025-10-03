@@ -283,18 +283,6 @@ export default function SubscriptionDashboard() {
                   ))}
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-4">
-                <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
-                  Gerenciar Pagamento
-                </Button>
-                {subscription.status === 'active' && !subscription.cancelAt && (
-                  <Button variant="outline" className="border-red-600 text-red-400 hover:bg-red-900/20">
-                    Cancelar Assinatura
-                  </Button>
-                )}
-              </div>
             </div>
           ) : (
             // No Subscription State (FREE users)
