@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -27,10 +28,11 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    } catch (err: any) {
-      console.error('❌ Webhook signature verification failed:', err.message)
+    } catch (err) {
+      const error = err as Error
+      console.error('❌ Webhook signature verification failed:', error.message)
       return NextResponse.json(
-        { error: `Webhook Error: ${err.message}` },
+        { error: `Webhook Error: ${error.message}` },
         { status: 400 }
       )
     }
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
 
       if (plan.billingCycle === 'MONTHLY') {
         expiryDate.setMonth(expiryDate.getMonth() + 1)
-      } else if (plan.billingCycle === 'YEARLY') {
+      } else if (plan.billingCycle === 'ANNUALLY') {
         expiryDate.setFullYear(expiryDate.getFullYear() + 1)
       }
 
@@ -130,7 +132,7 @@ export async function POST(request: NextRequest) {
             paymentMethod: 'credit_card',
             transactionId: session.payment_intent as string || undefined,
             externalId: session.subscription as string || undefined,
-            externalData: session as any,
+            externalData: session as unknown as Prisma.InputJsonValue,
             nextBillingDate: expiryDate,
           },
         })
@@ -215,7 +217,7 @@ export async function POST(request: NextRequest) {
               paymentMethod: 'credit_card',
               transactionId: session.payment_intent as string || undefined,
               externalId: session.subscription as string || undefined,
-              externalData: session as any,
+              externalData: session as unknown as Prisma.InputJsonValue,
               nextBillingDate: expiryDate,
             },
           })

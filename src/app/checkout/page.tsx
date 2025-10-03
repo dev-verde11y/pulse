@@ -76,9 +76,10 @@ function CheckoutContent() {
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
       }
-    } catch (err: any) {
-      console.error('Checkout error:', err)
-      setError(err.message || 'Erro ao processar pagamento')
+    } catch (err) {
+      const error = err as Error
+      console.error('Checkout error:', error)
+      setError(error.message || 'Erro ao processar pagamento')
       setProcessing(false)
     }
   }

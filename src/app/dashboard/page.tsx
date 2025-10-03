@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSearchParams } from 'next/navigation'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
@@ -17,7 +17,7 @@ import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
 import '@/styles/swiper.css'
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, loading, refreshUser } = useAuth()
   const searchParams = useSearchParams()
   const [animes, setAnimes] = useState<Anime[]>([])
@@ -204,8 +204,16 @@ export default function DashboardPage() {
 
         </div>
       </main>
-      
+
       <Footer />
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<LoadingScreen message="Carregando dashboard..." />}>
+      <DashboardContent />
+    </Suspense>
   )
 }

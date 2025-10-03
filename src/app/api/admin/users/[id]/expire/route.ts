@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verifica autenticação e se é admin
@@ -16,7 +16,7 @@ export async function PATCH(
       )
     }
 
-    const userId = params.id
+    const { id: userId } = await params
 
     // Busca usuário
     const user = await prisma.user.findUnique({

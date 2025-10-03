@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
         successUrl,
         cancelUrl,
         userId: user.id,
-        stripeData: session as any,
+        stripeData: session as unknown as Prisma.InputJsonValue,
       },
     })
 
