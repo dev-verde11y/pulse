@@ -123,11 +123,11 @@ export function Header() {
                   priority
                 />
               </div>
-              <div className="hidden sm:block">
+              {/* <div className="hidden sm:block">
                 <span className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-white">
-                  -_-
+                  -_- - nomePlataforma
                 </span>
-              </div>
+              </div> */}
             </Link>
           </div>
 

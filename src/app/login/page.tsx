@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
@@ -15,7 +15,7 @@ interface Plan {
   billingCycle?: string
 }
 
-export default function LoginPage() {
+function LoginContent() {
   // Inicializa email com valor do localStorage se existir
   const [email, setEmail] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -36,6 +36,8 @@ export default function LoginPage() {
   const [renewalInfo, setRenewalInfo] = useState<SubscriptionInfo | null>(null)
   const [showContactMessage, setShowContactMessage] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [isRenewing, setIsRenewing] = useState(false)
+  const [selectedPlanForRenewal, setSelectedPlanForRenewal] = useState<string | null>(null)
 
   const { login, logout, loading, error, user } = useAuth()
   const router = useRouter()
@@ -136,6 +138,37 @@ export default function LoginPage() {
     } catch (err) {
       console.error('Login error:', err)
       setIsLogging(false)
+    }
+  }
+
+  const handleRenewSubscription = async (planId: string) => {
+    setIsRenewing(true)
+    setSelectedPlanForRenewal(planId)
+
+    try {
+      const response = await fetch('/api/checkout/renewal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ planId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao criar sessão de renovação')
+      }
+
+      // Redireciona para o Stripe Checkout
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      }
+    } catch (error) {
+      console.error('Renewal error:', error)
+      alert('Erro ao processar renovação. Tente novamente.')
+      setIsRenewing(false)
+      setSelectedPlanForRenewal(null)
     }
   }
 
@@ -512,14 +545,43 @@ export default function LoginPage() {
 
                   {/* Botões de Ação */}
                   <div className="space-y-3">
-                    <button
-                      onClick={() => {
-                        setShowContactMessage(true)
-                      }}
-                      className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
-                    >
-                      Renovar Assinatura
-                    </button>
+                    {/* Botões de Renovação por Plano */}
+                    {renewalInfo?.availablePlans && renewalInfo.availablePlans.length > 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-white text-sm font-semibold mb-2">Escolha um plano para renovar:</p>
+                        {renewalInfo.availablePlans.map((plan) => {
+                          const typedPlan = plan as unknown as Plan
+                          return (
+                            <button
+                              key={typedPlan.id}
+                              onClick={() => handleRenewSubscription(typedPlan.id)}
+                              disabled={isRenewing}
+                              className="w-full bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-between"
+                            >
+                              <div className="text-left">
+                                <div className="font-bold">{typedPlan.name}</div>
+                                <div className="text-xs opacity-80">{typedPlan.description}</div>
+                              </div>
+                              {isRenewing && selectedPlanForRenewal === typedPlan.id ? (
+                                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <div className="font-black">R$ {Number(typedPlan.price).toFixed(2)}</div>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowContactMessage(true)}
+                        className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        Renovar Assinatura
+                      </button>
+                    )}
                     {renewalInfo?.isExpired ? (
                       <button
                         onClick={() => {
@@ -542,34 +604,6 @@ export default function LoginPage() {
                       </button>
                     )}
                   </div>
-
-                  {/* Planos Disponíveis (se houver) */}
-                  {renewalInfo?.availablePlans && renewalInfo.availablePlans.length > 0 && (
-                    <div className="mt-6">
-                      <h4 className="text-white font-semibold mb-3 text-sm">Planos Disponíveis:</h4>
-                      <div className="space-y-2">
-                        {renewalInfo.availablePlans.slice(0, 2).map((plan) => {
-                          const typedPlan = plan as unknown as Plan
-                          return (
-                          <div key={typedPlan.id} className="bg-gray-800/30 border border-gray-700 rounded-lg p-3">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <span className="text-white font-medium text-sm">{typedPlan.name}</span>
-                                <div className="text-xs text-gray-400">{typedPlan.description}</div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-white font-bold text-sm">R$ {typedPlan.price}</div>
-                                <div className="text-xs text-gray-400">
-                                  {typedPlan.billingCycle === 'MONTHLY' ? '/mês' : '/ano'}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </>
               ) : (
                 <div className="space-y-3">
@@ -597,5 +631,23 @@ export default function LoginPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <svg className="animate-spin h-12 w-12 text-orange-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p className="text-gray-400">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }

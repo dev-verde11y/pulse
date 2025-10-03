@@ -131,6 +131,49 @@ export default function UsersPage() {
     }
   }
 
+  const handleExpireSubscription = async (user: User) => {
+    const message = user.subscriptionStatus === 'EXPIRED'
+      ? `A assinatura de "${user.email}" já está expirada. Deseja confirmar a expiração novamente?`
+      : `Tem certeza que deseja EXPIRAR a assinatura de "${user.email}"?\n\nPlano atual: ${getPlanDisplayName(user.currentPlan)}\nStatus atual: ${getStatusDisplayName(user.subscriptionStatus)}\n\nEsta ação irá:\n- Definir status como EXPIRADO\n- Remover benefícios (sem anúncios, offline, etc)\n- Usuário precisará renovar para acessar`
+
+    if (!confirm(message)) return
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}/expire`, {
+        method: 'PATCH',
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to expire subscription')
+      }
+
+      // Refresh the list
+      fetchUsers(pagination.currentPage)
+      alert('Assinatura expirada com sucesso!')
+    } catch (error) {
+      console.error('Error expiring subscription:', error)
+      alert('Erro ao expirar assinatura. Tente novamente.')
+    }
+  }
+
+  const isSubscriptionExpiringSoon = (expiryDate: string | null) => {
+    if (!expiryDate) return false
+    const expiry = new Date(expiryDate)
+    const now = new Date()
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    return daysUntilExpiry > 0 && daysUntilExpiry <= 7 // Expira em até 7 dias
+  }
+
+  const isSubscriptionExpired = (status: string, expiryDate: string | null) => {
+    if (status === 'EXPIRED') return true
+    if (!expiryDate) return false
+    const expiry = new Date(expiryDate)
+    const now = new Date()
+    return expiry < now
+  }
+
   const getRoleBadge = (role: string) => {
     const colors = {
       ADMIN: 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -450,9 +493,28 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(user.subscriptionStatus)}`}>
-                        {getStatusDisplayName(user.subscriptionStatus)}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(user.subscriptionStatus)}`}>
+                          {getStatusDisplayName(user.subscriptionStatus)}
+                        </span>
+                        {/* Alerta de Expiração */}
+                        {isSubscriptionExpired(user.subscriptionStatus, user.subscriptionExpiry) && (
+                          <div className="flex items-center gap-1 text-xs text-red-400">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            Expirado
+                          </div>
+                        )}
+                        {isSubscriptionExpiringSoon(user.subscriptionExpiry) && !isSubscriptionExpired(user.subscriptionStatus, user.subscriptionExpiry) && (
+                          <div className="flex items-center gap-1 text-xs text-yellow-400">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            Expira em breve
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-gray-300">{formatDate(user.createdAt)}</td>
                     <td className="p-4">
@@ -497,7 +559,29 @@ export default function UsersPage() {
                             ))}
                           </div>
                         </div>
-                        <button 
+
+                        {/* Botão Expirar Assinatura */}
+                        {user.role !== 'ADMIN' && (
+                          <button
+                            onClick={() => handleExpireSubscription(user)}
+                            className={`p-2 rounded-lg transition-colors ${
+                              isSubscriptionExpired(user.subscriptionStatus, user.subscriptionExpiry)
+                                ? 'text-gray-500 hover:text-gray-400 hover:bg-gray-500/10'
+                                : 'text-orange-400 hover:text-orange-300 hover:bg-orange-500/10'
+                            }`}
+                            title={
+                              isSubscriptionExpired(user.subscriptionStatus, user.subscriptionExpiry)
+                                ? 'Assinatura já expirada'
+                                : 'Expirar assinatura manualmente'
+                            }
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                        )}
+
+                        <button
                           onClick={() => handleDeleteUser(user.id, user.email)}
                           className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                           title="Excluir usuário"
