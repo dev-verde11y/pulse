@@ -66,6 +66,10 @@ model User {
   // Grace period (5 days after expiry)
   gracePeriodEnd    DateTime?
 
+  // Stripe integration
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+
   // Password reset
   resetToken        String?
   resetTokenExpiry  DateTime?
