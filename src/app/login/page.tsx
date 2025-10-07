@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import Image from 'next/image'
 import Link from 'next/link'
 import { AuthResponse, SubscriptionInfo } from '@/types/auth'
 
@@ -195,20 +194,12 @@ function LoginContent() {
           <div className="max-w-lg text-center space-y-10 relative z-10">
             {/* Logo Section */}
             <div className="space-y-8">
-              <Link href="/" className="inline-flex items-center space-x-4 group">
-                <div className="relative">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Logo Pulse"
-                    width={80}
-                    height={80}
-                    className="rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
-                    priority
-                  />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity"></div>
-                </div>
+              <Link href="/" className="inline-flex items-baseline space-x-2 group">
                 <span className="text-6xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   PULSE
+                </span>
+                <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                  ANIME
                 </span>
               </Link>
 
@@ -253,20 +244,12 @@ function LoginContent() {
           <div className="max-w-md w-full space-y-6 sm:space-y-8">
             {/* Mobile Logo */}
             <div className="lg:hidden text-center mb-6 sm:mb-8">
-              <Link href="/" className="inline-flex items-center space-x-3 group">
-                <div className="relative">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Logo Pulse"
-                    width={50}
-                    height={50}
-                    className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
-                    priority
-                  />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity"></div>
-                </div>
+              <Link href="/" className="inline-flex items-baseline space-x-1.5 group">
                 <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   PULSE
+                </span>
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  ANIME
                 </span>
               </Link>
               <p className="text-sm text-gray-400 mt-2">Plataforma de streaming</p>

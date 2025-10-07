@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default function ForgotPasswordPage() {
@@ -58,48 +57,47 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Professional Background */}
+      {/* Anime-inspired Background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-gray-900"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-gray-900/20 via-transparent to-gray-800/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-blue-950"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
 
-        {/* Animated gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-orange-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-purple-600/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        {/* Animated gradient orbs - Blue theme */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/15 to-cyan-600/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-blue-500/10 to-indigo-600/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+        {/* Anime-style floating elements */}
+        <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-blue-400/60 rounded-full blur-sm animate-float"></div>
+        <div className="absolute top-2/3 left-1/4 w-3 h-3 bg-cyan-400/40 rounded-full blur-sm animate-float-delayed"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-blue-300/50 rounded-full blur-sm animate-float"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-8">
         <div className="max-w-md w-full space-y-6 sm:space-y-8">
           {/* Logo */}
           <div className="text-center">
-            <Link href="/" className="inline-flex items-center space-x-3 group">
-              <div className="relative">
-                <Image
-                  src="/images/logo.png"
-                  alt="Logo Pulse"
-                  width={60}
-                  height={60}
-                  className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
-                  priority
-                />
-                <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
-              </div>
-              <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <Link href="/" className="inline-flex items-baseline space-x-2 group">
+              <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 PULSE
+              </span>
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                ANIME
               </span>
             </Link>
           </div>
 
           {/* Form Card */}
-          <div className="bg-gray-900/50 backdrop-blur-2xl border border-gray-700/50 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden">
+          <div className="bg-slate-900/60 backdrop-blur-2xl border border-blue-500/30 rounded-3xl shadow-2xl shadow-blue-900/20 p-6 sm:p-8 relative overflow-hidden">
             {/* Card glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-pink-500/5 to-purple-500/5 rounded-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-cyan-500/5 to-blue-600/5 rounded-3xl"></div>
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl"></div>
 
             <div className="relative z-10">
               {!emailSent ? (
                 <>
                   <div className="text-center mb-6 sm:mb-8">
-                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-orange-600 to-pink-600 rounded-full flex items-center justify-center mb-4">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-red-600 to-pink-600 rounded-full flex items-center justify-center mb-4">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                       </svg>
@@ -130,7 +128,7 @@ export default function ForgotPasswordPage() {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="seu@email.com"
                           autoComplete="email"
-                          className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                          className="w-full bg-slate-800/50 border border-blue-500/30 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/60 focus:bg-slate-800/70 transition-all duration-300 text-sm sm:text-base"
                         />
                       </div>
                       {error && (
@@ -146,10 +144,10 @@ export default function ForgotPasswordPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="relative w-full bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
+                      className="relative w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
                     >
                       {/* Button glow effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
 
                       {isSubmitting ? (
                         <>
@@ -187,13 +185,13 @@ export default function ForgotPasswordPage() {
                     <div>
                       <h3 className="text-2xl font-bold text-white mb-2">Email Enviado!</h3>
                       <p className="text-gray-300 text-sm sm:text-base">
-                        Enviamos um link de recuperação para <strong className="text-orange-400">{email}</strong>
+                        Enviamos um link de recuperação para <strong className="text-blue-400">{email}</strong>
                       </p>
                     </div>
 
-                    <div className="bg-orange-900/20 border border-orange-700/30 rounded-xl p-4 text-sm text-gray-300">
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-sm text-gray-300">
                       <p className="mb-2">
-                        <strong className="text-orange-400">Próximos passos:</strong>
+                        <strong className="text-blue-400">Próximos passos:</strong>
                       </p>
                       <ul className="text-left space-y-1 ml-4">
                         <li>• Verifique sua caixa de entrada</li>
@@ -212,13 +210,13 @@ export default function ForgotPasswordPage() {
                           setEmailSent(false)
                           setEmail('')
                         }}
-                        className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 rounded-xl transition-all duration-300"
+                        className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-xl transition-all duration-300"
                       >
                         Enviar Novamente
                       </button>
                       <Link
                         href="/login"
-                        className="flex-1 bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white font-bold py-3 rounded-xl transition-all duration-300 text-center"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl transition-all duration-300 text-center"
                       >
                         Voltar ao Login
                       </Link>

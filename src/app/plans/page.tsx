@@ -76,8 +76,13 @@ export default function PlansPage() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            PULSE
+          <Link href="/" className="inline-flex items-baseline space-x-2 group">
+            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              PULSE
+            </span>
+            <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              ANIME
+            </span>
           </Link>
           <div className="flex gap-4">
             <Link href="/browse" className="px-4 py-2 text-gray-300 hover:text-white transition">
