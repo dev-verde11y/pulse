@@ -174,14 +174,19 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Professional Background */}
+      {/* Anime-inspired Background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-gray-900"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-gray-900/20 via-transparent to-gray-800/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-blue-950"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
 
-        {/* Animated gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-orange-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-purple-600/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        {/* Animated gradient orbs - Blue theme */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/15 to-cyan-600/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-blue-500/10 to-indigo-600/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+        {/* Anime-style floating elements */}
+        <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-blue-400/60 rounded-full blur-sm animate-float"></div>
+        <div className="absolute top-2/3 left-1/4 w-3 h-3 bg-cyan-400/40 rounded-full blur-sm animate-float-delayed"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-blue-300/50 rounded-full blur-sm animate-float"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex">
@@ -200,9 +205,9 @@ function LoginContent() {
                     className="rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity"></div>
                 </div>
-                <span className="text-6xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                <span className="text-6xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   PULSE
                 </span>
               </Link>
@@ -210,33 +215,33 @@ function LoginContent() {
               <div className="space-y-4">
                 <h1 className="text-5xl font-bold leading-tight text-white">
                   Plataforma de{' '}
-                  <span className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                     streaming
                   </span>
                 </h1>
 
-                <p className="text-xl text-gray-400 leading-relaxed">
-                  Acesse conteúdo premium com qualidade profissional e experiência superior.
+                <p className="text-xl text-gray-300 leading-relaxed">
+                  Seus animes favoritos em HD+ com legendas e dublagens de qualidade.
                 </p>
               </div>
             </div>
 
-            {/* Professional Features Grid */}
+            {/* Anime Features Grid */}
             <div className="grid grid-cols-2 gap-6 pt-8">
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black text-white mb-2">15K+</div>
+              <div className="group bg-gradient-to-br from-blue-900/30 to-slate-800/40 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 text-center hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">15K+</div>
                 <div className="text-sm text-gray-300 font-semibold">Títulos Disponíveis</div>
               </div>
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black text-white mb-2">HD+</div>
+              <div className="group bg-gradient-to-br from-blue-900/30 to-slate-800/40 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 text-center hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">HD+</div>
                 <div className="text-sm text-gray-300 font-semibold">Alta Qualidade</div>
               </div>
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black text-white mb-2">∞</div>
+              <div className="group bg-gradient-to-br from-blue-900/30 to-slate-800/40 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 text-center hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">∞</div>
                 <div className="text-sm text-gray-300 font-semibold">Acesso Completo</div>
               </div>
-              <div className="group bg-gradient-to-br from-gray-800/30 to-gray-700/30 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 text-center hover:border-orange-500/50 transition-all duration-300 hover:scale-105">
-                <div className="text-3xl font-black text-white mb-2">24/7</div>
+              <div className="group bg-gradient-to-br from-blue-900/30 to-slate-800/40 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 text-center hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">24/7</div>
                 <div className="text-sm text-gray-300 font-semibold">Disponível</div>
               </div>
             </div>
@@ -258,9 +263,9 @@ function LoginContent() {
                     className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity"></div>
                 </div>
-                <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   PULSE
                 </span>
               </Link>
@@ -290,9 +295,11 @@ function LoginContent() {
             )}
 
             {/* Login Card */}
-            <div className="bg-gray-900/50 backdrop-blur-2xl border border-gray-700/50 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden">
+            <div className="bg-slate-900/60 backdrop-blur-2xl border border-blue-500/30 rounded-3xl shadow-2xl shadow-blue-900/20 p-6 sm:p-8 relative overflow-hidden">
               {/* Card glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-pink-500/5 to-purple-500/5 rounded-3xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-cyan-500/5 to-blue-600/5 rounded-3xl"></div>
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl"></div>
 
               <div className="relative z-10">
                 <div className="text-center mb-6 sm:mb-8">
@@ -320,7 +327,7 @@ function LoginContent() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       autoComplete="email"
-                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full bg-slate-800/50 border border-blue-500/30 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/60 focus:bg-slate-800/70 transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   {errors.email && (
@@ -350,7 +357,7 @@ function LoginContent() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Sua senha"
                       autoComplete="current-password"
-                      className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full bg-slate-800/50 border border-blue-500/30 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/60 focus:bg-slate-800/70 transition-all duration-300 text-sm sm:text-base"
                     />
                   </div>
                   {errors.password && (
@@ -364,16 +371,16 @@ function LoginContent() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center text-gray-400 cursor-pointer">
+                  <label className="flex items-center text-gray-400 cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded border-gray-600 text-orange-500 focus:ring-orange-500 bg-gray-700 mr-2 cursor-pointer"
+                      className="rounded border-blue-500/50 text-blue-500 focus:ring-blue-500 bg-slate-800 mr-2 cursor-pointer"
                     />
-                    Lembrar de mim
+                    <span className="group-hover:text-gray-300 transition-colors">Lembrar de mim</span>
                   </label>
-                  <Link href="/forgot-password" className="text-gray-400 hover:text-gray-300 transition-colors">
+                  <Link href="/forgot-password" className="text-gray-400 hover:text-blue-400 transition-colors">
                     Esqueceu a senha?
                   </Link>
                 </div>
@@ -390,11 +397,11 @@ function LoginContent() {
                 <button
                   type="submit"
                   disabled={isLogging}
-                  className="relative w-full bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
+                  className="relative w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
                 >
                   {/* Button glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
-                  
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
+
                   {isLogging ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -415,18 +422,18 @@ function LoginContent() {
               <div className="mt-6 sm:mt-8 text-center space-y-4">
                 <p className="text-gray-300 text-sm">
                   Não tem uma conta?{' '}
-                  <Link href="/register" className="text-orange-500 hover:text-orange-400 font-bold transition-all duration-300 hover:underline">
+                  <Link href="/register" className="text-blue-400 hover:text-cyan-400 font-bold transition-all duration-300 hover:underline">
                     Cadastre-se
                   </Link>
                 </p>
 
                 {/* Trial Info */}
-                <div className="bg-orange-900/20 border border-orange-700/30 rounded-xl p-3 text-xs text-gray-300">
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-3 text-xs text-gray-300">
                   <div className="flex items-center justify-center">
-                    <svg className="w-4 h-4 text-orange-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
-                    <span>Novos usuários ganham <strong className="text-orange-400">7 dias grátis</strong> ao se cadastrar</span>
+                    <span>Novos usuários ganham <strong className="text-blue-400">7 dias grátis</strong> ao se cadastrar</span>
                   </div>
                 </div>
               </div>
@@ -639,7 +646,7 @@ export default function LoginPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <svg className="animate-spin h-12 w-12 text-orange-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>

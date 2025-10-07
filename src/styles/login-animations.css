@@ -62,18 +62,34 @@
   animation: float 8s ease-in-out infinite reverse;
 }
 
-/* Glow effect */
+/* Glow effect - Enhanced Blue */
 @keyframes glow {
   0%, 100% {
     box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.5);
   }
   50% {
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.8);
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(34, 211, 238, 0.8);
   }
 }
 
 .animate-glow {
   animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Anime-style shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite linear;
+  background: linear-gradient(to right, transparent 0%, rgba(59, 130, 246, 0.2) 50%, transparent 100%);
+  background-size: 1000px 100%;
 }
 
 /* Pulse enhanced */

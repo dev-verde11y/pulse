@@ -1,8 +1,7 @@
 'use client'
 
-import { Button } from "@/components/ui/Button"
 import { useEffect, useState } from "react"
-import { Plan, PlanType } from "@prisma/client"
+import { Plan } from "@prisma/client"
 
 
 function formatPrice(price: string | number, billingCycle: string) {
@@ -62,15 +61,17 @@ export default function PricingPage() {
         if (!response.ok) {
           throw new Error('Falha ao buscar planos')
         }
-        const plansData = await response.json()
-        setPlans(plansData)
+        const data = await response.json()
+        // A API retorna { plans: [...] }
+        setPlans(data.plans || [])
       } catch (error) {
         console.error('Erro ao carregar planos:', error)
+        setPlans([]) // Define como array vazio em caso de erro
       } finally {
         setLoading(false)
       }
     }
-    
+
     loadPlans()
   }, [])
 
@@ -151,37 +152,37 @@ export default function PricingPage() {
                 {/* Brand Title - Pulse Representation */}
                 <div className="text-center mb-16">
                   <div className="space-y-6">
-                    {/* Pulse Visual Effect */}
+                    {/* Pulse Visual Effect - Blue theme */}
                     <div className="flex justify-center items-center gap-2 mb-4">
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-8 bg-gradient-to-t from-purple-500 to-pink-400 rounded-full animate-pulse"></div>
-                        <div className="w-2 h-12 bg-gradient-to-t from-pink-500 to-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                        <div className="w-2 h-16 bg-gradient-to-t from-purple-400 to-pink-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                        <div className="w-2 h-20 bg-gradient-to-t from-pink-400 to-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
-                        <div className="w-2 h-16 bg-gradient-to-t from-purple-500 to-pink-400 rounded-full animate-pulse" style={{animationDelay: '0.8s'}}></div>
-                        <div className="w-2 h-12 bg-gradient-to-t from-pink-500 to-purple-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                        <div className="w-2 h-8 bg-gradient-to-t from-purple-400 to-pink-500 rounded-full animate-pulse" style={{animationDelay: '1.2s'}}></div>
+                        <div className="w-2 h-8 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full animate-pulse"></div>
+                        <div className="w-2 h-12 bg-gradient-to-t from-cyan-500 to-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-2 h-16 bg-gradient-to-t from-blue-400 to-cyan-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                        <div className="w-2 h-20 bg-gradient-to-t from-cyan-400 to-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
+                        <div className="w-2 h-16 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full animate-pulse" style={{animationDelay: '0.8s'}}></div>
+                        <div className="w-2 h-12 bg-gradient-to-t from-cyan-500 to-blue-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                        <div className="w-2 h-8 bg-gradient-to-t from-blue-400 to-cyan-500 rounded-full animate-pulse" style={{animationDelay: '1.2s'}}></div>
                       </div>
                     </div>
-                    
-                    <h1 className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-400 animate-gradient-x leading-none tracking-tight">
+
+                    <h1 className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 animate-gradient-x leading-none tracking-tight">
                       PULSE
                     </h1>
-                    
+
                     {/* Heartbeat Line */}
                     <div className="flex justify-center items-center gap-6">
                       <div className="flex items-center">
-                        <div className="h-0.5 w-12 bg-gradient-to-r from-transparent to-purple-400"></div>
-                        <div className="h-1 w-4 bg-purple-400"></div>
-                        <div className="h-4 w-1 bg-pink-400"></div>
-                        <div className="h-8 w-1 bg-purple-500"></div>
-                        <div className="h-4 w-1 bg-pink-400"></div>
-                        <div className="h-1 w-4 bg-purple-400"></div>
-                        <div className="h-0.5 w-12 bg-gradient-to-l from-transparent to-purple-400"></div>
+                        <div className="h-0.5 w-12 bg-gradient-to-r from-transparent to-blue-400"></div>
+                        <div className="h-1 w-4 bg-blue-400"></div>
+                        <div className="h-4 w-1 bg-cyan-400"></div>
+                        <div className="h-8 w-1 bg-blue-500"></div>
+                        <div className="h-4 w-1 bg-cyan-400"></div>
+                        <div className="h-1 w-4 bg-blue-400"></div>
+                        <div className="h-0.5 w-12 bg-gradient-to-l from-transparent to-blue-400"></div>
                       </div>
                     </div>
-                    
-                    <p className="text-purple-300 font-black tracking-[0.3em] text-xl">
+
+                    <p className="text-blue-300 font-black tracking-[0.3em] text-xl">
                       STREAMING ANIME
                     </p>
                   </div>
@@ -192,7 +193,7 @@ export default function PricingPage() {
                   <h2 className="text-4xl md:text-6xl font-bold text-gray-100 leading-tight">
                     Viva Sua
                     <br />
-                    <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent animate-gradient-x">
+                    <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">
                       Paixão Anime
                     </span>
                   </h2>
@@ -206,19 +207,19 @@ export default function PricingPage() {
                 {/* Stats Simplificados */}
                 <div className="grid grid-cols-3 gap-8 py-8">
                   <div className="text-center group cursor-pointer">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
                       15K+
                     </div>
                     <div className="text-xs text-gray-500 font-normal mt-1">Episódios</div>
                   </div>
                   <div className="text-center group cursor-pointer">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+                    <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
                       4K
                     </div>
                     <div className="text-xs text-gray-500 font-normal mt-1">Ultra HD</div>
                   </div>
                   <div className="text-center group cursor-pointer">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
                       0
                     </div>
                     <div className="text-xs text-gray-500 font-normal mt-1">Anúncios</div>
@@ -249,7 +250,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Escolha Sua <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent animate-gradient-x">Fase da Lua</span>
+              Escolha Sua <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">Fase da Lua</span>
             </h2>
             <p className="text-xl text-white/70 max-w-2xl mx-auto">
               Todos os planos incluem 7 dias grátis. Sem compromisso, cancele quando quiser.
@@ -258,37 +259,150 @@ export default function PricingPage() {
 
           {/* Pricing Cards - Clean & Modern */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {plans.map((plan, index) => {
+            {/* Free Trial Card - Always First */}
+            <div className="relative group">
+              {/* Trial Badge */}
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
+                <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-yellow-500/50">
+                  🎁 TESTE GRÁTIS
+                </div>
+              </div>
+
+              {/* Card */}
+              <div className="relative bg-slate-900/60 backdrop-blur-xl border border-yellow-500/40 shadow-yellow-500/10 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+
+                {/* Plan Icon & Name */}
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-400/30">
+                    <span className="text-2xl">🎁</span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Teste Grátis
+                  </h3>
+
+                  <p className="text-gray-400 text-sm mb-4">
+                    Experimente tudo sem compromisso
+                  </p>
+
+                  {/* Price */}
+                  <div className="mb-4">
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-4xl font-black bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
+                        7 dias
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-gray-400 text-sm">
+                        100% Grátis
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-300 text-sm">
+                      Acesso completo por 7 dias
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-300 text-sm">
+                      Sem cartão de crédito
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-300 text-sm">
+                      Cancele a qualquer momento
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-300 text-sm">
+                      Streaming HD e 4K
+                    </span>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <a
+                  href="/plans"
+                  className="block w-full py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-yellow-500 to-amber-500 text-white hover:from-yellow-400 hover:to-amber-400 shadow-yellow-500/30 hover:scale-105 shadow-lg hover:shadow-xl text-center"
+                >
+                  Começar Teste Grátis
+                </a>
+
+                <p className="text-center text-gray-500 text-xs mt-3">
+                  Sem compromisso • Sem cartão
+                </p>
+              </div>
+            </div>
+
+            {plans.filter(plan => Number(plan.price) > 0).map((plan, index) => {
               const pricing = formatPrice(Number(plan.price), plan.billingCycle)
               const isPopular = plan.popular
-              
+              const isAnnual = plan.billingCycle === 'ANNUALLY'
+
               return (
                 <div key={plan.id} className="relative group">
-                  {/* Popular Badge */}
-                  {isPopular && (
+                  {/* Annual Badge */}
+                  {isAnnual && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                      <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg">
+                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-green-500/50">
+                        💰 ECONOMIZE 16%
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Popular Badge */}
+                  {isPopular && !isAnnual && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
+                      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-blue-500/50">
                         🌕 POPULAR
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Card */}
                   <div className={`
-                    relative bg-white/[0.02] backdrop-blur-xl border rounded-2xl p-6
+                    relative bg-slate-900/60 backdrop-blur-xl border rounded-2xl p-6
                     transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl
-                    ${isPopular 
-                      ? 'border-purple-400/40 shadow-purple-400/10' 
-                      : 'border-white/10 hover:border-purple-400/30'
+                    ${isAnnual
+                      ? 'border-green-500/40 shadow-green-500/10'
+                      : isPopular
+                      ? 'border-cyan-500/40 shadow-cyan-500/10'
+                      : 'border-blue-500/30 hover:border-blue-400/50'
                     }
                   `}>
                     
                     {/* Plan Icon & Name */}
                     <div className="text-center mb-6">
                       <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-                        isPopular 
-                          ? 'bg-gradient-to-br from-purple-400/20 to-pink-500/20 border border-purple-400/30' 
-                          : 'bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-400/30'
+                        isAnnual
+                          ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-400/30'
+                          : isPopular
+                          ? 'bg-gradient-to-br from-blue-400/20 to-cyan-500/20 border border-cyan-400/30'
+                          : 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30'
                       }`}>
                         <span className="text-2xl">
                           {plan.type === 'FREE' && '🆓'}
@@ -309,8 +423,12 @@ export default function PricingPage() {
                       {/* Price */}
                       <div className="mb-4">
                         <div className="flex items-baseline justify-center gap-1">
-                          <span className={`text-4xl font-black ${
-                            isPopular ? 'text-purple-400' : 'text-white'
+                          <span className={`text-4xl font-black bg-gradient-to-r ${
+                            isAnnual
+                              ? 'from-green-400 to-emerald-400 bg-clip-text text-transparent'
+                              : isPopular
+                              ? 'from-blue-400 to-cyan-400 bg-clip-text text-transparent'
+                              : 'from-blue-400 to-cyan-400 bg-clip-text text-transparent'
                           }`}>
                             {pricing.price}
                           </span>
@@ -318,11 +436,11 @@ export default function PricingPage() {
                             {pricing.period}
                           </span>
                         </div>
-                        
-                        {plan.billingCycle === 'ANNUALLY' && (
+
+                        {isAnnual && (
                           <div className="mt-2">
-                            <span className="inline-block bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
-                              💰 Economize 16%
+                            <span className="inline-block bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">
+                              Equivalente a R$ {(Number(plan.price) / 12).toFixed(2)}/mês
                             </span>
                           </div>
                         )}
@@ -334,9 +452,9 @@ export default function PricingPage() {
                       {plan.features.slice(0, 4).map((feature, idx) => (
                         <div key={idx} className="flex items-start gap-3">
                           <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isPopular 
-                              ? 'bg-purple-400/20 text-purple-400' 
-                              : 'bg-purple-400/20 text-purple-400'
+                            isAnnual
+                              ? 'bg-green-400/20 text-green-400'
+                              : 'bg-blue-400/20 text-blue-400'
                           }`}>
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -352,9 +470,9 @@ export default function PricingPage() {
                       {plan.maxScreens > 1 && (
                         <div className="flex items-start gap-3">
                           <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isPopular 
-                              ? 'bg-purple-400/20 text-purple-400' 
-                              : 'bg-purple-400/20 text-purple-400'
+                            isAnnual
+                              ? 'bg-green-400/20 text-green-400'
+                              : 'bg-blue-400/20 text-blue-400'
                           }`}>
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -369,9 +487,9 @@ export default function PricingPage() {
                       {plan.offlineViewing && (
                         <div className="flex items-start gap-3">
                           <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isPopular 
-                              ? 'bg-purple-400/20 text-purple-400' 
-                              : 'bg-purple-400/20 text-purple-400'
+                            isAnnual
+                              ? 'bg-green-400/20 text-green-400'
+                              : 'bg-blue-400/20 text-blue-400'
                           }`}>
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -386,9 +504,9 @@ export default function PricingPage() {
                       {plan.gameVaultAccess && (
                         <div className="flex items-start gap-3">
                           <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isPopular 
-                              ? 'bg-purple-400/20 text-purple-400' 
-                              : 'bg-purple-400/20 text-purple-400'
+                            isAnnual
+                              ? 'bg-green-400/20 text-green-400'
+                              : 'bg-blue-400/20 text-blue-400'
                           }`}>
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -402,16 +520,21 @@ export default function PricingPage() {
                     </div>
                     
                     {/* CTA Button */}
-                    <Button className={`
-                      w-full py-3 rounded-xl font-semibold transition-all duration-300
-                      ${isPopular 
-                        ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white hover:from-purple-300 hover:to-pink-400' 
-                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500'
-                      }
-                      hover:scale-105 shadow-lg hover:shadow-xl
-                    `}>
+                    <a
+                      href="/plans"
+                      className={`
+                        block w-full py-3 rounded-xl font-semibold transition-all duration-300 text-center
+                        ${isAnnual
+                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500 shadow-green-500/30'
+                          : isPopular
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-400 hover:to-cyan-400 shadow-blue-500/30'
+                          : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-500 hover:to-cyan-500 shadow-blue-500/30'
+                        }
+                        hover:scale-105 shadow-lg hover:shadow-xl
+                      `}
+                    >
                       Começar Teste Grátis
-                    </Button>
+                    </a>
                     
                     <p className="text-center text-gray-500 text-xs mt-3">
                       7 dias grátis • Sem compromisso

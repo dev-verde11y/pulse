@@ -131,7 +131,7 @@ function RegisterContent() {
         <div className="absolute inset-0 bg-gradient-to-tr from-gray-900/20 via-transparent to-gray-800/20"></div>
 
         {/* Animated gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-orange-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-purple-600/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
@@ -151,9 +151,9 @@ function RegisterContent() {
                     className="rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
                 </div>
-                <span className="text-6xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                <span className="text-6xl font-black tracking-tight bg-blue-500 bg-clip-text text-transparent">
                   PULSE
                 </span>
               </Link>
@@ -161,7 +161,7 @@ function RegisterContent() {
               <div className="space-y-4">
                 <h1 className="text-5xl font-bold leading-tight text-white">
                   Comece sua{' '}
-                  <span className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent">
+                  <span className="bg-blue-400 bg-clip-text text-transparent">
                     jornada anime
                   </span>
                 </h1>
@@ -175,7 +175,7 @@ function RegisterContent() {
             {/* Benefits */}
             <div className="space-y-4 pt-8">
               <div className="flex items-start gap-4 text-left bg-white/5 p-4 rounded-xl border border-white/10">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-pink-500 rounded-lg flex items-center justify-center">
                   <span className="text-xl">✨</span>
                 </div>
                 <div>
@@ -222,9 +222,9 @@ function RegisterContent() {
                     className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
                     priority
                   />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute -inset-1 bg-blue-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
                 </div>
-                <span className="text-4xl font-black tracking-tight bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                <span className="text-4xl font-black tracking-tight bg-blue-500 bg-clip-text text-transparent">
                   PULSE
                 </span>
               </Link>
@@ -234,7 +234,7 @@ function RegisterContent() {
             {/* Register Card */}
             <div className="bg-gray-900/50 backdrop-blur-2xl border border-gray-700/50 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden">
               {/* Card glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-pink-500/5 to-purple-500/5 rounded-3xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-pink-500/5 to-purple-500/5 rounded-3xl"></div>
 
               <div className="relative z-10">
                 <div className="text-center mb-6 sm:mb-8">
@@ -245,7 +245,7 @@ function RegisterContent() {
                     {selectedPlan ? (
                       <>Crie sua conta para continuar com o pagamento</>
                     ) : (
-                      <>Comece agora com <span className="font-bold text-orange-400">7 dias grátis</span></>
+                      <>Comece agora com <span className="font-bold text-blue-400">7 dias grátis</span></>
                     )}
                   </p>
                 </div>
@@ -269,7 +269,7 @@ function RegisterContent() {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Seu nome"
                         autoComplete="name"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
                     {errors.name && (
@@ -300,7 +300,7 @@ function RegisterContent() {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="seu@email.com"
                         autoComplete="email"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
                     {errors.email && (
@@ -331,7 +331,7 @@ function RegisterContent() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Mínimo 12 caracteres"
                         autoComplete="new-password"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
                     {errors.password && (
@@ -362,7 +362,7 @@ function RegisterContent() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirme sua senha"
                         autoComplete="new-password"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
+                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
                       />
                     </div>
                     {errors.confirmPassword && (
@@ -382,15 +382,15 @@ function RegisterContent() {
                       type="checkbox"
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="mt-1 rounded border-gray-600 text-orange-600 focus:ring-orange-500 bg-gray-700"
+                      className="mt-1 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700"
                     />
                     <label htmlFor="terms" className="ml-3 text-sm text-gray-300">
                       Eu concordo com os{' '}
-                      <Link href="/terms" className="text-orange-400 hover:text-orange-300 font-semibold">
+                      <Link href="/terms" className="text-blue-400 hover:text-blue-300 font-semibold">
                         Termos de Uso
                       </Link>{' '}
                       e{' '}
-                      <Link href="/privacy" className="text-orange-400 hover:text-orange-300 font-semibold">
+                      <Link href="/privacy" className="text-blue-400 hover:text-blue-300 font-semibold">
                         Política de Privacidade
                       </Link>
                     </label>
@@ -408,9 +408,9 @@ function RegisterContent() {
                   <button
                     type="submit"
                     disabled={isRegistering}
-                    className="relative w-full bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-600/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
+                    className="relative w-full bg-blue-600 hover:from-blue-500 hover:to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
+                    <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
 
                     {isRegistering ? (
                       <>
@@ -431,14 +431,14 @@ function RegisterContent() {
                 <div className="mt-6 sm:mt-8 text-center space-y-4">
                   <p className="text-gray-300 text-sm">
                     Já tem uma conta?{' '}
-                    <Link href="/login" className="text-orange-400 hover:text-orange-300 font-bold transition-all duration-300 hover:underline">
+                    <Link href="/login" className="text-blue-400 hover:text-blue-300 font-bold transition-all duration-300 hover:underline">
                       Faça login
                     </Link>
                   </p>
 
                   <div className="pt-4 border-t border-gray-700/50">
                     <p className="text-xs text-gray-400">
-                      Ao criar sua conta, você recebe <span className="font-semibold text-orange-400">7 dias de acesso gratuito</span> a todos os recursos premium. Cancele quando quiser.
+                      Ao criar sua conta, você recebe <span className="font-semibold text-blue-400">7 dias de acesso gratuito</span> a todos os recursos premium. Cancele quando quiser.
                     </p>
                   </div>
                 </div>

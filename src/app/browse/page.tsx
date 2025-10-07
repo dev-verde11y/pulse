@@ -87,7 +87,7 @@ export default function BrowsePage() {
                 height={40}
                 className="rounded-lg"
               />
-              <span className="text-2xl font-black bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+              <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 PULSE
               </span>
             </Link>
@@ -107,7 +107,7 @@ export default function BrowsePage() {
               </Link>
               <Link
                 href="/plans"
-                className="px-6 py-2 text-sm font-bold bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 rounded-lg transition-all"
+                className="px-6 py-2 text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 rounded-lg transition-all shadow-lg shadow-blue-500/30"
               >
                 Assinar Agora
               </Link>
@@ -117,11 +117,11 @@ export default function BrowsePage() {
       </header>
 
       {/* Hero Section */}
-      <div className="relative h-[300px] bg-gradient-to-b from-gray-900 to-black">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 to-pink-600/10"></div>
+      <div className="relative h-[300px] bg-gradient-to-b from-slate-900 to-black">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-cyan-600/10"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
           <h1 className="text-5xl sm:text-6xl font-black mb-4">
-            <span className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               Catálogo
             </span>
           </h1>
@@ -143,7 +143,7 @@ export default function BrowsePage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Buscar animes..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full bg-slate-800 border border-blue-500/30 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -165,7 +165,7 @@ export default function BrowsePage() {
             <select
               value={selectedGenre}
               onChange={(e) => setSelectedGenre(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="bg-slate-800 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Todos os Gêneros</option>
               {genres.map((genre) => (
@@ -179,7 +179,7 @@ export default function BrowsePage() {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="bg-slate-800 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Todos os Tipos</option>
               {types.map((type) => (
@@ -197,7 +197,7 @@ export default function BrowsePage() {
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <svg
-              className="animate-spin h-12 w-12 text-orange-500"
+              className="animate-spin h-12 w-12 text-blue-500"
               fill="none"
               viewBox="0 0 24 24"
             >
@@ -225,7 +225,7 @@ export default function BrowsePage() {
             {animes.map((anime) => (
               <div
                 key={anime.id}
-                className="group relative bg-gray-900 rounded-lg overflow-hidden hover:ring-2 hover:ring-orange-500 transition-all duration-300"
+                className="group relative bg-slate-900 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300"
               >
                 {/* Poster */}
                 <div className="aspect-[2/3] relative overflow-hidden bg-gray-800">
@@ -263,7 +263,7 @@ export default function BrowsePage() {
                       {anime.genres.slice(0, 2).map((genre) => (
                         <span
                           key={genre}
-                          className="text-xs px-2 py-1 bg-orange-600/80 rounded"
+                          className="text-xs px-2 py-1 bg-blue-600/80 rounded"
                         >
                           {genre}
                         </span>
@@ -277,7 +277,7 @@ export default function BrowsePage() {
                   </div>
 
                   {/* Type Badge */}
-                  <div className="absolute top-2 left-2 bg-orange-600/90 px-2 py-1 rounded text-xs font-bold">
+                  <div className="absolute top-2 left-2 bg-blue-600/90 px-2 py-1 rounded text-xs font-bold">
                     {anime.type === 'ANIME' ? 'Anime' : anime.type === 'FILME' ? 'Filme' : 'Série'}
                   </div>
                 </div>
@@ -307,7 +307,7 @@ export default function BrowsePage() {
                   className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
                   <div className="text-center">
-                    <div className="bg-gradient-to-r from-orange-600 to-pink-600 px-6 py-3 rounded-lg font-bold">
+                    <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-3 rounded-lg font-bold shadow-lg shadow-blue-500/50">
                       Assistir
                     </div>
                     <p className="text-xs text-gray-300 mt-2">Faça login para assistir</p>
@@ -325,11 +325,11 @@ export default function BrowsePage() {
           <div className="text-center text-gray-400 text-sm">
             <p>© {new Date().getFullYear()} Pulse. Todos os direitos reservados.</p>
             <p className="mt-2">
-              <Link href="/login" className="text-orange-500 hover:text-orange-400">
+              <Link href="/login" className="text-blue-400 hover:text-cyan-400">
                 Faça login
               </Link>
               {' ou '}
-              <Link href="/register" className="text-orange-500 hover:text-orange-400">
+              <Link href="/register" className="text-blue-400 hover:text-cyan-400">
                 cadastre-se
               </Link>
               {' '}para assistir
