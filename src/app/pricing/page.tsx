@@ -33,7 +33,7 @@ function getMoonPhaseDescription(planType: string) {
   return descriptions[planType as keyof typeof descriptions] || 'Plano premium'
 }
 
-function updateFeatureText(feature: string, planType: string) {
+function updateFeatureText(feature: string) {
   // Atualiza referências aos planos antigos nas features
   let updatedFeature = feature
   
@@ -358,7 +358,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            {plans.filter(plan => Number(plan.price) > 0).map((plan, index) => {
+            {plans.filter(plan => Number(plan.price) > 0).map((plan) => {
               const pricing = formatPrice(Number(plan.price), plan.billingCycle)
               const isPopular = plan.popular
               const isAnnual = plan.billingCycle === 'ANNUALLY'
@@ -461,7 +461,7 @@ export default function PricingPage() {
                             </svg>
                           </div>
                           <span className="text-gray-300 text-sm">
-                            {updateFeatureText(feature, plan.type)}
+                            {updateFeatureText(feature)}
                           </span>
                         </div>
                       ))}

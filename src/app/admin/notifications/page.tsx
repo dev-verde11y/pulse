@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { NotificationForm } from '@/components/admin/NotificationForm'
 import { NotificationList } from '@/components/admin/NotificationList'
-import { useNotifications, Notification } from '@/hooks/useNotifications'
+import { Notification } from '@/hooks/useNotifications'
 
 export default function NotificationsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)

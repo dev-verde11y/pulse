@@ -41,13 +41,14 @@ export function sanitizeEpisodeByContext(episode: Record<string, unknown>, reque
   }
 
   // Se é contexto público, remove URLs e caminhos sensíveis
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {
     videoUrl,
-    r2Key,
-    thumbnailR2Key,
-    r2VideoPath,
-    r2SubtitlePath,
-    r2ThumbnailPath,
+    r2Key: _r2Key,
+    thumbnailR2Key: _thumbnailR2Key,
+    r2VideoPath: _r2VideoPath,
+    r2SubtitlePath: _r2SubtitlePath,
+    r2ThumbnailPath: _r2ThumbnailPath,
     ...sanitized
   } = episode
 

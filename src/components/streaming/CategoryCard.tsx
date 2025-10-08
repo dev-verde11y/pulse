@@ -22,6 +22,7 @@ const getCategoryIcon = (categoryName: string) => {
   return icons[categoryName] || '🎌'
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getCategoryGradient = (categoryName: string) => {
   const gradients: { [key: string]: string } = {
     'Ação': 'from-red-600/20 via-orange-600/10 to-yellow-600/20',

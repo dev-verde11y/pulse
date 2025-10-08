@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   PlayIcon,
   PauseIcon,
@@ -13,7 +13,6 @@ import {
   LanguageIcon,
   ChatBubbleBottomCenterTextIcon,
   Cog6ToothIcon,
-  RectangleStackIcon,
   ComputerDesktopIcon,
   TvIcon
 } from '@heroicons/react/24/solid'
@@ -123,7 +122,7 @@ export function VideoPlayerV2({
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1)
   const [showQualityMenu, setShowQualityMenu] = useState(false)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
-  const [isPictureInPicture, setIsPictureInPicture] = useState(false)
+  const [, setIsPictureInPicture] = useState(false)
   const [isHlsSupported, setIsHlsSupported] = useState(false)
   const [skipDuration, setSkipDuration] = useState<number>(10)
   const [showSkipMenu, setShowSkipMenu] = useState(false)
@@ -135,22 +134,21 @@ export function VideoPlayerV2({
   const { user } = useAuth()
 
   // Função para salvar progresso
-  const saveProgress = async (currentTime: number, duration: number, forceComplete = false) => {
+  const saveProgress = useCallback(async (currentTime: number, duration: number) => {
     if (!user || !episode.id || !animeId) return
-    
+
     const progressPercent = (currentTime / duration) * 100
-    const isCompleted = forceComplete || progressPercent >= 90
-    
+
     try {
       await api.updateWatchHistory(
         animeId,
-        episode.id, 
+        episode.id,
         progressPercent
       )
     } catch (error) {
       console.error('Erro ao salvar progresso:', error)
     }
-  }
+  }, [user, episode.id, animeId])
 
   // Auto-save progress
   useEffect(() => {
@@ -178,7 +176,7 @@ export function VideoPlayerV2({
         clearInterval(interval)
       }
     }
-  }, [isPlaying, user])
+  }, [isPlaying, user, saveProgress])
 
   // Save on pause/completion
   useEffect(() => {
@@ -188,15 +186,17 @@ export function VideoPlayerV2({
         setLastProgressUpdate(currentTime)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, currentTime, duration, lastProgressUpdate, user])
 
   useEffect(() => {
     if (duration > 0 && currentTime > 0 && user) {
       const progressPercent = (currentTime / duration) * 100
       if (progressPercent >= 90) {
-        saveProgress(currentTime, duration, true)
+        saveProgress(currentTime, duration)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration, user])
 
   // Auto-hide controls
@@ -527,6 +527,7 @@ export function VideoPlayerV2({
         hlsRef.current = null
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [episode.id, isHlsSupported, subtitles])
 
   // Trocar trilha de áudio
@@ -763,6 +764,7 @@ export function VideoPlayerV2({
 
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration, skipDuration])
 
   const formatTime = (time: number) => {

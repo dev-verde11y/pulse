@@ -1,4 +1,4 @@
-import { User, Subscription, Plan, SubscriptionStatus, PlanType } from '@prisma/client'
+import { User, Subscription, Plan, PlanType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 export interface UserWithSubscription extends User {

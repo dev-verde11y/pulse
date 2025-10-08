@@ -48,6 +48,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     fetchAnimes()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGenre, selectedType])
 
   const fetchAnimes = async () => {

@@ -1,14 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { Button } from '@/components/ui/Button'
 import { formatPrice as formatCurrency } from '@/lib/payments/plan-config'
 
-function formatPrice(amount: number, billingCycle: string) {
+function formatPrice(amount: number) {
   const formatted = formatCurrency(amount)
   return formatted
 }
@@ -93,7 +91,6 @@ interface Plan {
 
 export default function SubscriptionDashboard() {
   const { user } = useAuth()
-  const router = useRouter()
   const [subscription, setSubscription] = useState<UserSubscription | null>(null)
   const [payments, setPayments] = useState<PaymentHistory[]>([])
   const [loading, setLoading] = useState(true)
@@ -236,7 +233,7 @@ export default function SubscriptionDashboard() {
                 
                 <div className="text-right">
                   <div className="text-3xl font-bold text-purple-400">
-                    {formatPrice(subscription.plan.price, subscription.plan.billingCycle)}
+                    {formatPrice(subscription.plan.price)}
                   </div>
                   <div className="text-gray-400 text-sm">
                     /{subscription.plan.billingCycle === 'MONTHLY' ? 'mês' : 'ano'}

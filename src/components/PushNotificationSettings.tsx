@@ -25,6 +25,7 @@ export default function PushNotificationSettings() {
     };
 
     initializePushNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleToggleNotifications = async () => {

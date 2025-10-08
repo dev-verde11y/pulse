@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { Anime, Episode } from '@/types/anime'
-import { PlayIcon, PlusIcon} from '@heroicons/react/24/solid'
+import { PlayIcon } from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
 import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
@@ -70,7 +70,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
           anime: anime,
           lastWatched: animeHistory[0]
         })
-      } catch (error) {
+      } catch {
         // Usuário nunca assistiu - history fica null
         setWatchHistory(null)
       } finally {
@@ -79,6 +79,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     }
 
     loadWatchHistory()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, anime.id])
 
   // Verificar se o anime está nos favoritos

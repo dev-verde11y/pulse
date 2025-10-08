@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 export default function LandingPage() {
   const router = useRouter()
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -17,7 +17,7 @@ export default function LandingPage() {
     try {
       const response = await fetch('/api/auth/me')
       setIsAuthenticated(response.ok)
-    } catch (error) {
+    } catch {
       setIsAuthenticated(false)
     }
   }

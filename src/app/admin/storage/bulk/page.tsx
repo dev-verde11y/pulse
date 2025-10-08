@@ -37,7 +37,6 @@ interface Episode {
 export default function BulkUploadPage() {
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([])
   const [episodes, setEpisodes] = useState<Episode[]>([])
-  const [selectedAnimeId, setSelectedAnimeId] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -189,7 +188,7 @@ export default function BulkUploadPage() {
   const selectEpisodeForFile = (fileId: string, episode: Episode) => {
     updateUploadFile(fileId, {
       episodeId: episode.id,
-      animeId: episode.animeId || selectedAnimeId
+      animeId: episode.animeId
     })
   }
 

@@ -30,7 +30,7 @@ export default function PlansPage() {
     try {
       const response = await fetch('/api/auth/me')
       setIsAuthenticated(response.ok)
-    } catch (error) {
+    } catch {
       setIsAuthenticated(false)
     }
   }

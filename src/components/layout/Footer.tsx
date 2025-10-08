@@ -100,14 +100,14 @@ export function Footer() {
     }
   ]
 
-  const features = [
-    "4K Ultra HD",
-    "HDR Dolby Vision",
-    "Áudio Dolby Atmos",
-    "Múltiplos Dispositivos",
-    "Download Offline",
-    "Controle Parental"
-  ]
+  // const features = [
+  //   "4K Ultra HD",
+  //   "HDR Dolby Vision",
+  //   "Áudio Dolby Atmos",
+  //   "Múltiplos Dispositivos",
+  //   "Download Offline",
+  //   "Controle Parental"
+  // ]
 
   return (
     <footer className="relative bg-black/95 backdrop-blur-sm border-t border-white/5">

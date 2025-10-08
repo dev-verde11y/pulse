@@ -85,7 +85,7 @@ export function validateSecureVideoToken(token: string): {
       data: decoded
     }
 
-  } catch (error) {
+  } catch {
     return { valid: false, error: 'Token malformado' }
   }
 }

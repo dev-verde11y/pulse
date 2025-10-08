@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { 
   PlayIcon, 
   PauseIcon, 
@@ -80,22 +80,21 @@ export function VideoPlayer({
   const { user } = useAuth()
 
   // Função para salvar progresso na API
-  const saveProgress = async (currentTime: number, duration: number, forceComplete = false) => {
+  const saveProgress = useCallback(async (currentTime: number, duration: number) => {
     if (!user || !episode.id || !animeId) return
-    
+
     const progressPercent = (currentTime / duration) * 100
-    const isCompleted = forceComplete || progressPercent >= 90
-    
+
     try {
       await api.updateWatchHistory(
         animeId,
-        episode.id, 
+        episode.id,
         progressPercent
       )
     } catch (error) {
       console.error('Erro ao salvar progresso:', error)
     }
-  }
+  }, [user, episode.id, animeId])
 
   // Salvar progresso a cada 10 segundos durante reprodução
   useEffect(() => {
@@ -125,7 +124,7 @@ export function VideoPlayer({
         clearInterval(interval)
       }
     }
-  }, [isPlaying, user])
+  }, [isPlaying, user, saveProgress])
 
   // Salvar quando pausar
   useEffect(() => {
@@ -136,17 +135,19 @@ export function VideoPlayer({
         setLastProgressUpdate(currentTime)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, currentTime, duration, lastProgressUpdate, user])
 
   // Salvar quando episódio terminar (90%+)
   useEffect(() => {
     if (duration > 0 && currentTime > 0 && user) {
       const progressPercent = (currentTime / duration) * 100
-      
+
       if (progressPercent >= 90) {
-        saveProgress(currentTime, duration, true)
+        saveProgress(currentTime, duration)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration, user])
 
   // Auto-hide controls
@@ -373,6 +374,7 @@ export function VideoPlayer({
 
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration])
 
   const formatTime = (time: number) => {

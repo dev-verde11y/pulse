@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { Anime } from '@/types/anime'
 import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
@@ -12,7 +12,7 @@ interface BannerCarouselProps {
 
 export function BannerCarousel({ title, animes }: BannerCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  // const scrollContainerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const nextSlide = () => {

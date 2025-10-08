@@ -1,7 +1,7 @@
 'use client'
 
 import { Notification } from '@/hooks/useNotifications'
-import Link from 'next/link'
+//import Link from 'next/link'
 import Image from 'next/image'
 
 interface NotificationItemProps {

@@ -14,7 +14,7 @@ import { Anime } from '@/types/anime'
 
 export default function AnimeDetailPage() {
   const params = useParams()
-  const { user, loading } = useAuth()
+  const { loading } = useAuth()
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')

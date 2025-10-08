@@ -29,6 +29,7 @@ function CheckoutContent() {
     }
 
     fetchPlan()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planType])
 
   const fetchPlan = async () => {

@@ -9,7 +9,6 @@ import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
 import { 
   FireIcon,
-  ArrowTrendingUpIcon,
   EyeIcon,
   StarIcon
 } from '@heroicons/react/24/outline'

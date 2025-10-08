@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { AuthContextType, User, LoginCredentials, RegisterCredentials, AuthResponse, SubscriptionInfo } from '@/types/auth'
+import { AuthContextType, User, AuthResponse, SubscriptionInfo } from '@/types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (isExpired) {
           logout()
         }
-      } catch (error) {
+      } catch {
         logout()
       }
     }
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             validateToken(storedToken)
           }
         }
-      } catch (error) {
+      } catch {
         // Token inválido, remove dados
         logout()
       } finally {
@@ -72,6 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     loadStoredAuth()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const validateToken = async (token: string) => {
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         return prevUser
       })
-    } catch (error) {
+    } catch {
       // Token inválido, remove do localStorage silenciosamente
       logout()
     }
@@ -186,7 +187,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Atualiza no localStorage
       try {
         localStorage.setItem('user', JSON.stringify(updatedUser))
-      } catch (error) {
+      } catch {
         // Ignore localStorage errors on server
       }
       
@@ -201,7 +202,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('subscriptionInfo')
       // Remove cookie
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-    } catch (error) {
+    } catch {
       // Ignore localStorage errors on server
     }
     setToken(null)

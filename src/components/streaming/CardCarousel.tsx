@@ -52,7 +52,6 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
   if (animes.length === 0) return null
 
   const showNavigation = animes.length > itemsToShow
-  const actualItemsToShow = Math.min(animes.length, itemsToShow)
 
   return (
     <section className="mb-10 relative carousel-section group">

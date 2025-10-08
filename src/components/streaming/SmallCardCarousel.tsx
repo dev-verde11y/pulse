@@ -18,7 +18,7 @@ function ContinueWatchingSmallCard({ anime }: { anime: Anime }) {
   const router = useRouter()
   const { user } = useAuth()
   const [watchHistory, setWatchHistory] = useState<{ episodeId: string; progress: number; completed?: boolean } | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
 
   // Carregar histórico de visualização
   useEffect(() => {
@@ -212,7 +212,6 @@ export function SmallCardCarousel({ title, animes }: SmallCardCarouselProps) {
   if (animes.length === 0) return null
 
   const showNavigation = animes.length > itemsToShow
-  const actualItemsToShow = Math.min(animes.length, itemsToShow)
 
   return (
     <section className="mb-8 relative carousel-section group">

@@ -27,6 +27,7 @@ export function useFavorites() {
 
   useEffect(() => {
     loadFavoritesCount()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const refreshCount = () => {

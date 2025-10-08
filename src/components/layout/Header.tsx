@@ -36,7 +36,7 @@ export function Header() {
   const [loadingGenres, setLoadingGenres] = useState(false)
   
   const { user, logout } = useAuth()
-  const { favoritesCount, loading: favoritesLoading } = useFavorites()
+  const { favoritesCount } = useFavorites()
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, loading: notificationsLoading } = useNotifications()
   const userMenuRef = useRef<HTMLDivElement>(null)
   const categoriesRef = useRef<HTMLDivElement>(null)
@@ -85,21 +85,21 @@ export function Header() {
     }
   }, [])
 
-  const categories = [
-    { name: 'Filmes', subcategories: ['Ação', 'Drama', 'Comédia', 'Terror', 'Ficção Científica'] },
-    { name: 'Séries', subcategories: ['Drama', 'Comédia', 'Reality Show', 'Documentário'] },
-    { name: 'Documentários', subcategories: ['Natureza', 'História', 'Tecnologia', 'Biografias'] },
-    { name: 'Anime', subcategories: ['Shounen', 'Shoujo', 'Seinen', 'Josei'] }
-  ]
+  // const categories = [
+  //   { name: 'Filmes', subcategories: ['Ação', 'Drama', 'Comédia', 'Terror', 'Ficção Científica'] },
+  //   { name: 'Séries', subcategories: ['Drama', 'Comédia', 'Reality Show', 'Documentário'] },
+  //   { name: 'Documentários', subcategories: ['Natureza', 'História', 'Tecnologia', 'Biografias'] },
+  //   { name: 'Anime', subcategories: ['Shounen', 'Shoujo', 'Seinen', 'Josei'] }
+  // ]
 
   const handleLogout = () => {
     logout()
     window.location.href = '/login'
   }
 
-  const navLinkClass = "relative group text-sm font-medium transition-colors"
-  const navLinkTextClass = "text-gray-300 hover:text-white transition-colors duration-200"
-  const navLinkUnderlineClass = "absolute bottom-0 left-0 h-0.5 w-0 bg-blue-500 group-hover:w-full transition-all duration-300 ease-in-out"
+  // const navLinkClass = "relative group text-sm font-medium transition-colors"
+  // const navLinkTextClass = "text-gray-300 hover:text-white transition-colors duration-200"
+  // const navLinkUnderlineClass = "absolute bottom-0 left-0 h-0.5 w-0 bg-blue-500 group-hover:w-full transition-all duration-300 ease-in-out"
 
   return (
     <header className={`text-white sticky top-0 z-50 transition-all duration-300 ${

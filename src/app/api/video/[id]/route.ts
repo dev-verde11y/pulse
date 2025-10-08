@@ -147,7 +147,6 @@ export async function GET(
     console.log(`🎬 [VIDEO API] Quality solicitada: ${quality}`)
 
     // 🛡️ VALIDAÇÃO DE SEGURANÇA
-    const referer = request.headers.get('referer')
     const origin = request.headers.get('origin')
 
     // Verificar se vem do nosso domínio
@@ -249,7 +248,7 @@ export async function GET(
   }
 }
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new Response(null, {
     status: 200,
     headers: {

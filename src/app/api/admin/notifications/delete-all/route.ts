@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // DELETE - Excluir todas as notificações (admin)
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     const session = await auth()
     if (!session?.user?.id) {

@@ -158,6 +158,7 @@ export function EditAnimeModal({ anime, isOpen, onClose, onSuccess }: EditAnimeM
     }))
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
       setFormData(prev => ({
@@ -168,6 +169,7 @@ export function EditAnimeModal({ anime, isOpen, onClose, onSuccess }: EditAnimeM
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const removeTag = (tag: string) => {
     setFormData(prev => ({
       ...prev,

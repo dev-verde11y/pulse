@@ -15,28 +15,28 @@ import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
 import 'swiper/css/autoplay'
 
-interface HeroContent {
-  id: string
-  title: string
-  subtitle: string
-  description: string
-  type: string
-  year: number
-  rating: string
-  duration: string
-  episode?: string
-  backgroundImage: string
-  genres: string[]
-  animeId?: string
-  anime?: Anime
-}
+// interface HeroContent {
+//   id: string
+//   title: string
+//   subtitle: string
+//   description: string
+//   type: string
+//   year: number
+//   rating: string
+//   duration: string
+//   episode?: string
+//   backgroundImage: string
+//   genres: string[]
+//   animeId?: string
+//   anime?: Anime
+// }
 
-interface HeroBannerProps {
-  animes?: Anime[]
-}
+// interface HeroBannerProps {
+//   animes?: Anime[]
+// }
 
 
-export function HeroBanner({ animes = [] }: HeroBannerProps) {
+export function HeroBanner() {
   const swiperRef = useRef<SwiperRef | null>(null)
   const { user } = useAuth()
   const router = useRouter()
@@ -44,7 +44,7 @@ export function HeroBanner({ animes = [] }: HeroBannerProps) {
   const [heroBanners, setHeroBanners] = useState<Array<Record<string, unknown>>>([])
   const [bannersLoading, setBannersLoading] = useState(true)
   const [imagesLoaded, setImagesLoaded] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [favorites, setFavorites] = useState<string[]>([])
   const [favoriteLoading, setFavoriteLoading] = useState<string[]>([])
 

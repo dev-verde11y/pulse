@@ -21,7 +21,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
   const router = useRouter()
   const { user } = useAuth()
   const [watchHistory, setWatchHistory] = useState<Array<{ episodeId: string; progress: number; completed: boolean }>>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   
   // Buscar temporada selecionada
   const selectedSeason = anime.seasons?.find(s => s.seasonNumber === season)

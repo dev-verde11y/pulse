@@ -93,7 +93,7 @@ export function NotificationForm({ notification, onSubmit, onCancel }: Notificat
         if (formData.data.trim()) {
           submitData.data = JSON.parse(formData.data)
         }
-      } catch (err) {
+      } catch {
         alert('JSON inválido no campo "Dados Adicionais"')
         return
       }

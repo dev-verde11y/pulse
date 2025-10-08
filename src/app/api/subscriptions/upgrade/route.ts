@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
 
 // Mock payment processing function
 // Replace with real payment provider integration
-async function processPayment(params: {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function processPayment(_params: {
   amount: number
   currency: string
   method: string

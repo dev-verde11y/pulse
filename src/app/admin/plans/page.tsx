@@ -53,9 +53,7 @@ export default function PlansPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   
   // Modal states
-  const [showCreateModal, setShowCreateModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
 
   const fetchPlans = useCallback(async (page = 1) => {
@@ -218,7 +216,7 @@ export default function PlansPage() {
           <p className="text-gray-400 mt-1">Gerencie todos os planos de assinatura</p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => alert('Funcionalidade de criar plano em desenvolvimento')}
           className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -555,11 +553,8 @@ export default function PlansPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        <button 
-                          onClick={() => {
-                            setSelectedPlan(plan)
-                            setShowEditModal(true)
-                          }}
+                        <button
+                          onClick={() => alert('Funcionalidade de editar plano em desenvolvimento')}
                           className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
                           title="Editar plano"
                         >

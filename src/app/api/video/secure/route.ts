@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { episodeId, quality, userId } = validation.data!
+    const { episodeId, quality } = validation.data!
 
     // 📋 Buscar episódio
     const episode = await prisma.episode.findUnique({
@@ -137,7 +137,7 @@ async function proxyVideoFromR2(r2Url: string, request: NextRequest) {
   }
 }
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new Response(null, {
     status: 200,
     headers: {

@@ -133,6 +133,7 @@ export default function EpisodesPage() {
 
   useEffect(() => {
     fetchEpisodes()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, sortOrder, searchTerm, animeFilter, seasonFilter])
 
   const formatDuration = (seconds?: number) => {

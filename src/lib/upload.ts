@@ -104,7 +104,7 @@ export class R2UploadService {
       
       await r2Client.send(command)
       return true
-    } catch (error) {
+    } catch {
       return false
     }
   }

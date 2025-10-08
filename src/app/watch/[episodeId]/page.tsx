@@ -14,7 +14,7 @@ import { PlayIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 export default function WatchPage() {
   const params = useParams()
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { loading } = useAuth()
   
   const [episode, setEpisode] = useState<Episode | null>(null)
   const [anime, setAnime] = useState<Anime | null>(null)
