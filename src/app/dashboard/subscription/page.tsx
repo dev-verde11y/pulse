@@ -37,23 +37,23 @@ interface PaymentHistory {
 }
 
 function getMoonPhaseName(planType: string) {
-  const moonPhases = {
-    'FREE': 'Free',
-    'FAN': 'The Arcane',
-    'MEGA_FAN': 'The Sorcerer', 
-    'MEGA_FAN_ANNUAL': 'The Sage'
+  const plans = {
+    'FREE': 'Aventureiro',
+    'FAN': 'Cavaleiro',
+    'MEGA_FAN': 'Titã',
+    'MEGA_FAN_ANNUAL': 'Titã Anual'
   }
-  return moonPhases[planType as keyof typeof moonPhases] || planType
+  return plans[planType as keyof typeof plans] || planType
 }
 
 function getMoonPhaseIcon(planType: string) {
   const icons = {
-    'FREE': '🆓',
-    'FAN': '🌑',
-    'MEGA_FAN': '🌕',
-    'MEGA_FAN_ANNUAL': '🌘'
+    'FREE': '🛡️',
+    'FAN': '⚔️',
+    'MEGA_FAN': '👑',
+    'MEGA_FAN_ANNUAL': '💎'
   }
-  return icons[planType as keyof typeof icons] || '🌙'
+  return icons[planType as keyof typeof icons] || '✨'
 }
 
 function getStatusColor(status: string) {
@@ -72,7 +72,7 @@ function formatStatus(status: string) {
     'active': 'Ativa',
     'trialing': 'Período Gratuito',
     'canceled': 'Cancelada',
-    'past_due': 'Pagamento Pendente', 
+    'past_due': 'Pagamento Pendente',
     'incomplete': 'Incompleta'
   }
   return statusMap[status as keyof typeof statusMap] || status
@@ -203,217 +203,213 @@ export default function SubscriptionDashboard() {
 
         {/* Content */}
         <div className="relative z-10 container mx-auto px-6 py-20">
-        <div className="max-w-4xl mx-auto">
-          
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Minha <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">Assinatura</span>
-            </h1>
-            <p className="text-gray-400 text-lg">Gerencie sua experiência lunar no Pulse</p>
-          </div>
+          <div className="max-w-4xl mx-auto">
 
-          {/* Current Subscription Card */}
-          {subscription ? (
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-400/30 rounded-2xl flex items-center justify-center">
-                    <span className="text-3xl">{getMoonPhaseIcon(subscription.planType)}</span>
+            {/* Header */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Minha <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">Assinatura</span>
+              </h1>
+              <p className="text-gray-400 text-lg">Gerencie sua jornada e evolução no Pulse</p>
+            </div>
+
+            {/* Current Subscription Card */}
+            {subscription ? (
+              <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-400/30 rounded-2xl flex items-center justify-center">
+                      <span className="text-3xl">{getMoonPhaseIcon(subscription.planType)}</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-1">
+                        {getMoonPhaseName(subscription.planType)}
+                      </h2>
+                      <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(subscription.status)}`}>
+                        {formatStatus(subscription.status)}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-1">
-                      {getMoonPhaseName(subscription.planType)}
-                    </h2>
-                    <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(subscription.status)}`}>
-                      {formatStatus(subscription.status)}
+
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-purple-400">
+                      {formatPrice(subscription.plan.price)}
+                    </div>
+                    <div className="text-gray-400 text-sm">
+                      /{subscription.plan.billingCycle === 'MONTHLY' ? 'mês' : 'ano'}
                     </div>
                   </div>
                 </div>
-                
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-purple-400">
-                    {formatPrice(subscription.plan.price)}
-                  </div>
-                  <div className="text-gray-400 text-sm">
-                    /{subscription.plan.billingCycle === 'MONTHLY' ? 'mês' : 'ano'}
-                  </div>
-                </div>
-              </div>
 
-              {/* Billing Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-gray-900/50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-400 mb-2">Período Atual</h3>
-                  <p className="text-white">
-                    {new Date(subscription.currentPeriodStart).toLocaleDateString('pt-BR')} - {' '}
-                    {new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                
-                <div className="bg-gray-900/50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-400 mb-2">
-                    {subscription.cancelAt ? 'Cancela em' : 'Próxima Cobrança'}
-                  </h3>
-                  <p className="text-white">
-                    {subscription.cancelAt 
-                      ? new Date(subscription.cancelAt).toLocaleDateString('pt-BR')
-                      : new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR')
-                    }
-                  </p>
-                </div>
-              </div>
+                {/* Billing Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">Período Atual</h3>
+                    <p className="text-white">
+                      {new Date(subscription.currentPeriodStart).toLocaleDateString('pt-BR')} - {' '}
+                      {new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
 
-              {/* Plan Features */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-3">Recursos do seu plano</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {subscription.plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-5 h-5 bg-purple-400/20 text-purple-400 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">
+                      {subscription.cancelAt ? 'Cancela em' : 'Próxima Cobrança'}
+                    </h3>
+                    <p className="text-white">
+                      {subscription.cancelAt
+                        ? new Date(subscription.cancelAt).toLocaleDateString('pt-BR')
+                        : new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR')
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {/* Plan Features */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-3">Recursos do seu plano</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {subscription.plan.features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="w-5 h-5 bg-purple-400/20 text-purple-400 rounded-full flex items-center justify-center flex-shrink-0">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-300 text-sm">{feature}</span>
                       </div>
-                      <span className="text-gray-300 text-sm">{feature}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // No Subscription State (FREE users)
+              <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8 text-center">
+                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 rounded-2xl flex items-center justify-center">
+                  <span className="text-4xl">🌙</span>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-4">Nenhuma Assinatura Ativa</h2>
+                <p className="text-gray-400">Escolha sua classe para começar sua jornada</p>
+              </div>
+            )}
+
+            {/* Available Plans Section - Sempre visível para FREE */}
+            {!subscription && availablePlans.length > 0 && (
+              <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Planos Disponíveis</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {availablePlans.map((plan) => (
+                    <div
+                      key={plan.id}
+                      className={`relative bg-white/[0.02] border rounded-xl p-4 transition-all hover:scale-[1.02] ${plan.popular
+                          ? 'border-orange-500 shadow-lg shadow-orange-500/20'
+                          : 'border-white/10 hover:border-white/20'
+                        }`}
+                    >
+                      {plan.popular && (
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-pink-600 px-3 py-0.5 rounded-full text-xs font-bold">
+                          MAIS POPULAR
+                        </div>
+                      )}
+
+                      <div className="text-center mb-3">
+                        <h4 className="text-lg font-bold text-white mb-1">{plan.name}</h4>
+                        <p className="text-gray-400 text-xs mb-3">{plan.description}</p>
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+                            R$ {Number(plan.price).toFixed(2)}
+                          </span>
+                          <span className="text-gray-500 text-xs">
+                            /{plan.billingCycle === 'MONTHLY' ? 'mês' : 'ano'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ul className="space-y-1.5 mb-4">
+                        {plan.features.slice(0, 4).map((feature, index) => (
+                          <li key={index} className="flex items-start gap-2 text-xs">
+                            <svg className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="text-gray-300">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSubscribeToPlan(plan.id)}
+                        disabled={processingPlan === plan.id}
+                        className={`w-full py-2.5 rounded-lg font-bold text-sm transition-all ${plan.popular
+                            ? 'bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90'
+                            : 'bg-gray-700 hover:bg-gray-600'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {processingPlan === plan.id ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processando...
+                          </span>
+                        ) : (
+                          'Assinar Agora'
+                        )}
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          ) : (
-            // No Subscription State (FREE users)
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8 text-center">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 rounded-2xl flex items-center justify-center">
-                <span className="text-4xl">🌙</span>
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Nenhuma Assinatura Ativa</h2>
-              <p className="text-gray-400">Escolha uma fase da lua para começar sua jornada</p>
-            </div>
-          )}
-
-          {/* Available Plans Section - Sempre visível para FREE */}
-          {!subscription && availablePlans.length > 0 && (
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Planos Disponíveis</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {availablePlans.map((plan) => (
-                  <div
-                    key={plan.id}
-                    className={`relative bg-white/[0.02] border rounded-xl p-4 transition-all hover:scale-[1.02] ${
-                      plan.popular
-                        ? 'border-orange-500 shadow-lg shadow-orange-500/20'
-                        : 'border-white/10 hover:border-white/20'
-                    }`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-pink-600 px-3 py-0.5 rounded-full text-xs font-bold">
-                        MAIS POPULAR
-                      </div>
-                    )}
-
-                    <div className="text-center mb-3">
-                      <h4 className="text-lg font-bold text-white mb-1">{plan.name}</h4>
-                      <p className="text-gray-400 text-xs mb-3">{plan.description}</p>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
-                          R$ {Number(plan.price).toFixed(2)}
-                        </span>
-                        <span className="text-gray-500 text-xs">
-                          /{plan.billingCycle === 'MONTHLY' ? 'mês' : 'ano'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <ul className="space-y-1.5 mb-4">
-                      {plan.features.slice(0, 4).map((feature, index) => (
-                        <li key={index} className="flex items-start gap-2 text-xs">
-                          <svg className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-gray-300">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <button
-                      type="button"
-                      onClick={() => handleSubscribeToPlan(plan.id)}
-                      disabled={processingPlan === plan.id}
-                      className={`w-full py-2.5 rounded-lg font-bold text-sm transition-all ${
-                        plan.popular
-                          ? 'bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90'
-                          : 'bg-gray-700 hover:bg-gray-600'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {processingPlan === plan.id ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Processando...
-                        </span>
-                      ) : (
-                        'Assinar Agora'
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Payment History */}
-          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold text-white mb-6">Histórico de Pagamentos</h3>
-            
-            {payments.length > 0 ? (
-              <div className="space-y-4">
-                {payments.map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-3 h-3 rounded-full ${
-                        payment.status === 'completed' ? 'bg-green-400' : 
-                        payment.status === 'failed' ? 'bg-red-400' : 'bg-yellow-400'
-                      }`}></div>
-                      <div>
-                        <p className="text-white font-medium">
-                          R$ {payment.amount.toFixed(2).replace('.', ',')}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          {payment.paidAt 
-                            ? new Date(payment.paidAt).toLocaleDateString('pt-BR')
-                            : new Date(payment.createdAt).toLocaleDateString('pt-BR')
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                        payment.status === 'completed' ? 'text-green-400 bg-green-400/10' : 
-                        payment.status === 'failed' ? 'text-red-400 bg-red-400/10' : 'text-yellow-400 bg-yellow-400/10'
-                      }`}>
-                        {payment.status === 'completed' ? 'Pago' : 
-                         payment.status === 'failed' ? 'Falhou' : 'Pendente'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                </div>
-                <h4 className="text-lg font-semibold text-white mb-2">Nenhum Pagamento</h4>
-                <p className="text-gray-400">Seus pagamentos aparecerão aqui quando você tiver uma assinatura ativa</p>
-              </div>
             )}
+
+            {/* Payment History */}
+            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold text-white mb-6">Histórico de Pagamentos</h3>
+
+              {payments.length > 0 ? (
+                <div className="space-y-4">
+                  {payments.map((payment) => (
+                    <div key={payment.id} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-3 h-3 rounded-full ${payment.status === 'completed' ? 'bg-green-400' :
+                            payment.status === 'failed' ? 'bg-red-400' : 'bg-yellow-400'
+                          }`}></div>
+                        <div>
+                          <p className="text-white font-medium">
+                            R$ {payment.amount.toFixed(2).replace('.', ',')}
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            {payment.paidAt
+                              ? new Date(payment.paidAt).toLocaleDateString('pt-BR')
+                              : new Date(payment.createdAt).toLocaleDateString('pt-BR')
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${payment.status === 'completed' ? 'text-green-400 bg-green-400/10' :
+                            payment.status === 'failed' ? 'text-red-400 bg-red-400/10' : 'text-yellow-400 bg-yellow-400/10'
+                          }`}>
+                          {payment.status === 'completed' ? 'Pago' :
+                            payment.status === 'failed' ? 'Falhou' : 'Pendente'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 rounded-2xl flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-white mb-2">Nenhum Pagamento</h4>
+                  <p className="text-gray-400">Seus pagamentos aparecerão aqui quando você tiver uma assinatura ativa</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         </div>
       </div>
       <Footer />

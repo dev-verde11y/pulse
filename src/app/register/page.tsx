@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
 import Link from 'next/link'
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 
 function RegisterContent() {
   const [name, setName] = useState('')
@@ -14,6 +15,9 @@ function RegisterContent() {
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; confirmPassword?: string; general?: string }>({})
   const [isRegistering, setIsRegistering] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -29,6 +33,17 @@ function RegisterContent() {
       router.push('/dashboard')
     }
   }, [user, loading, router])
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      })
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
 
   const validateForm = () => {
     const newErrors: typeof errors = {}
@@ -124,332 +139,172 @@ function RegisterContent() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Professional Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-gray-900"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-gray-900/20 via-transparent to-gray-800/20"></div>
-
-        {/* Animated gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-purple-600/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    <div className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center p-4">
+      {/* Background with Parallax */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-blue-950"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
+        <div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] animate-pulse transition-transform duration-700 ease-out"
+          style={{ transform: `translate(${mousePosition.x * 40}px, ${mousePosition.y * 40}px)` }}
+        ></div>
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px] animate-pulse delay-1000 transition-transform duration-1000 ease-out"
+          style={{ transform: `translate(${mousePosition.x * -60}px, ${mousePosition.y * -60}px)` }}
+        ></div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex">
-        {/* Left Side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative">
-          <div className="max-w-lg text-center space-y-10 relative z-10">
-            {/* Logo Section */}
-            <div className="space-y-8">
-              <Link href="/" className="inline-flex items-center space-x-4 group">
-                <div className="relative">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Logo Pulse"
-                    width={80}
-                    height={80}
-                    className="rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
-                    priority
-                  />
-                  <div className="absolute -inset-1 bg-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
-                </div>
-                <span className="text-6xl font-black tracking-tight bg-blue-500 bg-clip-text text-transparent">
-                  PULSE
-                </span>
-              </Link>
-
-              <div className="space-y-4">
-                <h1 className="text-5xl font-bold leading-tight text-white">
-                  Comece sua{' '}
-                  <span className="bg-blue-400 bg-clip-text text-transparent">
-                    jornada anime
-                  </span>
-                </h1>
-
-                <p className="text-xl text-gray-400 leading-relaxed">
-                  7 dias grátis para explorar milhares de títulos em alta qualidade.
-                </p>
-              </div>
-            </div>
-
-            {/* Benefits */}
-            <div className="space-y-4 pt-8">
-              <div className="flex items-start gap-4 text-left bg-white/5 p-4 rounded-xl border border-white/10">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <span className="text-xl">✨</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-white mb-1">7 Dias Grátis</h3>
-                  <p className="text-sm text-gray-400">Teste todos os recursos premium sem compromisso</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 text-left bg-white/5 p-4 rounded-xl border border-white/10">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-xl">🎬</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-white mb-1">Acesso Completo</h3>
-                  <p className="text-sm text-gray-400">Todo catálogo disponível em HD e 4K</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 text-left bg-white/5 p-4 rounded-xl border border-white/10">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                  <span className="text-xl">🚫</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-white mb-1">Sem Anúncios</h3>
-                  <p className="text-sm text-gray-400">Maratone sem interrupções</p>
-                </div>
-              </div>
-            </div>
+      <div className="relative z-10 w-full max-w-md space-y-8">
+        {/* Logo Section */}
+        <div className="text-center space-y-4 animate-fade-in opacity-0">
+          <Link href="/" className="inline-flex items-baseline space-x-2 group">
+            <span className="text-5xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              PULSE
+            </span>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              ANIME
+            </span>
+          </Link>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold text-white">
+              {selectedPlan ? 'Finalize sua assinatura' : 'Crie sua conta'}
+            </h1>
+            <p className="text-gray-400 text-sm">
+              {selectedPlan ? 'Mais um passo para o seu acervo digital' : 'Seu acervo digital de animes em alta qualidade'}
+            </p>
           </div>
         </div>
 
-        {/* Right Side - Register Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8">
-          <div className="max-w-md w-full space-y-6 sm:space-y-8">
-            {/* Mobile Logo */}
-            <div className="lg:hidden text-center mb-6 sm:mb-8">
-              <Link href="/" className="inline-flex items-center space-x-3 group">
-                <div className="relative">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Logo Pulse"
-                    width={50}
-                    height={50}
-                    className="rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300"
-                    priority
-                  />
-                  <div className="absolute -inset-1 bg-blue-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition-opacity"></div>
-                </div>
-                <span className="text-4xl font-black tracking-tight bg-blue-500 bg-clip-text text-transparent">
-                  PULSE
-                </span>
-              </Link>
-              <p className="text-sm text-gray-400 mt-2">O maior acervo de anime</p>
+        {/* Register Form Card */}
+        <div
+          className="bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 sm:p-10 animate-slide-up opacity-0 shadow-2xl"
+          style={{ animationDelay: '200ms' }}
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium text-gray-300 ml-1">Nome Completo</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Seu nome"
+                className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/40 focus:shadow-[0_0_25px_-5px_rgba(59,130,246,0.2)] transition-all duration-300"
+              />
+              {errors.name && <p className="text-xs text-red-400 mt-1 ml-1">{errors.name}</p>}
             </div>
 
-            {/* Register Card */}
-            <div className="bg-gray-900/50 backdrop-blur-2xl border border-gray-700/50 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden">
-              {/* Card glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-pink-500/5 to-purple-500/5 rounded-3xl"></div>
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-gray-300 ml-1">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/40 focus:shadow-[0_0_25px_-5px_rgba(59,130,246,0.2)] transition-all duration-300"
+              />
+              {errors.email && <p className="text-xs text-red-400 mt-1 ml-1">{errors.email}</p>}
+            </div>
 
-              <div className="relative z-10">
-                <div className="text-center mb-6 sm:mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                    {selectedPlan ? 'Quase lá!' : 'Crie sua conta'}
-                  </h2>
-                  <p className="text-gray-300 text-sm sm:text-base">
-                    {selectedPlan ? (
-                      <>Crie sua conta para continuar com o pagamento</>
-                    ) : (
-                      <>Comece agora com <span className="font-bold text-blue-400">7 dias grátis</span></>
-                    )}
-                  </p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-                  {/* Name Field */}
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-semibold text-gray-200 block">
-                      Nome Completo
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-gray-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Seu nome"
-                        autoComplete="name"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
-                      />
-                    </div>
-                    {errors.name && (
-                      <p className="text-sm text-red-400 flex items-center mt-1">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {errors.name}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Email Field */}
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-semibold text-gray-200 block">
-                      Email
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-gray-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                        </svg>
-                      </div>
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seu@email.com"
-                        autoComplete="email"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="text-sm text-red-400 flex items-center mt-1">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Password Field */}
-                  <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-semibold text-gray-200 block">
-                      Senha
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-gray-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      </div>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Mínimo 12 caracteres"
-                        autoComplete="new-password"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
-                      />
-                    </div>
-                    {errors.password && (
-                      <p className="text-sm text-red-400 flex items-center mt-1">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {errors.password}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Confirm Password Field */}
-                  <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-200 block">
-                      Confirmar Senha
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-gray-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirme sua senha"
-                        autoComplete="new-password"
-                        className="w-full bg-gray-800/50 border border-gray-600/50 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800/70 transition-all duration-300 text-sm sm:text-base"
-                      />
-                    </div>
-                    {errors.confirmPassword && (
-                      <p className="text-sm text-red-400 flex items-center mt-1">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {errors.confirmPassword}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Terms Checkbox */}
-                  <div className="flex items-start">
-                    <input
-                      id="terms"
-                      type="checkbox"
-                      checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="mt-1 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700"
-                    />
-                    <label htmlFor="terms" className="ml-3 text-sm text-gray-300">
-                      Eu concordo com os{' '}
-                      <Link href="/terms" className="text-blue-400 hover:text-blue-300 font-semibold">
-                        Termos de Uso
-                      </Link>{' '}
-                      e{' '}
-                      <Link href="/privacy" className="text-blue-400 hover:text-blue-300 font-semibold">
-                        Política de Privacidade
-                      </Link>
-                    </label>
-                  </div>
-
-                  {errors.general && (
-                    <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-xl flex items-center">
-                      <svg className="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm">{errors.general}</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isRegistering}
-                    className="relative w-full bg-blue-600 hover:from-blue-500 hover:to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center group overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
-
-                    {isRegistering ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span className="text-base">Criando conta...</span>
-                      </>
-                    ) : (
-                      <span className="text-base sm:text-lg font-black relative z-10">
-                        {selectedPlan ? 'Criar Conta e Continuar' : 'Começar 7 Dias Grátis'}
-                      </span>
-                    )}
-                  </button>
-                </form>
-
-                <div className="mt-6 sm:mt-8 text-center space-y-4">
-                  <p className="text-gray-300 text-sm">
-                    Já tem uma conta?{' '}
-                    <Link href="/login" className="text-blue-400 hover:text-blue-300 font-bold transition-all duration-300 hover:underline">
-                      Faça login
-                    </Link>
-                  </p>
-
-                  <div className="pt-4 border-t border-gray-700/50">
-                    <p className="text-xs text-gray-400">
-                      Ao criar sua conta, você recebe <span className="font-semibold text-blue-400">7 dias de acesso gratuito</span> a todos os recursos premium. Cancele quando quiser.
-                    </p>
-                  </div>
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-gray-300 ml-1">Senha</label>
+              <div className="relative group">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="No mínimo 12 caracteres"
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/40 focus:shadow-[0_0_25px_-5px_rgba(59,130,246,0.2)] transition-all duration-300 pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                </button>
               </div>
+              {errors.password && <p className="text-xs text-red-400 mt-1 ml-1">{errors.password}</p>}
             </div>
 
-            {/* Footer */}
-            <div className="text-center text-xs text-gray-500 space-y-2">
-              <p>© {new Date().getFullYear()} Pulse Anime. Todos os direitos reservados.</p>
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-300 ml-1">Confirmar Senha</label>
+              <div className="relative group">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirme sua senha"
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/40 focus:shadow-[0_0_25px_-5px_rgba(59,130,246,0.2)] transition-all duration-300 pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors focus:outline-none"
+                >
+                  {showConfirmPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-xs text-red-400 mt-1 ml-1">{errors.confirmPassword}</p>}
             </div>
+
+            <div className="flex flex-col space-y-4">
+              <label className="flex items-start text-xs text-gray-400 cursor-pointer px-1">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="rounded border-white/10 bg-white/5 text-blue-500 mr-3 mt-0.5"
+                />
+                <span>
+                  Eu concordo com os{' '}
+                  <Link href="/terms" className="text-blue-400 hover:underline">Termos de Uso</Link>
+                  {' '}e{' '}
+                  <Link href="/privacy" className="text-blue-400 hover:underline">Privacidade</Link>
+                </span>
+              </label>
+            </div>
+
+            {errors.general && (
+              <div className="bg-red-900/40 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl text-sm italic">
+                {errors.general}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isRegistering}
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center shadow-lg shadow-blue-500/20"
+            >
+              {isRegistering ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Criando conta...
+                </span>
+              ) : (
+                selectedPlan ? 'Criar conta e pagar' : 'Começar 7 dias grátis'
+              )}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 text-sm">
+              Já tem uma conta? <Link href="/login" className="text-white font-bold hover:underline">Entre agora</Link>
+            </p>
           </div>
+        </div>
+
+        <div
+          className="text-center text-gray-600 text-[10px] uppercase tracking-widest animate-fade-in opacity-0"
+          style={{ animationDelay: '400ms' }}
+        >
+          © {new Date().getFullYear()} Pulse. Todos os direitos reservados.
         </div>
       </div>
     </div>

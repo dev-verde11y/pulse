@@ -2,56 +2,56 @@
 export const STRIPE_PLANS = {
   FAN: {
     priceId: process.env.STRIPE_FAN_PRICE_ID || 'price_1S5nLD91l9itSVBOCQpvSL1R',
-    name: 'The Arcane',
-    phase: 'New Moon',
+    name: 'Cavaleiro',
+    phase: 'Rising Knight',
     amount: 14.99,
     currency: 'BRL',
     interval: 'month',
     planType: 'FAN' as const,
     features: [
       'Sem anúncios',
-      'HD Quality', 
+      'HD Quality',
       '1 tela simultânea'
     ],
-    icon: '🌑',
+    icon: '⚔️',
     color: 'blue'
   },
-  
+
   MEGA_FAN: {
     priceId: process.env.STRIPE_MEGA_FAN_PRICE_ID || 'price_1S5rQZ91l9itSVBOIF3iJBPH',
-    name: 'The Sorcerer',
-    phase: 'Full Moon',
+    name: 'Titã',
+    phase: 'Divine Power',
     amount: 19.99,
     currency: 'BRL',
     interval: 'month',
     planType: 'MEGA_FAN' as const,
     features: [
-      'Tudo do The Arcane',
+      'Tudo do Cavaleiro',
       '4K Ultra HD',
       '4 telas simultâneas',
       'Download offline',
       'Game Vault'
     ],
-    icon: '🌕',
+    icon: '👑',
     color: 'purple',
     popular: true
   },
-  
+
   MEGA_FAN_ANNUAL: {
     priceId: process.env.STRIPE_MEGA_FAN_ANNUAL_PRICE_ID || 'price_1S5nOM91l9itSVBOqsJ2vJQU',
-    name: 'The Sage',
-    phase: 'Waning Moon',
+    name: 'Titã Anual',
+    phase: 'Legendary Soul',
     amount: 199.99,
     currency: 'BRL',
     interval: 'year',
     planType: 'MEGA_FAN_ANNUAL' as const,
     features: [
-      'Tudo do The Sorcerer',
+      'Tudo do Titã',
       'Pagamento anual',
       'R$ 16,66/mês',
       'Suporte prioritário'
     ],
-    icon: '🌘',
+    icon: '💎',
     color: 'green',
     savings: '16%'
   }

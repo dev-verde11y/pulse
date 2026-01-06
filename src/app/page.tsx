@@ -3,15 +3,56 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
+interface Anime {
+  id: string
+  title: string
+  description: string
+  thumbnail: string | null
+  posterUrl: string | null
+  bannerUrl: string | null
+  year: number
+  status: string
+  type: string
+  rating: string
+  genres: string[]
+  tags: string[]
+  isSubbed: boolean
+  isDubbed: boolean
+  slug: string
+}
 
 export default function LandingPage() {
   const router = useRouter()
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
-  const [, setIsAuthenticated] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [trendingAnimes, setTrendingAnimes] = useState<Anime[]>([])
+  const [loadingAnimes, setLoadingAnimes] = useState(true)
 
   useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
     checkAuth()
+    fetchTrendingAnimes()
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const fetchTrendingAnimes = async () => {
+    try {
+      const response = await fetch('/api/public/animes?limit=4')
+      const data = await response.json()
+      if (data.animes) {
+        setTrendingAnimes(data.animes)
+      }
+    } catch (error) {
+      console.error('Error fetching trending animes:', error)
+    } finally {
+      setLoadingAnimes(false)
+    }
+  }
 
   const checkAuth = async () => {
     try {
@@ -22,405 +63,271 @@ export default function LandingPage() {
     }
   }
 
-  const handleSelectPlan = () => {
+  const handleStartQuest = () => {
     router.push('/plans')
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                PULSE
-              </span>
-              <span className="text-xs text-gray-400">ANIME</span>
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
+      {/* Header - Transparent to Solid on scroll */}
+      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${isScrolled ? 'bg-slate-950/80 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'
+        }`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push('/')}>
+            <div className="relative w-8 h-8">
+              <div className="absolute inset-0 bg-blue-500 rounded-lg blur-md group-hover:blur-lg transition-all"></div>
+              <div className="relative bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg w-full h-full flex items-center justify-center font-black text-white text-xl">P</div>
             </div>
+            <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">PULSE</span>
+          </div>
 
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/browse" className="text-gray-300 hover:text-white transition-colors">
-                Catálogo
-              </Link>
-              <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
-                Planos
-              </Link>
-            </nav>
+          <nav className="hidden md:flex items-center gap-10">
+            {['Catálogo', 'Novidades', 'Top Animes', 'Comunidade'].map((item) => (
+              <Link key={item} href="/browse" className="text-sm font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest">{item}</Link>
+            ))}
+          </nav>
 
-            <div className="flex items-center gap-4">
-              <Link
-                href="/login"
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                LOGIN
-              </Link>
-              <Link
-                href="/register"
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-6 py-2 rounded-full font-medium transition-all shadow-lg shadow-blue-500/30"
-              >
-                COMEÇAR GRÁTIS
-              </Link>
-            </div>
+          <div className="flex items-center gap-6">
+            {!isAuthenticated ? (
+              <>
+                <Link href="/login" className="text-sm font-black text-slate-400 hover:text-white transition-all uppercase tracking-widest">Login</Link>
+                <button
+                  onClick={handleStartQuest}
+                  className="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-400 hover:text-white transition-all shadow-xl shadow-white/5"
+                >
+                  Iniciar Quest
+                </button>
+              </>
+            ) : (
+              <Link href="/dashboard" className="bg-blue-600 px-6 py-2 rounded-full font-bold text-sm hover:bg-blue-500 transition-all">DASHBOARD</Link>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative pt-16 min-h-screen flex items-center overflow-hidden">
-        {/* Background with gradient overlay - Blue theme */}
+      {/* Hero Section - Cinematic Impact */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        {/* Background Atmosphere */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-blue-950 opacity-90 z-10"></div>
-          <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-5"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 via-transparent to-[#020617] z-10"></div>
+          <div className="absolute inset-0 bg-black/40 z-10"></div>
 
-          {/* Animated orbs - Blue theme */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-blue-500/15 to-indigo-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          {/* Moving particles/mesh could be added here later with canvas */}
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-indigo-500/10 rounded-full blur-[100px] animate-pulse delay-700"></div>
         </div>
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight">
-              O Maior Acervo de
-              <span className="block mt-2 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent animate-gradient-x">
-                Anime do Mundo
-              </span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Assista a novos episódios uma hora após a exibição no Japão.
-              Desfrute de acesso ilimitado a animes, sem propaganda.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Link
-                href="/register"
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 rounded-full text-lg font-bold transition-all transform hover:scale-105 shadow-2xl shadow-blue-500/50"
-              >
-                INICIE TESTE GRATUITO DE 7 DIAS
-              </Link>
-            </div>
-
-            <p className="text-sm text-gray-400">
-              Todos os planos incluem 7 dias grátis. Sem compromisso, cancele quando quiser.
-            </p>
+        <div className="relative z-20 container mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-8 animate-fade-in-up">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Nova Temporada Disponível</span>
           </div>
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24">
-            <div className="text-center p-6 bg-blue-900/20 backdrop-blur-sm rounded-2xl border border-blue-500/30 hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/20 transition-all">
-              <div className="text-4xl mb-4">⏰</div>
-              <h3 className="text-xl font-bold mb-2">Assista em Primeira Mão</h3>
-              <p className="text-gray-400">
-                Novos episódios logo após a exibição no Japão
-              </p>
-            </div>
+          <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[0.9] tracking-tighter drop-shadow-2xl">
+            SUA PRÓXIMA <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 animate-gradient-x underline decoration-blue-500/30 decoration-8 underline-offset-8">AVENTURA</span>
+            <br /> COMEÇA AQUI
+          </h1>
 
-            <div className="text-center p-6 bg-blue-900/20 backdrop-blur-sm rounded-2xl border border-blue-500/30 hover:border-cyan-400/60 hover:shadow-lg hover:shadow-cyan-500/20 transition-all">
-              <div className="text-4xl mb-4">🚫</div>
-              <h3 className="text-xl font-bold mb-2">Sem Propagandas</h3>
-              <p className="text-gray-400">
-                Experiência premium sem interrupções
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-blue-900/20 backdrop-blur-sm rounded-2xl border border-blue-500/30 hover:border-blue-400/60 hover:shadow-lg hover:shadow-blue-500/20 transition-all">
-              <div className="text-4xl mb-4">🛍️</div>
-              <h3 className="text-xl font-bold mb-2">Loja Exclusiva</h3>
-              <p className="text-gray-400">
-                Descontos exclusivos na Loja Pulse
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="relative py-24 bg-gradient-to-b from-black via-gray-900/50 to-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Escolha Sua <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">Fase da Lua</span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-              Todos os planos incluem 7 dias grátis. Sem compromisso, cancele quando quiser.
-            </p>
-
-            {/* Billing Toggle */}
-            <div className="inline-flex items-center gap-4 bg-slate-900/50 p-2 rounded-full border border-blue-500/30">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${billingCycle === 'monthly'
-                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                  : 'text-gray-400 hover:text-white'
-                  }`}
-              >
-                Mensal
-              </button>
-              <button
-                onClick={() => setBillingCycle('annual')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${billingCycle === 'annual'
-                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                  : 'text-gray-400 hover:text-white'
-                  }`}
-              >
-                Anual
-                <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
-                  -16%
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
-            {/* Free Plan - 7 Days Trial */}
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-blue-400/30 transition-all">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 flex items-center justify-center">
-                  <span className="text-3xl">🆓</span>
-                </div>
-                <h3 className="text-2xl font-bold mb-2">Grátis</h3>
-                <p className="text-gray-400 mb-4">7 dias de teste</p>
-                <div className="text-4xl font-bold mb-2">
-                  R$ 0,00
-                  <span className="text-lg text-gray-400">/7 dias</span>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm">Acesso completo</span>
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm">Sem anúncios</span>
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm">Qualidade HD</span>
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  <span className="text-sm">7 dias grátis</span>
-                </li>
-              </ul>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  handleSelectPlan()
-                }}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-full transition-all"
-              >
-                Começar Grátis
-              </button>
-            </div>
-
-            {/* The Arcane - New Moon */}
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-blue-400/30 transition-all">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30 flex items-center justify-center">
-                  <span className="text-3xl">🌑</span>
-                </div>
-                <h3 className="text-2xl font-bold mb-2">The Arcane</h3>
-                <p className="text-gray-400 mb-4">New Moon • Básico</p>
-                <div className="text-4xl font-bold mb-2">
-                  R$ 14,99
-                  <span className="text-lg text-gray-400">/mês</span>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Sem anúncios
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Qualidade HD
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  1 tela simultânea
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Acesso ilimitado
-                </li>
-              </ul>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  handleSelectPlan()
-                }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-all"
-              >
-                Ver Planos
-              </button>
-            </div>
-
-            {/* The Sorcerer - Full Moon - Popular */}
-            <div className="relative bg-white/[0.02] backdrop-blur-xl border border-cyan-400/40 rounded-2xl p-8 transform scale-105 shadow-2xl shadow-cyan-400/10">
-              {/* Popular Badge */}
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-blue-400 to-cyan-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg shadow-blue-500/50">
-                  🌕 POPULAR
-                </div>
-              </div>
-
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-cyan-400/30 flex items-center justify-center">
-                  <span className="text-3xl">🌕</span>
-                </div>
-                <h3 className="text-2xl font-bold mb-2">The Sorcerer</h3>
-                <p className="text-gray-400 mb-4">Full Moon • Completo</p>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-                  R$ 19,99
-                  <span className="text-lg text-gray-400">/mês</span>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Tudo do The Arcane
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  4K Ultra HD
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  4 telas simultâneas
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Download offline
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Game Vault
-                </li>
-              </ul>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  handleSelectPlan()
-                }}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-full transition-all shadow-lg shadow-blue-500/30"
-              >
-                Ver Planos
-              </button>
-            </div>
-
-            {/* The Sage - Waning Moon */}
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-green-400/30 transition-all">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-400/30 flex items-center justify-center">
-                  <span className="text-3xl">🌘</span>
-                </div>
-                <h3 className="text-2xl font-bold mb-2">The Sage</h3>
-                <p className="text-gray-400 mb-4">Waning Moon • Anual</p>
-                <div className="text-4xl font-bold mb-2">
-                  R$ 199,99
-                  <span className="text-lg text-gray-400">/ano</span>
-                </div>
-                <div className="inline-block bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
-                  💰 Economize 16%
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Tudo do The Sorcerer
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Pagamento anual
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  R$ 16,66/mês
-                </li>
-                <li className="flex items-center text-gray-300">
-                  <span className="text-green-400 mr-3">✓</span>
-                  Suporte prioritário
-                </li>
-              </ul>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  handleSelectPlan()
-                }}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-full transition-all"
-              >
-                Ver Planos
-              </button>
-            </div>
-          </div>
-
-          <p className="text-center text-gray-400 mt-12 text-sm">
-            *A disponibilidade da Pulse Store pode variar entre países. <br />
-            Todos os planos incluem 7 dias de teste gratuito. Cancele quando quiser.
+          <p className="text-lg md:text-2xl text-slate-400 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
+            Mergulhe em universos infinitos com qualidade 4K cinematográfica.
+            A forja dos maiores títulos de anime, agora ao seu alcance.
           </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20 animate-fade-in-up delay-300">
+            <button
+              onClick={handleStartQuest}
+              className="group relative px-12 py-5 bg-blue-600 rounded-full font-black text-sm uppercase tracking-[0.3em] overflow-hidden transition-all hover:bg-blue-500 active:scale-95 shadow-2xl shadow-blue-500/40"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              Escolher sua Classe
+            </button>
+            <Link
+              href="/browse"
+              className="px-10 py-5 rounded-full border border-white/10 font-black text-sm uppercase tracking-[0.3em] hover:bg-white/5 transition-all"
+            >
+              Explorar Catálogo
+            </Link>
+          </div>
+
+          {/* Scrolling Brand Bar */}
+          <div className="relative mt-20 opacity-30 mask-fade-edges overflow-hidden whitespace-nowrap py-10">
+            <div className="inline-block animate-marquee">
+              {['SHONEN', 'SEINEN', 'SHOUJO', 'JOSEI', 'SLICE OF LIFE', 'FANTASY', 'MECHANICAL', 'PSYCHOLOGICAL'].map((genre) => (
+                <span key={genre} className="text-4xl font-black mx-12 text-slate-700 tracking-[0.5em]">{genre}</span>
+              ))}
+            </div>
+            <div className="inline-block animate-marquee">
+              {['SHONEN', 'SEINEN', 'SHOUJO', 'JOSEI', 'SLICE OF LIFE', 'FANTASY', 'MECHANICAL', 'PSYCHOLOGICAL'].map((genre) => (
+                <span key={genre} className="text-4xl font-black mx-12 text-slate-700 tracking-[0.5em]">{genre}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900/50 border-t border-white/10 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      {/* Content Showcase - Premium Visuals */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
             <div>
-              <h4 className="font-bold mb-4 text-lg bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                PULSE ANIME
-              </h4>
-              <p className="text-gray-400 text-sm">
-                O maior acervo de anime do mundo. Assista onde e quando quiser.
-              </p>
+              <h2 className="text-sm font-black text-blue-500 uppercase tracking-[0.4em] mb-4">Lendários em Exibição</h2>
+              <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tight">O que está em <span className="text-slate-500">alta</span></h3>
             </div>
-
-            <div>
-              <h5 className="font-semibold mb-4">Navegação</h5>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/browse" className="text-gray-400 hover:text-white transition-colors">Catálogo</Link></li>
-                <li><Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">Planos</Link></li>
-                <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">Sobre</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h5 className="font-semibold mb-4">Suporte</h5>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/help" className="text-gray-400 hover:text-white transition-colors">Central de Ajuda</Link></li>
-                <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">Contato</Link></li>
-                <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h5 className="font-semibold mb-4">Legal</h5>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/terms" className="text-gray-400 hover:text-white transition-colors">Termos de Uso</Link></li>
-                <li><Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacidade</Link></li>
-              </ul>
-            </div>
+            <Link href="/browse" className="text-sm font-black uppercase tracking-widest border-b-2 border-blue-500 pb-2 hover:text-blue-400 transition-all">Ver todos</Link>
           </div>
 
-          <div className="border-t border-white/10 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} Pulse Anime. Todos os direitos reservados.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {loadingAnimes ? (
+              // Loading Skeleton
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-[2/3] rounded-2xl bg-slate-900/50 animate-pulse border border-white/5"></div>
+              ))
+            ) : trendingAnimes.length > 0 ? (
+              trendingAnimes.map((anime) => (
+                <div
+                  key={anime.id}
+                  onClick={() => router.push(`/animes/${anime.slug}`)}
+                  className="group relative aspect-[2/3] overflow-hidden rounded-2xl bg-slate-900 border border-white/5 cursor-pointer"
+                >
+                  <Image
+                    src={anime.posterUrl || anime.thumbnail || 'https://images.unsplash.com/photo-1541562232579-512a21360020?w=500&h=750&fit=crop'}
+                    alt={anime.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                  <div className="absolute top-4 left-4 bg-blue-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest leading-none">
+                    {anime.type === 'ANIME' ? `${anime.year}` : 'Filme'}
+                  </div>
+                  <div className="absolute bottom-6 left-6 right-6 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 block">
+                      {anime.genres[0] || 'Ação'}
+                    </span>
+                    <h4 className="text-xl font-black uppercase leading-tight tracking-tighter">{anime.title}</h4>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-slate-500 col-span-full text-center py-10">Nenhum lendário encontrado na forja.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section - "Adventurer's Perks" */}
+      <section className="py-32 bg-slate-950/40 relative border-y border-white/5">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center mb-24">
+            <h2 className="text-sm font-black text-blue-500 uppercase tracking-[0.4em] mb-4">Vantagens de Elite</h2>
+            <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight">O PODER DA FORJA <span className="text-slate-500">PULSE</span></h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            {[
+              { icon: '🚀', title: 'Speed of Sound', desc: 'Sincronização global. Assista apenas 1 hora após a estréia no Japão.' },
+              { icon: '💎', title: 'Infinite Clarity', desc: 'Resolução 4K nativa com HDR para uma imersão Visual nunca vista em animes.' },
+              { icon: '⚔️', title: 'Ad-Free Battle', desc: 'Lute contra as distrações. Zero propaganda em todos os planos de assinatura.' }
+            ].map((benefit, i) => (
+              <div key={i} className="text-center group">
+                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform duration-500 inline-block">{benefit.icon}</div>
+                <h4 className="text-2xl font-black uppercase tracking-tighter mb-4">{benefit.title}</h4>
+                <p className="text-slate-400 leading-relaxed font-medium">{benefit.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quest Selection CTA - Replaces the Pricing Section */}
+      <section className="py-40 relative overflow-hidden">
+        {/* Background visual for the CTA */}
+        <div className="absolute inset-0 bg-blue-600/5"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+
+        <div className="container relative z-10 mx-auto px-6">
+          <div className="max-w-5xl mx-auto bg-gradient-to-br from-slate-900 to-black p-12 md:p-24 rounded-[3rem] border border-white/10 text-center shadow-3xl shadow-blue-500/10">
+            <h2 className="text-sm font-black text-blue-400 uppercase tracking-[0.5em] mb-8">O Chamado para a Evolução</h2>
+            <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-10 leading-tight">
+              SUA CLASSE <br /> ESTÁ À SUA <br /> <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">ESPERA</span>
+            </h3>
+
+            <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+              De aventureiro a titã. Escolha o seu caminho e desbloqueie o verdadeiro potencial da sua experiência anime.
+            </p>
+
+            <button
+              onClick={handleStartQuest}
+              className="px-16 py-6 bg-white text-black rounded-full font-black text-sm uppercase tracking-[0.4em] hover:bg-blue-400 hover:text-white transition-all shadow-2xl shadow-white/5 active:scale-95"
+            >
+              Iniciar Evolução
+            </button>
+
+            <p className="mt-8 text-xs font-bold text-slate-600 uppercase tracking-widest">
+              Garantia de 7 dias • Sem contratos • Cancele quando quiser
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer - Minimal & Bold */}
+      <footer className="py-20 bg-black border-t border-white/5">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black text-white">P</div>
+              <span className="text-2xl font-black tracking-tighter">PULSE</span>
+            </div>
+
+            <div className="flex gap-10">
+              <Link href="/browse" className="text-xs font-black uppercase text-slate-500 hover:text-white transition-colors tracking-widest">Catálogo</Link>
+              <Link href="/pricing" className="text-xs font-black uppercase text-slate-500 hover:text-white transition-colors tracking-widest">Planos</Link>
+              <Link href="/terms" className="text-xs font-black uppercase text-slate-500 hover:text-white transition-colors tracking-widest">Privacidade</Link>
+            </div>
+
+            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">
+              &copy; {new Date().getFullYear()} PULSE STREAMING INTERACTIVE
+            </p>
           </div>
         </div>
       </footer>
+
+      {/* Custom Styles for animations */}
+      <style jsx global>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+          display: inline-block;
+          animation: marquee 30s linear infinite;
+        }
+        .mask-fade-edges {
+          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 1s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-gradient-x {
+          background-size: 200% auto;
+          animation: gradientX 5s ease infinite;
+        }
+        @keyframes gradientX {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .shadow-3xl {
+          box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+        }
+      `}</style>
     </div>
   )
 }

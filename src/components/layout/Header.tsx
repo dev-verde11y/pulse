@@ -14,15 +14,15 @@ import Link from "next/link"
 const formatPlanName = (planType: string | undefined): string => {
   switch (planType) {
     case 'FREE':
-      return 'Grátis'
+      return 'Aventureiro'
     case 'FAN':
-      return 'The Arcane'
+      return 'Cavaleiro'
     case 'MEGA_FAN':
-      return 'The Sorcerer'
+      return 'Titã'
     case 'MEGA_FAN_ANNUAL':
-      return 'The Sage Premium'
+      return 'Titã Anual'
     default:
-      return 'Grátis'
+      return 'Aventureiro'
   }
 }
 

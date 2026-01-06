@@ -13,9 +13,12 @@ async function main() {
     // Free Plan
     prisma.plan.upsert({
       where: { type: PlanType.FREE },
-      update: {},
+      update: {
+        name: 'Aventureiro',
+        description: 'Inicie sua jornada no mundo dos animes',
+      },
       create: {
-        name: 'Grátis',
+        name: 'Aventureiro',
         type: PlanType.FREE,
         billingCycle: BillingCycle.MONTHLY,
         price: 0,
@@ -24,7 +27,7 @@ async function main() {
         offlineViewing: false,
         gameVaultAccess: false,
         adFree: false,
-        description: 'Acesso básico com anúncios',
+        description: 'Inicie sua jornada no mundo dos animes',
         features: [
           'Acesso limitado ao catálogo',
           'Qualidade padrão',
@@ -40,9 +43,12 @@ async function main() {
     // Fan Plan (Monthly)
     prisma.plan.upsert({
       where: { type: PlanType.FAN },
-      update: {},
+      update: {
+        name: 'Cavaleiro',
+        description: 'Uma jornada sem interrupções e com mais honra',
+      },
       create: {
-        name: 'Fan',
+        name: 'Cavaleiro',
         type: PlanType.FAN,
         billingCycle: BillingCycle.MONTHLY,
         price: 14.99,
@@ -51,7 +57,7 @@ async function main() {
         offlineViewing: false,
         gameVaultAccess: false,
         adFree: true,
-        description: 'Assista a todo o acervo, sem propagandas',
+        description: 'Uma jornada sem interrupções e com mais honra',
         features: [
           'Todo o acervo da Pulse',
           'Sem propagandas',
@@ -68,9 +74,12 @@ async function main() {
     // Mega Fan Plan (Monthly)
     prisma.plan.upsert({
       where: { type: PlanType.MEGA_FAN },
-      update: {},
+      update: {
+        name: 'Titã',
+        description: 'O poder máximo para os mestres do acervo',
+      },
       create: {
-        name: 'Mega Fan',
+        name: 'Titã',
         type: PlanType.MEGA_FAN,
         billingCycle: BillingCycle.MONTHLY,
         price: 19.99,
@@ -79,7 +88,7 @@ async function main() {
         offlineViewing: true,
         gameVaultAccess: true,
         adFree: true,
-        description: 'A experiência completa do streaming',
+        description: 'O poder máximo para os mestres do acervo',
         features: [
           'Todo o acervo da Pulse',
           'Sem propagandas',
@@ -98,9 +107,12 @@ async function main() {
     // Mega Fan Plan (Annual)
     prisma.plan.upsert({
       where: { type: PlanType.MEGA_FAN_ANNUAL },
-      update: {},
+      update: {
+        name: 'Titã Anual',
+        description: 'Domínio total por um ano com bônus de economia',
+      },
       create: {
-        name: 'Mega Fan Anual',
+        name: 'Titã Anual',
         type: PlanType.MEGA_FAN_ANNUAL,
         billingCycle: BillingCycle.ANNUALLY,
         price: 199.99,
@@ -109,7 +121,7 @@ async function main() {
         offlineViewing: true,
         gameVaultAccess: true,
         adFree: true,
-        description: 'A experiência completa com 16% de desconto',
+        description: 'Domínio total por um ano com bônus de economia',
         features: [
           'Todo o acervo da Pulse',
           'Sem propagandas',
@@ -173,7 +185,7 @@ async function main() {
 
   // Create test users for each plan
   const testPassword = await bcrypt.hash('TestUser@123!', 12)
-  
+
   // FREE Plan User
   const freeUser = await prisma.user.upsert({
     where: { email: 'free@pulse.com' },
@@ -384,14 +396,14 @@ async function main() {
   console.log('   💎 Mega Fan Annual:', megaFanAnnualUser.email, '- Password: TestUser@123!')
   console.log('   ❌ Expired:', expiredUser.email, '- Password: TestUser@123!')
   console.log('   ⏰ Grace Period:', gracePeriodUser.email, '- Password: TestUser@123!')
-  
+
   // Seed Animes
   console.log('🎬 Seeding animes...')
-  
+
   const animePromises = mockAnimes.map(async (animeData) => {
     // Convert duration from minutes to seconds for database
     const durationInSeconds = animeData.duration * 60
-    
+
     // Generate slug from title
     const slug = animeData.title
       .toLowerCase()
@@ -401,19 +413,19 @@ async function main() {
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .trim()
-    
+
     // Map status from mock data to enum
     let status: AnimeStatus = AnimeStatus.ONGOING
     if (animeData.status === 'completed' || animeData.episodes <= 50) {
       status = AnimeStatus.FINISHED
     }
-    
+
     // Map type from mock data to enum
     let type: AnimeType = AnimeType.ANIME
     if (animeData.title === 'Your Name' || animeData.title === 'Spirited Away' || animeData.title === 'Princess Mononoke') {
       type = AnimeType.FILME
     }
-    
+
     // Create anime
     const anime = await prisma.anime.upsert({
       where: { slug },
@@ -436,10 +448,17 @@ async function main() {
         r2BucketPath: `animes/${slug}`,
       },
     })
-    
-    // Create season 1 for each anime (most animes have at least 1 season)
-    const season = await prisma.season.create({
-      data: {
+
+    // Create/Update season 1 for each anime
+    const season = await prisma.season.upsert({
+      where: {
+        animeId_seasonNumber: {
+          animeId: anime.id,
+          seasonNumber: 1,
+        },
+      },
+      update: {},
+      create: {
         animeId: anime.id,
         seasonNumber: 1,
         title: type === AnimeType.FILME ? undefined : 'Temporada 1',
@@ -448,21 +467,28 @@ async function main() {
         r2BucketPath: `animes/${slug}/season-1`,
       },
     })
-    
+
     // Create episodes
-    const episodesToCreate = type === AnimeType.FILME ? 1 : Math.min(animeData.episodes, 12) // Limit to 12 episodes for seed
-    
+    const episodesToCreate = type === AnimeType.FILME ? 1 : Math.min(animeData.episodes, 12)
+
     const episodePromises = Array.from({ length: episodesToCreate }, (_, index) => {
       const episodeNumber = index + 1
-      return prisma.episode.create({
-        data: {
+      return prisma.episode.upsert({
+        where: {
+          seasonId_episodeNumber: {
+            seasonId: season.id,
+            episodeNumber,
+          },
+        },
+        update: {},
+        create: {
           seasonId: season.id,
           episodeNumber,
-          title: type === AnimeType.FILME 
-            ? animeData.title 
+          title: type === AnimeType.FILME
+            ? animeData.title
             : `Episódio ${episodeNumber}`,
-          description: type === AnimeType.FILME 
-            ? animeData.description 
+          description: type === AnimeType.FILME
+            ? animeData.description
             : `${animeData.title} - Episódio ${episodeNumber}`,
           thumbnail: animeData.thumbnail,
           duration: durationInSeconds,
@@ -474,19 +500,19 @@ async function main() {
         },
       })
     })
-    
+
     await Promise.all(episodePromises)
-    
+
     return anime
   })
-  
+
   const animes = await Promise.all(animePromises)
-  
+
   console.log(`✅ Created ${animes.length} animes with seasons and episodes`)
-  
+
   // Create some watch history and favorites for test users
   console.log('📊 Creating sample watch history and favorites...')
-  
+
   // Add some favorites for the admin user
   const adminFavorites = animes.slice(0, 5)
   for (const anime of adminFavorites) {
@@ -504,7 +530,7 @@ async function main() {
       },
     })
   }
-  
+
   // Add some watch history for the fan user
   const fanWatchList = animes.slice(0, 3)
   for (const anime of fanWatchList) {
@@ -512,7 +538,7 @@ async function main() {
       where: { animeId: anime.id },
       include: { episodes: true },
     })
-    
+
     if (season && season.episodes.length > 0) {
       const episode = season.episodes[0]
       await prisma.watchHistory.upsert({
@@ -535,12 +561,12 @@ async function main() {
       })
     }
   }
-  
+
   console.log('✅ Sample watch history and favorites created')
-  
+
   // Seed Hero Banners
   await seedHeroBanners()
-  
+
   console.log('🎉 Seed completed successfully!')
 }
 
