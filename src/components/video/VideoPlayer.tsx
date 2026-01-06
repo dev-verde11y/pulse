@@ -50,6 +50,7 @@ interface VideoPlayerProps {
   hasPreviousEpisode?: boolean
   animeId: string
   initialProgress?: number
+  nextEpisodeId?: string
 }
 
 export function VideoPlayer({
@@ -59,7 +60,8 @@ export function VideoPlayer({
   hasNextEpisode,
   hasPreviousEpisode,
   animeId,
-  initialProgress = 0
+  initialProgress = 0,
+  nextEpisodeId
 }: VideoPlayerProps) {
   const videoRef = useRef<ExtendedHTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -82,20 +84,40 @@ export function VideoPlayer({
   const [autoPlayCountdown, setAutoPlayCountdown] = useState<number | null>(null)
   const [hasSeekedInitial, setHasSeekedInitial] = useState(false)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
+  const [hasPrefetchedNext, setHasPrefetchedNext] = useState(false)
+  const lastApiSyncRef = useRef<number>(0)
 
   const { user } = useAuth()
 
-  // Função para salvar progresso na API
-  const saveProgress = useCallback(async (currTime: number, dur: number) => {
-    if (!user || !episode.id || !animeId) return
-    if (dur <= 0) return
+  // Função para salvar progresso na API (Throttled)
+  const saveProgressToAPI = useCallback(async (currTime: number, dur: number, force = false) => {
+    if (!user || !episode.id || !animeId || dur <= 0) return
+
+    const now = Date.now()
+    // Somente envia se for forçado (pause/exit) ou se passaram 30 segundos
+    if (!force && now - lastApiSyncRef.current < 30000) return
+
     const progressPercent = (currTime / dur) * 100
     try {
       await api.updateWatchHistory(animeId, episode.id, progressPercent)
+      lastApiSyncRef.current = now
+      console.log(`[Pulse Sync] Progresso sincronizado com servidor: ${Math.round(progressPercent)}%`)
     } catch (error) {
-      console.error('Erro ao salvar progresso:', error)
+      console.error('Erro ao sincronizar com servidor:', error)
     }
   }, [user, episode.id, animeId])
+
+  // Função para salvar no LocalStorage (Alta frequência)
+  const saveProgressLocal = useCallback((currTime: number, dur: number) => {
+    if (!episode.id || dur <= 0) return
+    const progressPercent = (currTime / dur) * 100
+    const storageKey = `pulse_progress_${episode.id}`
+    localStorage.setItem(storageKey, JSON.stringify({
+      progress: progressPercent,
+      time: currTime,
+      updatedAt: Date.now()
+    }))
+  }, [episode.id])
 
   // Salvar progresso periódico
   useEffect(() => {
@@ -103,13 +125,23 @@ export function VideoPlayer({
     if (isPlaying && user && videoRef.current) {
       interval = setInterval(() => {
         if (videoRef.current) {
-          saveProgress(videoRef.current.currentTime, videoRef.current.duration)
-          setLastProgressUpdate(videoRef.current.currentTime)
+          const cTime = videoRef.current.currentTime
+          const duration = videoRef.current.duration
+
+          saveProgressLocal(cTime, duration)
+          saveProgressToAPI(cTime, duration)
+          setLastProgressUpdate(cTime)
         }
-      }, 10000)
+      }, 2000) // Verifica a cada 2 segundos localmente
     }
-    return () => { if (interval) clearInterval(interval) }
-  }, [isPlaying, user, saveProgress])
+    return () => {
+      if (interval) clearInterval(interval)
+      // Tentar um save final ao desmontar se o vídeo estava tocando
+      if (videoRef.current) {
+        saveProgressToAPI(videoRef.current.currentTime, videoRef.current.duration, true)
+      }
+    }
+  }, [isPlaying, user, saveProgressToAPI, saveProgressLocal])
 
   // Lógica de "Pular Intro" e "Auto-Play"
   useEffect(() => {
@@ -130,7 +162,18 @@ export function VideoPlayer({
     } else {
       setAutoPlayCountdown(null)
     }
-  }, [currentTime, duration, hasNextEpisode, isPlaying, onNextEpisode, autoPlayCountdown])
+
+    // Prefetching do próximo episódio aos 90%
+    if (!hasPrefetchedNext && nextEpisodeId && duration > 0 && (currentTime / duration) > 0.9) {
+      setHasPrefetchedNext(true)
+      console.log(`[Pulse Performance] Prefetching iniciado para o próximo episódio: ${nextEpisodeId}`)
+      const prefetchLink = document.createElement('link')
+      prefetchLink.rel = 'prefetch'
+      prefetchLink.as = 'video'
+      prefetchLink.href = `/api/video/${nextEpisodeId}`
+      document.head.appendChild(prefetchLink)
+    }
+  }, [currentTime, duration, hasNextEpisode, isPlaying, onNextEpisode, autoPlayCountdown, nextEpisodeId, hasPrefetchedNext])
 
   // Auto-hide controls
   useEffect(() => {
@@ -156,10 +199,11 @@ export function VideoPlayer({
     }
   }, [isPlaying])
 
-  // Resetar busca inicial ao trocar de episódio
+  // Resetar busca inicial e prefetch ao trocar de episódio
   useEffect(() => {
     setHasSeekedInitial(false)
     setShowResumePrompt(false)
+    setHasPrefetchedNext(false)
     setLoading(true)
   }, [episode.id])
 
@@ -181,6 +225,8 @@ export function VideoPlayer({
       } else {
         videoRef.current.pause()
         setIsPlaying(false)
+        // Salvar imediatamente ao pausar
+        saveProgressToAPI(videoRef.current.currentTime, videoRef.current.duration, true)
       }
     }
   }
