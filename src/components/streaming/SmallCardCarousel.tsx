@@ -79,7 +79,7 @@ function ContinueWatchingSmallCard({ anime }: { anime: Anime }) {
   return (
     <div
       onClick={handleClick}
-      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
+      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group card-glow rounded-lg"
     >
       {/* Card menor - aspect-ratio mais horizontal */}
       <div className="aspect-[4/3] bg-gray-800 rounded-lg overflow-hidden relative mb-2">

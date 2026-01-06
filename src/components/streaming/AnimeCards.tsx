@@ -22,7 +22,7 @@ export function SmallAnimeCard({ anime }: { anime: Anime }) {
   return (
     <div
       onClick={handleClick}
-      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
+      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group card-glow rounded-md"
     >
       <div className="aspect-[2/3] bg-gray-800 rounded-md overflow-hidden relative mb-2">
         <Image
@@ -87,7 +87,7 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
   return (
     <div
       onClick={handleClick}
-      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
+      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group card-glow rounded-lg"
     >
       <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative mb-3">
         <Image
@@ -164,7 +164,7 @@ export function ContinueWatchingCard({ anime }: { anime: Anime }) {
   return (
     <div
       onClick={handleClick}
-      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
+      className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group card-glow rounded-lg"
     >
       <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative mb-3">
         <Image

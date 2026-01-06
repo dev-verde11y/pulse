@@ -12,6 +12,7 @@ import { PosterCarousel } from '@/components/streaming/PosterCarousel'
 import { SmallCardCarousel } from '@/components/streaming/SmallCardCarousel'
 import { BannerCarousel } from '@/components/streaming/BannerCarousel'
 import CategoryCard from '@/components/streaming/CategoryCard'
+import { RevealSection } from '@/components/ui/RevealSection'
 import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
@@ -138,29 +139,35 @@ export function DashboardClient({
 
 
                     {/* Em Alta */}
-                    <PosterCarousel
-                        title="Em Alta"
-                        animes={trending}
-                    />
+                    <RevealSection delay="delay-100">
+                        <PosterCarousel
+                            title="Em Alta"
+                            animes={trending}
+                        />
+                    </RevealSection>
 
                     {/* Continue Assistindo (Only if logged in and has history) */}
                     {userContentLoading && user ? (
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-bold text-white px-4 md:px-0">Continue Assistindo</h2>
-                            <div className="flex gap-4 overflow-hidden px-4 md:px-0">
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="w-[160px] flex-shrink-0">
-                                        <MediumAnimeCardSkeleton />
-                                    </div>
-                                ))}
+                        <RevealSection delay="delay-200">
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-bold text-white px-4 md:px-0">Continue Assistindo</h2>
+                                <div className="flex gap-4 overflow-hidden px-4 md:px-0">
+                                    {[...Array(5)].map((_, i) => (
+                                        <div key={i} className="w-[160px] flex-shrink-0">
+                                            <MediumAnimeCardSkeleton />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        </RevealSection>
                     ) : (
                         user && continueWatchingAnimes.length > 0 && (
-                            <SmallCardCarousel
-                                title="Continue Assistindo"
-                                animes={continueWatchingAnimes}
-                            />
+                            <RevealSection delay="delay-200">
+                                <SmallCardCarousel
+                                    title="Continue Assistindo"
+                                    animes={continueWatchingAnimes}
+                                />
+                            </RevealSection>
                         )
                     )}
 
@@ -168,78 +175,94 @@ export function DashboardClient({
 
                     {/* Minha Lista (Only if logged in and has favorites) */}
                     {userContentLoading && user ? (
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-bold text-white px-4 md:px-0">Minha Lista</h2>
-                            <div className="flex gap-4 overflow-hidden px-4 md:px-0">
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="w-[160px] flex-shrink-0">
-                                        <MediumAnimeCardSkeleton />
-                                    </div>
-                                ))}
+                        <RevealSection delay="delay-300">
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-bold text-white px-4 md:px-0">Minha Lista</h2>
+                                <div className="flex gap-4 overflow-hidden px-4 md:px-0">
+                                    {[...Array(5)].map((_, i) => (
+                                        <div key={i} className="w-[160px] flex-shrink-0">
+                                            <MediumAnimeCardSkeleton />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        </RevealSection>
                     ) : (
                         user && myList.length > 0 && (
-                            <SmallCardCarousel
-                                title="Minha Lista"
-                                animes={myList}
-                            />
+                            <RevealSection delay="delay-300">
+                                <SmallCardCarousel
+                                    title="Minha Lista"
+                                    animes={myList}
+                                />
+                            </RevealSection>
                         )
                     )}
 
                     {/* Recomendados para Você */}
-                    <PosterCarousel
-                        title="Recomendados para Você"
-                        animes={recommendations}
-                    />
+                    <RevealSection>
+                        <PosterCarousel
+                            title="Recomendados para Você"
+                            animes={recommendations}
+                        />
+                    </RevealSection>
 
                     {/* Lançamentos */}
-                    <BannerCarousel
-                        title="Novos Lançamentos"
-                        animes={newReleases}
-                    />
+                    <RevealSection>
+                        <BannerCarousel
+                            title="Novos Lançamentos"
+                            animes={newReleases}
+                        />
+                    </RevealSection>
 
                     {/* Mais Avaliados */}
-                    <PosterCarousel
-                        title="Mais Avaliados"
-                        animes={topRated}
-                    />
+                    <RevealSection>
+                        <PosterCarousel
+                            title="Mais Avaliados"
+                            animes={topRated}
+                        />
+                    </RevealSection>
 
                     {/* Ação */}
-                    <CardCarousel
-                        title="Ação & Aventura"
-                        animes={action}
-                    />
+                    <RevealSection>
+                        <CardCarousel
+                            title="Ação & Aventura"
+                            animes={action}
+                        />
+                    </RevealSection>
 
                     {/* Comédia */}
-                    <CardCarousel
-                        title="Comédia"
-                        animes={comedy}
-                    />
+                    <RevealSection>
+                        <CardCarousel
+                            title="Comédia"
+                            animes={comedy}
+                        />
+                    </RevealSection>
 
                     {/* Categorias Populares */}
-                    <section className="mb-20 py-16 text-center">
-                        <div className="mb-12">
-                            <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
-                                Explorar por Categoria
-                            </h2>
-                            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                                Descubra animes organizados por gênero<br />
-                                <span className="text-white font-medium">Encontre exatamente o que você procura</span>
-                            </p>
-                        </div>
-                        <div className="w-full px-4">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 max-w-[1400px] mx-auto">
-                                {categories.map((category) => (
-                                    <CategoryCard
-                                        key={category.name}
-                                        name={category.name}
-                                        count={category.count}
-                                    />
-                                ))}
+                    <RevealSection>
+                        <section className="mb-20 py-16 text-center">
+                            <div className="mb-12">
+                                <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
+                                    Explorar por Categoria
+                                </h2>
+                                <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                                    Descubra animes organizados por gênero<br />
+                                    <span className="text-white font-medium">Encontre exatamente o que você procura</span>
+                                </p>
                             </div>
-                        </div>
-                    </section>
+                            <div className="w-full px-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 max-w-[1400px] mx-auto">
+                                    {categories.map((category) => (
+                                        <CategoryCard
+                                            key={category.name}
+                                            name={category.name}
+                                            count={category.count}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    </RevealSection>
 
                 </div>
             </main>

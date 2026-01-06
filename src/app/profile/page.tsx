@@ -6,7 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { api } from '@/lib/api'
-import { 
+import {
   KeyIcon,
   CheckIcon,
   EyeIcon
@@ -25,24 +25,24 @@ export default function ProfilePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
-  
+
   const [profileData, setProfileData] = useState<ProfileData>({
     name: '',
     currentPlan: '',
     subscriptionStatus: '',
     createdAt: ''
   })
-  
+
   const [profileErrors, setProfileErrors] = useState<{ [key: string]: string }>({})
-  
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   })
-  
+
   const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({})
-  
+
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -75,12 +75,12 @@ export default function ProfilePage() {
       updateUser(updatedUser)
       setIsEditingProfile(false)
       setSuccessMessage('Perfil atualizado com sucesso!')
-      
+
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error: unknown) {
       console.error('Erro ao atualizar perfil:', error)
-      setProfileErrors({ 
-        general: error instanceof Error ? error.message : 'Erro ao atualizar perfil' 
+      setProfileErrors({
+        general: error instanceof Error ? error.message : 'Erro ao atualizar perfil'
       })
     } finally {
       setSaving(false)
@@ -122,12 +122,12 @@ export default function ProfilePage() {
       })
       setIsChangingPassword(false)
       setSuccessMessage('Senha alterada com sucesso!')
-      
+
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error: unknown) {
       console.error('Erro ao alterar senha:', error)
-      setPasswordErrors({ 
-        general: error instanceof Error ? error.message : 'Erro ao alterar senha' 
+      setPasswordErrors({
+        general: error instanceof Error ? error.message : 'Erro ao alterar senha'
       })
     } finally {
       setSaving(false)
@@ -155,15 +155,15 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="bg-black text-white min-h-screen">
+      <Header forceSolid />
+
+      <main className="bg-black text-white min-h-screen pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           <div className="mb-8">
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                
+
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center">
                     <span className="text-2xl font-bold text-white">
@@ -176,13 +176,13 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex-1 text-center sm:text-left">
                   <h1 className="text-2xl font-bold text-white mb-1">
                     {profileData.name || 'Usuario'}
                   </h1>
                   <p className="text-gray-400 mb-3">{user?.email}</p>
-                  
+
                   <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     <span className="px-2 py-1 bg-blue-600/20 text-blue-300 text-xs rounded">
                       {formatPlanName(profileData.currentPlan)}
@@ -194,7 +194,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>
@@ -209,9 +209,9 @@ export default function ProfilePage() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             <div className="lg:col-span-2 space-y-6">
-              
+
               <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-white">
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                         {profileErrors.general}
                       </div>
                     )}
-                    
+
                     <div>
                       <label className="block text-sm text-gray-300 mb-2">Nome de exibicao</label>
                       <input
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                       <label className="block text-sm text-gray-400 mb-1">Nome</label>
                       <p className="text-white">{profileData.name || 'Nao definido'}</p>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm text-gray-400 mb-1">Email</label>
                       <p className="text-white">{user?.email}</p>
@@ -397,20 +397,19 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-6">
-              
+
               <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6 text-center">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 mx-auto ${
-                  profileData.currentPlan === 'FREE' 
-                    ? 'bg-gray-700' 
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 mx-auto ${profileData.currentPlan === 'FREE'
+                    ? 'bg-gray-700'
                     : 'bg-blue-600'
-                }`}>
+                  }`}>
                   <span className="text-xl">
                     {profileData.currentPlan === 'FREE' ? '🆓' : '⭐'}
                   </span>
                 </div>
                 <h4 className="font-semibold text-white mb-1">{formatPlanName(profileData.currentPlan)}</h4>
                 <p className="text-gray-400 text-sm">Status: Ativo</p>
-                
+
                 {profileData.currentPlan === 'FREE' && (
                   <button className="w-full mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
                     Fazer Upgrade
@@ -437,7 +436,7 @@ export default function ProfilePage() {
                   )}
                 </div>
               </div>
-              
+
             </div>
           </div>
         </div>

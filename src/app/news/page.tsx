@@ -7,7 +7,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { MediumAnimeCard } from '@/components/streaming/AnimeCards'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
-import { 
+import {
   SparklesIcon,
   CalendarIcon,
   ClockIcon
@@ -47,11 +47,11 @@ export default function NovidadesPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="bg-black text-white min-h-screen">
+      <Header forceSolid />
+
+      <main className="bg-black text-white min-h-screen pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           {/* Header da página */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -103,7 +103,7 @@ export default function NovidadesPage() {
                 {animes.map(anime => (
                   <div key={anime.id} className="relative group">
                     <MediumAnimeCard anime={anime} />
-                    
+
                     {/* Badge de novo */}
                     <div className="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded">
                       NOVO

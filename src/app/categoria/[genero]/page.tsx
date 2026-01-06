@@ -8,7 +8,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { MediumAnimeCard } from '@/components/streaming/AnimeCards'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
-import { 
+import {
   TagIcon,
   StarIcon,
   CalendarIcon,
@@ -31,7 +31,7 @@ export default function CategoriaPage() {
   useEffect(() => {
     const loadAnimes = async () => {
       if (!generoDecoded) return
-      
+
       try {
         setLoading(true)
         // Buscar animes por gênero
@@ -83,11 +83,11 @@ export default function CategoriaPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="bg-black text-white min-h-screen">
+      <Header forceSolid />
+
+      <main className="bg-black text-white min-h-screen pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           {/* Header da categoria */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -110,38 +110,35 @@ export default function CategoriaPage() {
               <AdjustmentsHorizontalIcon className="h-4 w-4 text-gray-400" />
               <span className="text-sm text-gray-400">Ordenar por:</span>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => handleSortChange('rating')}
-              className={`px-3 py-1 rounded text-sm transition-colors ${
-                sortBy === 'rating' 
-                  ? 'bg-blue-600 text-white' 
+              className={`px-3 py-1 rounded text-sm transition-colors ${sortBy === 'rating'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-              }`}
+                }`}
             >
               <StarIcon className="h-4 w-4 inline mr-1" />
               Melhor Avaliados
             </button>
-            
-            <button 
+
+            <button
               onClick={() => handleSortChange('year')}
-              className={`px-3 py-1 rounded text-sm transition-colors ${
-                sortBy === 'year' 
-                  ? 'bg-blue-600 text-white' 
+              className={`px-3 py-1 rounded text-sm transition-colors ${sortBy === 'year'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-              }`}
+                }`}
             >
               <CalendarIcon className="h-4 w-4 inline mr-1" />
               Mais Recentes
             </button>
-            
-            <button 
+
+            <button
               onClick={() => handleSortChange('title', 'asc')}
-              className={`px-3 py-1 rounded text-sm transition-colors ${
-                sortBy === 'title' 
-                  ? 'bg-blue-600 text-white' 
+              className={`px-3 py-1 rounded text-sm transition-colors ${sortBy === 'title'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-              }`}
+                }`}
             >
               A-Z
             </button>
@@ -171,7 +168,7 @@ export default function CategoriaPage() {
                 {animes.map(anime => (
                   <div key={anime.id} className="relative group">
                     <MediumAnimeCard anime={anime} />
-                    
+
                     {/* Rating badge */}
                     {anime.rating && !isNaN(Number(anime.rating)) && (
                       <div className="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded flex items-center gap-1">

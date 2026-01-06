@@ -7,7 +7,7 @@ import { Footer } from '@/components/layout/Footer'
 import { MediumAnimeCard } from '@/components/streaming/AnimeCards'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
-import { 
+import {
   HeartIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
@@ -95,11 +95,11 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="bg-black text-white min-h-screen">
+      <Header forceSolid />
+
+      <main className="bg-black text-white min-h-screen pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           {/* Título */}
           <div className="mb-8 text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -139,7 +139,7 @@ export default function FavoritesPage() {
               {favorites.map(anime => (
                 <div key={anime.id} className="relative group">
                   <MediumAnimeCard anime={anime} />
-                  
+
                   {/* Botão Remover */}
                   <button
                     onClick={() => handleRemoveFavorite(anime.id)}
@@ -166,7 +166,7 @@ export default function FavoritesPage() {
               <p className="text-gray-400 mb-6">
                 Adicione animes aos seus favoritos para vê-los aqui.
               </p>
-              <a 
+              <a
                 href="/search?q=*"
                 className="inline-flex items-center justify-center px-6 py-3 border-2 border-blue-500 text-blue-500 font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25"
               >

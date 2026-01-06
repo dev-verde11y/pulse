@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 const GENRES = [
-  'Ação', 'Aventura', 'Comédia', 'Drama', 'Fantasia', 'Horror', 
+  'Ação', 'Aventura', 'Comédia', 'Drama', 'Fantasia', 'Horror',
   'Romance', 'Ficção Científica', 'Slice of Life', 'Esporte',
   'Sobrenatural', 'Suspense', 'Thriller', 'Militar', 'Escola',
   'Música', 'Família', 'Histórico', 'Psicológico', 'Gore'
@@ -55,7 +55,7 @@ const SORT_OPTIONS = [
 function SearchPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   // Estados
   const [query, setQuery] = useState(searchParams.get('q') || '')
   const [animes, setAnimes] = useState<Anime[]>([])
@@ -64,7 +64,7 @@ function SearchPageContent() {
   const [totalResults, setTotalResults] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  
+
   // Filtros
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
   const [selectedRating, setSelectedRating] = useState('')
@@ -77,11 +77,11 @@ function SearchPageContent() {
   // Função de busca
   const performSearch = useCallback(async (page = 1) => {
     console.log('performSearch called with:', { query, page, selectedGenres, selectedRating, selectedStatus, selectedType })
-    
+
     // Tratar q=* como busca por todos os animes
     const shouldShowAll = query.trim() === '*'
     const hasSearchCriteria = query.trim() || selectedGenres.length > 0 || selectedRating || selectedStatus || selectedType || shouldShowAll
-    
+
     if (!hasSearchCriteria) {
       console.log('No search criteria, clearing results')
       setAnimes([])
@@ -92,11 +92,11 @@ function SearchPageContent() {
     console.log('Starting search with query:', query)
     setLoading(true)
     try {
-      const [sortField, sortOrder] = sortBy.includes('-desc') 
-        ? [sortBy.replace('-desc', ''), 'desc'] 
+      const [sortField, sortOrder] = sortBy.includes('-desc')
+        ? [sortBy.replace('-desc', ''), 'desc']
         : sortBy.includes('-asc')
-        ? [sortBy.replace('-asc', ''), 'asc']
-        : [sortBy, 'asc']
+          ? [sortBy.replace('-asc', ''), 'asc']
+          : [sortBy, 'asc']
 
       const filters = {
         // Se for *, não enviar parâmetro de busca para retornar todos
@@ -114,11 +114,11 @@ function SearchPageContent() {
       console.log('API call with filters:', filters)
       const response = await api.getAnimes(filters)
       console.log('API response:', response)
-      
+
       // Filtrar por múltiplos gêneros no frontend se necessário
       let filteredAnimes = response.animes
       if (selectedGenres.length > 1) {
-        filteredAnimes = response.animes.filter(anime => 
+        filteredAnimes = response.animes.filter(anime =>
           selectedGenres.every(genre => anime.genres?.includes(genre))
         )
       }
@@ -157,7 +157,7 @@ function SearchPageContent() {
       // Tratar q=* como busca por todos os animes
       const shouldShowAll = query.trim() === '*'
       const hasSearchCriteria = query.trim() || selectedGenres.length > 0 || selectedRating || selectedStatus || selectedType || shouldShowAll
-      
+
       if (!hasSearchCriteria) {
         setAnimes([])
         setTotalResults(0)
@@ -169,29 +169,29 @@ function SearchPageContent() {
       const [sortField, sortOrder] = sortBy.includes('-desc')
         ? [sortBy.replace('-desc', ''), 'desc']
         : sortBy.includes('-asc')
-        ? [sortBy.replace('-asc', ''), 'asc']
-        : [sortBy, 'asc']
+          ? [sortBy.replace('-asc', ''), 'asc']
+          : [sortBy, 'asc']
 
       const filters = {
-          // Se for *, não enviar parâmetro de busca para retornar todos
-          search: shouldShowAll ? undefined : (query.trim() || undefined),
-          genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined,
-          rating: selectedRating || undefined,
-          status: selectedStatus as "FINISHED" | "ONGOING" | "UPCOMING" | "CANCELLED" | undefined,
-          type: selectedType as "ANIME" | "FILME" | "SERIE" | undefined,
-          sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
-          sortOrder: sortOrder as "asc" | "desc",
-          page: currentPage,
-          limit: 20
-        }
+        // Se for *, não enviar parâmetro de busca para retornar todos
+        search: shouldShowAll ? undefined : (query.trim() || undefined),
+        genre: selectedGenres.length > 0 ? selectedGenres[0] : undefined,
+        rating: selectedRating || undefined,
+        status: selectedStatus as "FINISHED" | "ONGOING" | "UPCOMING" | "CANCELLED" | undefined,
+        type: selectedType as "ANIME" | "FILME" | "SERIE" | undefined,
+        sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
+        sortOrder: sortOrder as "asc" | "desc",
+        page: currentPage,
+        limit: 20
+      }
 
       try {
         const response = await api.getAnimes(filters)
-        
+
         // Filter on frontend if needed
         let filteredAnimes = response.animes
         if (selectedGenres.length > 1) {
-          filteredAnimes = response.animes.filter(anime => 
+          filteredAnimes = response.animes.filter(anime =>
             selectedGenres.every(genre => anime.genres?.includes(genre))
           )
         }
@@ -265,8 +265,8 @@ function SearchPageContent() {
   }
 
   const toggleGenre = (genre: string) => {
-    setSelectedGenres(prev => 
-      prev.includes(genre) 
+    setSelectedGenres(prev =>
+      prev.includes(genre)
         ? prev.filter(g => g !== genre)
         : [...prev, genre]
     )
@@ -274,11 +274,11 @@ function SearchPageContent() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="bg-black text-white min-h-screen">
+      <Header forceSolid />
+
+      <main className="bg-black text-white min-h-screen pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           {/* Título */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Buscar Animes</h1>
@@ -328,7 +328,7 @@ function SearchPageContent() {
               </div>
 
               <div className="space-y-6">
-                
+
                 {/* Row 1: Gêneros */}
                 <div>
                   <label className="block text-sm font-semibold text-white mb-3">Gêneros</label>
@@ -337,11 +337,10 @@ function SearchPageContent() {
                       <button
                         key={genre}
                         onClick={() => toggleGenre(genre)}
-                        className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 ${
-                          selectedGenres.includes(genre)
+                        className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 ${selectedGenres.includes(genre)
                             ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/25'
                             : 'bg-transparent border-white/20 text-gray-300 hover:border-white/40 hover:text-white hover:bg-white/5'
-                        }`}
+                          }`}
                       >
                         {genre}
                       </button>
@@ -512,7 +511,7 @@ function SearchPageContent() {
                   <div className="text-sm text-gray-400 order-2 sm:order-1">
                     Página {currentPage} de {totalPages} ({totalResults} resultados)
                   </div>
-                  
+
                   {/* Controles de Navegação */}
                   <div className="flex items-center gap-2 order-1 sm:order-2">
                     {/* Primeira Página */}
@@ -524,7 +523,7 @@ function SearchPageContent() {
                     >
                       ««
                     </button>
-                    
+
                     {/* Página Anterior */}
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -539,7 +538,7 @@ function SearchPageContent() {
                     <div className="flex items-center gap-1">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         let pageNum
-                        
+
                         if (totalPages <= 5) {
                           pageNum = i + 1
                         } else if (currentPage <= 3) {
@@ -549,16 +548,15 @@ function SearchPageContent() {
                         } else {
                           pageNum = currentPage - 2 + i
                         }
-                        
+
                         return (
                           <button
                             key={pageNum}
                             onClick={() => setCurrentPage(pageNum)}
-                            className={`w-10 h-10 text-sm rounded-lg transition-all ${
-                              currentPage === pageNum
+                            className={`w-10 h-10 text-sm rounded-lg transition-all ${currentPage === pageNum
                                 ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400'
                                 : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white'
-                            }`}
+                              }`}
                           >
                             {pageNum}
                           </button>
@@ -575,7 +573,7 @@ function SearchPageContent() {
                       <span className="hidden sm:inline">Próxima</span>
                       <ChevronDownIcon className="h-4 w-4 -rotate-90" />
                     </button>
-                    
+
                     {/* Última Página */}
                     <button
                       onClick={() => setCurrentPage(totalPages)}

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -76,47 +78,7 @@ export default function BrowsePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3">
-              <Image
-                src="/images/logo.png"
-                alt="Logo"
-                width={40}
-                height={40}
-                className="rounded-lg"
-                priority
-              />
-              <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                PULSE
-              </span>
-            </Link>
-
-            <div className="flex items-center gap-4">
-              <Link
-                href="/plans"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
-              >
-                Planos
-              </Link>
-              <Link
-                href="/login"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
-              >
-                Entrar
-              </Link>
-              <Link
-                href="/plans"
-                className="px-6 py-2 text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 rounded-lg transition-all shadow-lg shadow-blue-500/30"
-              >
-                Assinar Agora
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header forceSolid />
 
       {/* Hero Section */}
       <div className="relative h-[300px] bg-gradient-to-b from-slate-900 to-black">

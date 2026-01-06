@@ -411,7 +411,7 @@ export function HeroBanner() {
 
                 {/* Advanced Gradient Overlays */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60" />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
 
                 {/* Main Content Container */}
@@ -521,8 +521,8 @@ export function HeroBanner() {
                                 onClick={() => toggleFavorite(animeId)}
                                 disabled={isLoading}
                                 className={`font-semibold p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-lg transition-all duration-300 flex items-center justify-center group border min-h-[40px] min-w-[40px] sm:min-h-[44px] sm:min-w-[44px] active:scale-95 ${isFavorite
-                                    ? 'bg-red-600/30 border-red-500/80 hover:bg-red-600/40 text-red-300 shadow-lg shadow-red-600/30'
-                                    : 'bg-white/10 hover:bg-white/20 backdrop-blur-md border-white/30 hover:border-red-400/60 text-white shadow-lg shadow-black/20'
+                                  ? 'bg-red-600/30 border-red-500/80 hover:bg-red-600/40 text-red-300 shadow-lg shadow-red-600/30'
+                                  : 'bg-white/10 hover:bg-white/20 backdrop-blur-md border-white/30 hover:border-red-400/60 text-white shadow-lg shadow-black/20'
                                   } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                               >

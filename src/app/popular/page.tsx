@@ -7,7 +7,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { MediumAnimeCard } from '@/components/streaming/AnimeCards'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
-import { 
+import {
   FireIcon,
   EyeIcon,
   StarIcon
@@ -53,11 +53,11 @@ export default function PopularesPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="bg-black text-white min-h-screen">
+      <Header forceSolid />
+
+      <main className="bg-black text-white min-h-screen pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           {/* Header da página */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -73,24 +73,22 @@ export default function PopularesPage() {
 
           {/* Filtros rápidos */}
           <div className="mb-6 flex flex-wrap gap-3">
-            <button 
+            <button
               onClick={() => handleFilterChange('rating')}
-              className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                activeFilter === 'rating' 
-                  ? 'bg-orange-600 text-white' 
+              className={`px-4 py-2 rounded-lg text-sm transition-colors ${activeFilter === 'rating'
+                  ? 'bg-orange-600 text-white'
                   : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-              }`}
+                }`}
             >
               <StarIcon className="h-4 w-4 inline mr-2" />
               Melhor Avaliados
             </button>
-            <button 
+            <button
               onClick={() => handleFilterChange('views')}
-              className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                activeFilter === 'views' 
-                  ? 'bg-orange-600 text-white' 
+              className={`px-4 py-2 rounded-lg text-sm transition-colors ${activeFilter === 'views'
+                  ? 'bg-orange-600 text-white'
                   : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-              }`}
+                }`}
             >
               <EyeIcon className="h-4 w-4 inline mr-2" />
               Mais Assistidos
@@ -120,15 +118,14 @@ export default function PopularesPage() {
                 {animes.map((anime, index) => (
                   <div key={anime.id} className="relative group">
                     <MediumAnimeCard anime={anime} />
-                    
+
                     {/* Rating badge principal */}
                     {anime.rating && !isNaN(Number(anime.rating)) ? (
-                      <div className={`absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border-2 border-white ${
-                        Number(anime.rating) >= 9.0 ? 'bg-yellow-500 text-black' :
-                        Number(anime.rating) >= 8.0 ? 'bg-orange-500 text-white' :
-                        Number(anime.rating) >= 7.0 ? 'bg-blue-600 text-white' :
-                        'bg-gray-600 text-white'
-                      }`}>
+                      <div className={`absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border-2 border-white ${Number(anime.rating) >= 9.0 ? 'bg-yellow-500 text-black' :
+                          Number(anime.rating) >= 8.0 ? 'bg-orange-500 text-white' :
+                            Number(anime.rating) >= 7.0 ? 'bg-blue-600 text-white' :
+                              'bg-gray-600 text-white'
+                        }`}>
                         <StarIcon className="h-3 w-3" />
                         {Number(anime.rating).toFixed(1)}
                       </div>
@@ -137,7 +134,7 @@ export default function PopularesPage() {
                         N/A
                       </div>
                     )}
-                    
+
                     {/* Position badge no canto direito */}
                     <div className="absolute top-2 right-2 w-6 h-6 bg-black/80 text-white text-xs font-bold rounded-full flex items-center justify-center border border-gray-500">
                       #{index + 1}

@@ -129,20 +129,90 @@ body {
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out;
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.8s ease-out;
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
+/* Reveal on Scroll Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px) scale(0.98);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  visibility: hidden;
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+
+.delay-100 {
+  transition-delay: 100ms;
+}
+
+.delay-200 {
+  transition-delay: 200ms;
+}
+
+.delay-300 {
+  transition-delay: 300ms;
+}
+
+.delay-400 {
+  transition-delay: 400ms;
+}
+
+.delay-500 {
+  transition-delay: 500ms;
+}
+
+/* Desktop Card Glow Effect */
+.card-glow {
+  position: relative;
+}
+
+.card-glow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, #2563eb, #3b82f6, #60a5fa, #2563eb);
+  background-size: 400%;
+  z-index: -1;
+  filter: blur(12px);
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.card-glow:hover::after {
+  opacity: 0.5;
+  animation: cardGlowMove 8s linear infinite;
+}
+
+@keyframes cardGlowMove {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Scrollbar personalizada */
