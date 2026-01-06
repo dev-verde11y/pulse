@@ -8,11 +8,17 @@ import { EpisodeList } from '@/components/anime/EpisodeList'
 import { SeasonSelector, EpisodeFilters } from '@/components/anime/SeasonSelector'
 import { Anime } from '@/types/anime'
 
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
 interface AnimeDetailClientProps {
     anime: Anime
 }
 
 export default function AnimeDetailClient({ anime }: AnimeDetailClientProps) {
+    const router = useRouter()
+    const { user, loading: authLoading } = useAuth()
     const [selectedSeason, setSelectedSeason] = useState(1)
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -20,6 +26,13 @@ export default function AnimeDetailClient({ anime }: AnimeDetailClientProps) {
         status: 'all',
         availability: 'all'
     })
+
+    // Auth Redirect if not logged in
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/login')
+        }
+    }, [user, authLoading, router])
 
     return (
         <div className="min-h-screen bg-black">

@@ -1,616 +1,291 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { Plan } from "@prisma/client"
-
-
-function formatPrice(price: string | number, billingCycle: string) {
-  const numPrice = typeof price === 'string' ? parseFloat(price) : Number(price)
-  const formatted = `R$ ${numPrice.toFixed(2).replace('.', ',')}`
-
-  if (billingCycle === 'MONTHLY') return { price: formatted, period: '/mês' }
-  if (billingCycle === 'ANNUALLY') return { price: formatted, period: '/ano' }
-  return { price: formatted, period: '' }
-}
-
-function getMoonPhaseName(planType: string) {
-  const plans = {
-    'FREE': 'Aventureiro',
-    'FAN': 'Cavaleiro',
-    'MEGA_FAN': 'Titã',
-    'MEGA_FAN_ANNUAL': 'Titã Anual'
-  }
-  return plans[planType as keyof typeof plans] || planType
-}
-
-function getMoonPhaseDescription(planType: string) {
-  const descriptions = {
-    'FREE': 'Inicie sua jornada',
-    'FAN': 'Rising Knight • Evolução constante',
-    'MEGA_FAN': 'Divine Power • Poder absoluto',
-    'MEGA_FAN_ANNUAL': 'Legendary Soul • Melhor valor nobre'
-  }
-  return descriptions[planType as keyof typeof descriptions] || 'Plano premium'
-}
-
-function updateFeatureText(feature: string) {
-  // Atualiza referências aos planos antigos nas features
-  let updatedFeature = feature
-
-  // Substitui referências ao "Fan" para "Cavaleiro"
-  if (updatedFeature.includes('Tudo do Fan') || updatedFeature.includes('do Fan')) {
-    updatedFeature = updatedFeature.replace(/Tudo do Fan|do Fan/g, 'Tudo do Cavaleiro')
-  }
-
-  // Substitui referências ao "Mega Fan" para "Titã"  
-  if (updatedFeature.includes('Tudo do Mega Fan') || updatedFeature.includes('do Mega Fan')) {
-    updatedFeature = updatedFeature.replace(/Tudo do Mega Fan|do Mega Fan/g, 'Tudo do Titã')
-  }
-
-  return updatedFeature
-}
+import { useRouter } from "next/navigation"
+import { Header } from "@/components/layout/Header"
+import { Footer } from "@/components/layout/Footer"
+import Image from "next/image"
 
 export default function PricingPage() {
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
-    async function loadPlans() {
-      try {
-        const response = await fetch('/api/plans')
-        if (!response.ok) {
-          throw new Error('Falha ao buscar planos')
-        }
-        const data = await response.json()
-        // A API retorna { plans: [...] }
-        setPlans(data.plans || [])
-      } catch (error) {
-        console.error('Erro ao carregar planos:', error)
-        setPlans([]) // Define como array vazio em caso de erro
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadPlans()
+    const handleScroll = () => setIsScrolled(window.scrollY > 50)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-xl font-medium">Carregando planos incríveis...</div>
-        </div>
-      </div>
-    )
+  const handleSelectClass = () => {
+    router.push('/plans')
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Anime-inspired Background */}
-      <div className="absolute inset-0">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-indigo-950/40 to-blue-950/30"></div>
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-blue-500/30 overflow-x-hidden">
+      <Header forceSolid={isScrolled} />
 
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 via-transparent to-yellow-500/5 animate-pulse"></div>
+      {/* Cinematic Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 overflow-hidden">
+        {/* Animated Background Atmosphere */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-[10%] right-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[100px] animate-pulse delay-700"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/50 to-[#020617] z-10"></div>
 
-        {/* Large animated orbs */}
-        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/8 to-cyan-600/8 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-gradient-to-l from-yellow-500/6 to-amber-500/6 rounded-full blur-3xl animate-pulse delay-1000"></div>
-
-        {/* Geometric patterns */}
-        <div className="absolute top-1/4 right-1/3 w-32 h-32 border border-blue-500/10 rotate-45 animate-spin-slow"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-24 h-24 border border-yellow-500/10 rotate-12 animate-spin-slow-reverse"></div>
-
-        {/* Premium floating elements */}
-        <div className="absolute top-20 left-20 w-2 h-2 bg-blue-400 rounded-full opacity-60 animate-bounce delay-700"></div>
-        <div className="absolute top-40 right-32 w-1 h-1 bg-yellow-400 rounded-full opacity-80 animate-bounce delay-1000"></div>
-        <div className="absolute bottom-32 left-16 w-3 h-3 bg-cyan-400 rounded-full opacity-40 animate-bounce delay-500"></div>
-        <div className="absolute bottom-20 right-20 w-2 h-2 bg-amber-400 rounded-full opacity-50 animate-bounce delay-300"></div>
-      </div>
-
-      {/* Hero Section Impactante */}
-      <div className="relative min-h-screen">
-        {/* Background Dinâmico */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black"></div>
-
-          {/* Anime-style background effects */}
-          <div className="absolute inset-0 opacity-30">
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: "url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop')"
-              }}
-            ></div>
-          </div>
-
-          {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/95"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/50"></div>
-
-          {/* Dynamic elements */}
-          <div className="absolute top-1/4 left-10 w-2 h-2 bg-blue-400 rounded-full animate-ping"></div>
-          <div className="absolute top-1/3 right-20 w-1 h-1 bg-cyan-400 rounded-full animate-pulse delay-500"></div>
-          <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-bounce delay-1000"></div>
-          <div className="absolute bottom-1/4 right-1/3 w-3 h-3 bg-purple-400 rounded-full animate-pulse delay-700 opacity-60"></div>
-
-          {/* Large orbs */}
-          <div className="absolute top-20 right-20 w-80 h-80 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-20 w-64 h-64 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          {/* Subtle Particles/Grid */}
+          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex items-center min-h-screen">
-          <div className="container mx-auto px-6">
-            <div className="max-w-4xl mx-auto text-center">
+        <div className="relative z-20 max-w-7xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-8 animate-fade-in-up">
+            <span className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em]">O Chamado da Glória</span>
+          </div>
 
-              {/* Conteúdo Principal Centralizado */}
-              <div className="space-y-8">
-                {/* Brand Title - Pulse Representation */}
-                <div className="text-center mb-16">
-                  <div className="space-y-6">
-                    {/* Pulse Visual Effect - Blue theme */}
-                    <div className="flex justify-center items-center gap-2 mb-4">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-8 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full animate-pulse"></div>
-                        <div className="w-2 h-12 bg-gradient-to-t from-cyan-500 to-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                        <div className="w-2 h-16 bg-gradient-to-t from-blue-400 to-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                        <div className="w-2 h-20 bg-gradient-to-t from-cyan-400 to-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.6s' }}></div>
-                        <div className="w-2 h-16 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.8s' }}></div>
-                        <div className="w-2 h-12 bg-gradient-to-t from-cyan-500 to-blue-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                        <div className="w-2 h-8 bg-gradient-to-t from-blue-400 to-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '1.2s' }}></div>
-                      </div>
-                    </div>
+          <h1 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-[0.8] mb-10">
+            ESCOLHA SUA <br />
+            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent animate-gradient-x underline decoration-blue-500/20 decoration-8 underline-offset-8">CLASSE</span>
+          </h1>
 
-                    <h1 className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 animate-gradient-x leading-none tracking-tight">
-                      PULSE
-                    </h1>
+          <p className="text-lg md:text-2xl text-slate-400 max-w-3xl mx-auto font-medium leading-relaxed mb-16">
+            Sua jornada épica merece o melhor equipamento. Desbloqueie o potencial máximo <br className="hidden md:block" />
+            da sua experiência anime com as classes de prestígio da Pulse.
+          </p>
 
-                    {/* Heartbeat Line */}
-                    <div className="flex justify-center items-center gap-6">
-                      <div className="flex items-center">
-                        <div className="h-0.5 w-12 bg-gradient-to-r from-transparent to-blue-400"></div>
-                        <div className="h-1 w-4 bg-blue-400"></div>
-                        <div className="h-4 w-1 bg-cyan-400"></div>
-                        <div className="h-8 w-1 bg-blue-500"></div>
-                        <div className="h-4 w-1 bg-cyan-400"></div>
-                        <div className="h-1 w-4 bg-blue-400"></div>
-                        <div className="h-0.5 w-12 bg-gradient-to-l from-transparent to-blue-400"></div>
-                      </div>
-                    </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs font-black uppercase tracking-widest text-slate-500">
+            <span className="flex items-center gap-2 flex-shrink-0">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> 7 Dias Grátis
+            </span>
+            <span className="hidden sm:block text-slate-800">•</span>
+            <span className="flex items-center gap-2 flex-shrink-0">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> Cancele a Qualquer Momento
+            </span>
+            <span className="hidden sm:block text-slate-800">•</span>
+            <span className="flex items-center gap-2 flex-shrink-0">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> Sem Compromisso
+            </span>
+          </div>
+        </div>
+      </section>
 
-                    <p className="text-blue-300 font-black tracking-[0.3em] text-xl">
-                      STREAMING ANIME
-                    </p>
-                  </div>
+      {/* RPG Classes Showcase */}
+      <section className="relative z-20 max-w-7xl mx-auto px-6 -mt-20 pb-40">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+
+          {/* Class: Aventureiro (Tier 1) */}
+          <div className="group relative">
+            <div className="absolute inset-0 bg-slate-400/5 rounded-[3rem] blur-2xl group-hover:bg-slate-400/10 transition-all duration-500"></div>
+            <div className="relative bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[3rem] p-10 flex flex-col h-full transition-all duration-500 group-hover:border-slate-400/30 group-hover:-translate-y-2">
+              <div className="flex justify-between items-start mb-12">
+                <div className="w-20 h-20 rounded-3xl bg-slate-800/50 border border-white/5 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  🛡️
                 </div>
-
-                {/* Main Headline */}
-                <div className="space-y-6">
-                  <h2 className="text-4xl md:text-6xl font-bold text-gray-100 leading-tight">
-                    Viva Sua
-                    <br />
-                    <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">
-                      Paixão Anime
-                    </span>
-                  </h2>
-
-                  <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto font-medium">
-                    Mergulhe no maior catálogo de animes do Brasil com qualidade 4K,
-                    sem anúncios e recursos que vão transformar sua experiência.
-                  </p>
+                <div className="text-right">
+                  <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Rank I</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tighter">Aventureiro</h3>
                 </div>
-
-                {/* Stats Simplificados */}
-                <div className="grid grid-cols-3 gap-8 py-8">
-                  <div className="text-center group cursor-pointer">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
-                      15K+
-                    </div>
-                    <div className="text-xs text-gray-500 font-normal mt-1">Episódios</div>
-                  </div>
-                  <div className="text-center group cursor-pointer">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
-                      4K
-                    </div>
-                    <div className="text-xs text-gray-500 font-normal mt-1">Ultra HD</div>
-                  </div>
-                  <div className="text-center group cursor-pointer">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
-                      0
-                    </div>
-                    <div className="text-xs text-gray-500 font-normal mt-1">Anúncios</div>
-                  </div>
-                </div>
-
-
-
               </div>
+
+              <div className="mb-10">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-black">Grátis</span>
+                </div>
+                <p className="text-slate-500 text-sm font-bold mt-2 uppercase tracking-widest">Inicie sua jornada</p>
+              </div>
+
+              <ul className="space-y-5 mb-12 flex-grow">
+                {[
+                  'Acesso a títulos selecionados',
+                  'Qualidade HD Standard',
+                  'Com anúncios entre episódios',
+                  '1 Dispositivo por vez'
+                ].map((feat) => (
+                  <li key={feat} className="flex items-center gap-4 text-slate-400 text-sm font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={handleSelectClass}
+                className="w-full py-5 rounded-2xl bg-white/5 border border-white/10 font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-white/10 active:scale-95"
+              >
+                Começar Jornada
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce">
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-xs font-medium">Veja as Fases da Lua</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-        </div>
-      </div>
+          {/* Class: Cavaleiro (Tier 2 - Popular) */}
+          <div className="group relative">
+            {/* Glow Effect */}
+            <div className="absolute inset-0 bg-blue-600/10 rounded-[3rem] blur-3xl group-hover:bg-blue-600/20 transition-all duration-500"></div>
 
+            <div className="relative bg-slate-900/60 backdrop-blur-2xl border border-blue-500/20 rounded-[3rem] p-10 flex flex-col h-full transition-all duration-500 group-hover:border-blue-500/40 group-hover:-translate-y-2 ring-1 ring-blue-500/10">
+              {/* Popular Badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-xl shadow-blue-900/40 z-30">
+                Classe Recomendada
+              </div>
 
-      {/* Pricing Section */}
-      <div className="py-20">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Escolha Sua <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">Classe RPG</span>
-            </h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto">
-              Todos os planos incluem 7 dias grátis. Sem compromisso, cancele quando quiser.
-            </p>
-          </div>
-
-          {/* Pricing Cards - Clean & Modern */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {/* Free Trial Card - Always First */}
-            <div className="relative group">
-              {/* Trial Badge */}
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-yellow-500/50">
-                  🎁 TESTE GRÁTIS
+              <div className="flex justify-between items-start mb-12">
+                <div className="w-20 h-20 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform duration-500 shadow-blue-500/10">
+                  ⚔️
+                </div>
+                <div className="text-right">
+                  <span className="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Rank II</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tighter">Cavaleiro</h3>
                 </div>
               </div>
 
-              {/* Card */}
-              <div className="relative bg-slate-900/60 backdrop-blur-xl border border-yellow-500/40 shadow-yellow-500/10 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
-
-                {/* Plan Icon & Name */}
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-400/30">
-                    <span className="text-2xl">🎁</span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    Teste Grátis
-                  </h3>
-
-                  <p className="text-gray-400 text-sm mb-4">
-                    Experimente tudo sem compromisso
-                  </p>
-
-                  {/* Price */}
-                  <div className="mb-4">
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-black bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
-                        7 dias
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-gray-400 text-sm">
-                        100% Grátis
-                      </span>
-                    </div>
-                  </div>
+              <div className="mb-10">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] font-black text-slate-500 mr-2">R$</span>
+                  <span className="text-5xl font-black">14,90</span>
+                  <span className="text-slate-500 text-sm font-bold">/mês</span>
                 </div>
+                <p className="text-blue-400 text-sm font-bold mt-2 uppercase tracking-widest">Evolução constante</p>
+              </div>
 
-                {/* Features */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-300 text-sm">
-                      Acesso completo por 7 dias
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-300 text-sm">
-                      Sem cartão de crédito
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-300 text-sm">
-                      Cancele a qualquer momento
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400/20 text-yellow-400">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-300 text-sm">
-                      Streaming HD e 4K
-                    </span>
-                  </div>
+              <ul className="space-y-5 mb-12 flex-grow">
+                {[
+                  'Acesso ILIMITADO ao catálogo',
+                  'Qualidade Full HD 1080p',
+                  'ZERO Anúncios',
+                  '2 Telas simultâneas'
+                ].map((feat) => (
+                  <li key={feat} className="flex items-center gap-4 text-slate-200 text-sm font-bold">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></div>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={handleSelectClass}
+                className="w-full py-5 rounded-2xl bg-blue-600 font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-blue-500 hover:shadow-2xl hover:shadow-blue-600/30 active:scale-95 text-white"
+              >
+                Iniciando Quest
+              </button>
+            </div>
+          </div>
+
+          {/* Class: Titã (Tier 3 - Legendary) */}
+          <div className="group relative">
+            <div className="absolute inset-0 bg-yellow-500/5 rounded-[3rem] blur-2xl group-hover:bg-yellow-500/10 transition-all duration-500"></div>
+            <div className="relative bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[3rem] p-10 flex flex-col h-full transition-all duration-500 group-hover:border-yellow-500/30 group-hover:-translate-y-2">
+              <div className="flex justify-between items-start mb-12">
+                <div className="w-20 h-20 rounded-3xl bg-yellow-500/5 border border-yellow-500/10 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  👑
                 </div>
+                <div className="text-right">
+                  <span className="block text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-1">Rank III</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tighter">Titã</h3>
+                </div>
+              </div>
 
-                {/* CTA Button */}
-                <a
-                  href="/plans"
-                  className="block w-full py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-yellow-500 to-amber-500 text-white hover:from-yellow-400 hover:to-amber-400 shadow-yellow-500/30 hover:scale-105 shadow-lg hover:shadow-xl text-center"
-                >
-                  Começar Teste Grátis
-                </a>
+              <div className="mb-10">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] font-black text-slate-500 mr-2">R$</span>
+                  <span className="text-5xl font-black">19,90</span>
+                  <span className="text-slate-500 text-sm font-bold">/mês</span>
+                </div>
+                <p className="text-yellow-500 text-sm font-bold mt-2 uppercase tracking-widest">Poder absoluto</p>
+              </div>
 
-                <p className="text-center text-gray-500 text-xs mt-3">
-                  Sem compromisso • Sem cartão
+              <ul className="space-y-5 mb-12 flex-grow">
+                {[
+                  'Qualidade ULTRA HD 4K',
+                  'Modo Offline (Downloads)',
+                  '4 Telas simultâneas',
+                  'Acesso antecipado a simulcasts'
+                ].map((feat) => (
+                  <li key={feat} className="flex items-center gap-4 text-slate-300 text-sm font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/50"></div>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={handleSelectClass}
+                className="w-full py-5 rounded-2xl bg-white/5 border border-white/10 font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-white/10 active:scale-95"
+              >
+                Elevar Poder
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Benefits Grid - Adventurer's Perks */}
+      <section className="py-40 relative border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-24">
+            <h2 className="text-sm font-black text-blue-500 uppercase tracking-[0.4em] mb-4">Vantagens de Guilda</h2>
+            <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tight">O PODER DA FORJA <span className="text-slate-500">PULSE</span></h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            {[
+              { icon: '🚀', title: 'Velocidade Divina', desc: 'Episódios disponíveis apenas 1 hora após a exibição original japonesa.' },
+              { icon: '💎', title: 'Cristal 4K', desc: 'Imersão visual máxima com resolução nativa e suporte HDR para cores vibrantes.' },
+              { icon: '🗡️', title: 'Zero Distração', desc: 'Sua batalha sem interrupções. Sem publicidade em todos os planos de elite.' },
+              { icon: '🌍', title: 'Toda Parte', desc: 'Sincronize seu progresso e assista em qualquer dispositivo, em qualquer lugar.' }
+            ].map((perk, i) => (
+              <div key={i} className="group">
+                <div className="text-5xl mb-8 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 inline-block">
+                  {perk.icon}
+                </div>
+                <h4 className="text-xl font-black uppercase tracking-tighter mb-4 group-hover:text-blue-400 transition-colors">
+                  {perk.title}
+                </h4>
+                <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                  {perk.desc}
                 </p>
               </div>
-            </div>
-
-            {plans.filter(plan => Number(plan.price) > 0).map((plan) => {
-              const pricing = formatPrice(Number(plan.price), plan.billingCycle)
-              const isPopular = plan.popular
-              const isAnnual = plan.billingCycle === 'ANNUALLY'
-
-              return (
-                <div key={plan.id} className="relative group">
-                  {/* Annual Badge */}
-                  {isAnnual && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-green-500/50">
-                        💰 ECONOMIZE 16%
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Popular Badge */}
-                  {isPopular && !isAnnual && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-blue-500/50">
-                        🌕 POPULAR
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Card */}
-                  <div className={`
-                    relative bg-slate-900/60 backdrop-blur-xl border rounded-2xl p-6
-                    transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl
-                    ${isAnnual
-                      ? 'border-green-500/40 shadow-green-500/10'
-                      : isPopular
-                        ? 'border-cyan-500/40 shadow-cyan-500/10'
-                        : 'border-blue-500/30 hover:border-blue-400/50'
-                    }
-                  `}>
-
-                    {/* Plan Icon & Name */}
-                    <div className="text-center mb-6">
-                      <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center ${isAnnual
-                          ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-400/30'
-                          : isPopular
-                            ? 'bg-gradient-to-br from-blue-400/20 to-cyan-500/20 border border-cyan-400/30'
-                            : 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30'
-                        }`}>
-                        <span className="text-2xl">
-                          {plan.type === 'FREE' && '🛡️'}
-                          {plan.type === 'FAN' && '⚔️'}
-                          {plan.type === 'MEGA_FAN' && '👑'}
-                          {plan.type === 'MEGA_FAN_ANNUAL' && '💎'}
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {getMoonPhaseName(plan.type)}
-                      </h3>
-
-                      <p className="text-gray-400 text-sm mb-4">
-                        {getMoonPhaseDescription(plan.type)}
-                      </p>
-
-                      {/* Price */}
-                      <div className="mb-4">
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className={`text-4xl font-black bg-gradient-to-r ${isAnnual
-                              ? 'from-green-400 to-emerald-400 bg-clip-text text-transparent'
-                              : isPopular
-                                ? 'from-blue-400 to-cyan-400 bg-clip-text text-transparent'
-                                : 'from-blue-400 to-cyan-400 bg-clip-text text-transparent'
-                            }`}>
-                            {pricing.price}
-                          </span>
-                          <span className="text-gray-400">
-                            {pricing.period}
-                          </span>
-                        </div>
-
-                        {isAnnual && (
-                          <div className="mt-2">
-                            <span className="inline-block bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">
-                              Equivalente a R$ {(Number(plan.price) / 12).toFixed(2)}/mês
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    <div className="space-y-3 mb-6">
-                      {plan.features.slice(0, 4).map((feature, idx) => (
-                        <div key={idx} className="flex items-start gap-3">
-                          <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${isAnnual
-                              ? 'bg-green-400/20 text-green-400'
-                              : 'bg-blue-400/20 text-blue-400'
-                            }`}>
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <span className="text-gray-300 text-sm">
-                            {updateFeatureText(feature)}
-                          </span>
-                        </div>
-                      ))}
-
-                      {/* Technical Features */}
-                      {plan.maxScreens > 1 && (
-                        <div className="flex items-start gap-3">
-                          <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${isAnnual
-                              ? 'bg-green-400/20 text-green-400'
-                              : 'bg-blue-400/20 text-blue-400'
-                            }`}>
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <span className="text-gray-300 text-sm">
-                            {plan.maxScreens} telas simultâneas
-                          </span>
-                        </div>
-                      )}
-
-                      {plan.offlineViewing && (
-                        <div className="flex items-start gap-3">
-                          <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${isAnnual
-                              ? 'bg-green-400/20 text-green-400'
-                              : 'bg-blue-400/20 text-blue-400'
-                            }`}>
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <span className="text-gray-300 text-sm">
-                            Download offline
-                          </span>
-                        </div>
-                      )}
-
-                      {plan.gameVaultAccess && (
-                        <div className="flex items-start gap-3">
-                          <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 ${isAnnual
-                              ? 'bg-green-400/20 text-green-400'
-                              : 'bg-blue-400/20 text-blue-400'
-                            }`}>
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <span className="text-gray-300 text-sm">
-                            Game Vault
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* CTA Button */}
-                    <a
-                      href="/plans"
-                      className={`
-                        block w-full py-3 rounded-xl font-semibold transition-all duration-300 text-center
-                        ${isAnnual
-                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500 shadow-green-500/30'
-                          : isPopular
-                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-400 hover:to-cyan-400 shadow-blue-500/30'
-                            : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-500 hover:to-cyan-500 shadow-blue-500/30'
-                        }
-                        hover:scale-105 shadow-lg hover:shadow-xl
-                      `}
-                    >
-                      Começar Teste Grátis
-                    </a>
-
-                    <p className="text-center text-gray-500 text-xs mt-3">
-                      7 dias grátis • Sem compromisso
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Additional Info */}
-          <div className="text-center mt-16 space-y-4">
-            <p className="text-white/60 text-sm">
-              Todos os planos incluem acesso completo à plataforma durante o período gratuito
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 text-white/40 text-sm">
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Cancele a qualquer momento
-              </span>
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Sem taxas ocultas
-              </span>
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Suporte 24/7
-              </span>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer Simple */}
-      <div className="py-16 bg-black/40 border-t border-white/10">
-        <div className="container mx-auto px-6 text-center">
-          <div className="space-y-6">
-            {/* Logo */}
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="text-4xl font-black text-purple-500">P</div>
-              <div className="text-2xl font-black text-white tracking-wider">PULSE</div>
-            </div>
-
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              A melhor plataforma de streaming anime do Brasil. Assista seus animes favoritos em 4K, sem anúncios e quando quiser.
-            </p>
-
-            <div className="flex flex-wrap justify-center items-center gap-8 text-gray-500 text-sm">
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                7 dias grátis
-              </span>
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Cancele quando quiser
-              </span>
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Sem compromisso
-              </span>
-            </div>
-
-            <div className="pt-8 border-t border-white/10">
-              <p className="text-gray-600 text-sm">
-                © {new Date().getFullYear()} Pulse Streaming. Todos os direitos reservados.
-              </p>
-            </div>
-          </div>
+      {/* Global Achievement CTA */}
+      <section className="py-40 relative overflow-hidden bg-blue-600/5">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-10 leading-[0.9]">
+            PRONTO PARA <br /> <span className="text-blue-400">EVOLUIR?</span>
+          </h3>
+          <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+            Junte-se a milhares de aventureiros e comece sua jornada com 7 dias de glória total por nossa conta.
+          </p>
+          <button
+            onClick={handleSelectClass}
+            className="px-16 py-6 bg-white text-black rounded-full font-black text-sm uppercase tracking-[0.4em] hover:bg-blue-400 hover:text-white transition-all shadow-2xl shadow-white/5 active:scale-95"
+          >
+            Criar seu Personagem
+          </button>
         </div>
-      </div>
+      </section>
+
+      <Footer />
+
+      <style jsx global>{`
+        .animate-gradient-x {
+          background-size: 200% auto;
+          animation: gradientX 5s ease infinite;
+        }
+        @keyframes gradientX {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   )
 }

@@ -81,11 +81,18 @@ export default function LandingPage() {
             <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">PULSE</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-10">
-            {['Catálogo', 'Novidades', 'Top Animes', 'Comunidade'].map((item) => (
-              <Link key={item} href="/browse" className="text-sm font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest">{item}</Link>
-            ))}
-          </nav>
+          {isAuthenticated && (
+            <nav className="hidden md:flex items-center gap-10">
+              {[
+                { label: 'Catálogo', href: '/browse' },
+                { label: 'Novidades', href: '/news' },
+                { label: 'Top Animes', href: '/popular' },
+                { label: 'Comunidade', href: '/browse' }
+              ].map((item) => (
+                <Link key={item.label} href={item.href} className="text-sm font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest">{item.label}</Link>
+              ))}
+            </nav>
+          )}
 
           <div className="flex items-center gap-6">
             {!isAuthenticated ? (
@@ -133,7 +140,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-2xl text-slate-400 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-            Mergulhe em universos infinitos com qualidade 4K cinematográfica.
+            Mergulhe em universos infinitos com qualidade Superior cinematográfica.
             A forja dos maiores títulos de anime, agora ao seu alcance.
           </p>
 

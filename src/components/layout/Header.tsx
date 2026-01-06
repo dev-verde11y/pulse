@@ -130,143 +130,155 @@ export function Header({ forceSolid = false }: { forceSolid?: boolean }) {
             </Link>
           </div>
 
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:block flex-1 max-w-md mx-6">
-            <SearchBar variant="header" className="w-full" />
-          </div>
+          {/* Search Bar - Desktop - Restricted to Authenticated Users */}
+          {user && (
+            <div className="hidden md:block flex-1 max-w-md mx-6">
+              <SearchBar variant="header" className="w-full" />
+            </div>
+          )}
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-2">
-            <Link href="/news" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
-              Novidades
-              <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
-            </Link>
-            <Link href="/popular" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
-              Populares
-              <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
-            </Link>
+          {/* Desktop Navigation - Restricted to Authenticated Users */}
+          {user && (
+            <nav className="hidden lg:flex items-center space-x-2">
+              <Link href="/browse" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
+                Catálogo
+                <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
+              </Link>
+              <Link href="/news" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
+                Novidades
+                <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
+              </Link>
+              <Link href="/popular" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
+                Top Animes
+                <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
+              </Link>
+              <Link href="/browse" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
+                Comunidade
+                <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
+              </Link>
 
-            {/* Categories Dropdown */}
-            <div className="relative" ref={categoriesRef}>
-              <button
-                onClick={() => {
-                  setIsCategoriesOpen(!isCategoriesOpen)
-                  if (!isCategoriesOpen) loadGenres()
-                }}
-                className={`relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center ${isCategoriesOpen
-                  ? 'bg-gray-800/50 backdrop-blur-sm'
-                  : 'hover:bg-gray-800/30 hover:backdrop-blur-sm'
-                  }`}
-                aria-expanded={isCategoriesOpen}
-                aria-haspopup="true"
-              >
-                Categorias
-                <svg className={`ml-2 h-4 w-4 transform transition-all duration-300 ${isCategoriesOpen ? 'rotate-180 text-gray-300' : 'group-hover:text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+              {/* Categories Dropdown */}
+              <div className="relative" ref={categoriesRef}>
+                <button
+                  onClick={() => {
+                    setIsCategoriesOpen(!isCategoriesOpen)
+                    if (!isCategoriesOpen) loadGenres()
+                  }}
+                  className={`relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center ${isCategoriesOpen
+                    ? 'bg-gray-800/50 backdrop-blur-sm'
+                    : 'hover:bg-gray-800/30 hover:backdrop-blur-sm'
+                    }`}
+                  aria-expanded={isCategoriesOpen}
+                  aria-haspopup="true"
+                >
+                  Categorias
+                  <svg className={`ml-2 h-4 w-4 transform transition-all duration-300 ${isCategoriesOpen ? 'rotate-180 text-gray-300' : 'group-hover:text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-              {isCategoriesOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-gray-950/98 backdrop-blur-lg border border-gray-800/50 rounded-xl shadow-2xl z-50">
-                  {/* Header */}
-                  <div className="px-6 py-4 border-b border-gray-800/30">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold">Categorias</h3>
-                      {loadingGenres && (
-                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      )}
+                {isCategoriesOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-gray-950/98 backdrop-blur-lg border border-gray-800/50 rounded-xl shadow-2xl z-50">
+                    {/* Header */}
+                    <div className="px-6 py-4 border-b border-gray-800/30">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-white font-semibold">Categorias</h3>
+                        {loadingGenres && (
+                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="p-6 space-y-6">
-                    {/* Gêneros Populares */}
-                    <div>
-                      <h4 className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
-                        Gêneros Populares
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {genres.slice(0, 8).map((genre) => (
+                    <div className="p-6 space-y-6">
+                      {/* Gêneros Populares */}
+                      <div>
+                        <h4 className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
+                          Gêneros Populares
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {genres.slice(0, 8).map((genre) => (
+                            <Link
+                              key={genre.name}
+                              href={`/categoria/${encodeURIComponent(genre.name)}`}
+                              className="group flex items-center justify-between px-3 py-2 rounded-lg bg-gray-900/40 hover:bg-blue-600/20 border border-gray-800/40 hover:border-blue-600/30 transition-all duration-200"
+                              onClick={() => setIsCategoriesOpen(false)}
+                            >
+                              <span className="text-sm text-gray-300 group-hover:text-white truncate">
+                                {genre.displayName}
+                              </span>
+                              <span className="text-xs text-gray-500 group-hover:text-blue-400 ml-1 flex-shrink-0">
+                                {genre.count}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                        {genres.length > 8 && (
                           <Link
-                            key={genre.name}
-                            href={`/categoria/${encodeURIComponent(genre.name)}`}
-                            className="group flex items-center justify-between px-3 py-2 rounded-lg bg-gray-900/40 hover:bg-blue-600/20 border border-gray-800/40 hover:border-blue-600/30 transition-all duration-200"
+                            href="/search?q=*"
+                            className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 mt-3 font-medium group"
                             onClick={() => setIsCategoriesOpen(false)}
                           >
-                            <span className="text-sm text-gray-300 group-hover:text-white truncate">
-                              {genre.displayName}
-                            </span>
-                            <span className="text-xs text-gray-500 group-hover:text-blue-400 ml-1 flex-shrink-0">
-                              {genre.count}
-                            </span>
+                            Ver todos os gêneros
+                            <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </Link>
-                        ))}
+                        )}
                       </div>
-                      {genres.length > 8 && (
-                        <Link
-                          href="/search?q=*"
-                          className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 mt-3 font-medium group"
-                          onClick={() => setIsCategoriesOpen(false)}
-                        >
-                          Ver todos os gêneros
-                          <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </Link>
-                      )}
-                    </div>
 
-                    {/* Tipos e Seções */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Por Tipo */}
-                      <div>
-                        <h4 className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
-                          Por Tipo
-                        </h4>
-                        <div className="space-y-1">
-                          {[
-                            { name: 'Animes', href: '/categoria/tipo/anime' },
-                            { name: 'Filmes', href: '/categoria/tipo/filme' },
-                            { name: 'Séries', href: '/categoria/tipo/serie' }
-                          ].map((item) => (
-                            <Link
-                              key={item.name}
-                              href={item.href}
-                              className="block px-2 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800/50 transition-colors"
-                              onClick={() => setIsCategoriesOpen(false)}
-                            >
-                              {item.name}
-                            </Link>
-                          ))}
+                      {/* Tipos e Seções */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Por Tipo */}
+                        <div>
+                          <h4 className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
+                            Por Tipo
+                          </h4>
+                          <div className="space-y-1">
+                            {[
+                              { name: 'Animes', href: '/categoria/tipo/anime' },
+                              { name: 'Filmes', href: '/categoria/tipo/filme' },
+                              { name: 'Séries', href: '/categoria/tipo/serie' }
+                            ].map((item) => (
+                              <Link
+                                key={item.name}
+                                href={item.href}
+                                className="block px-2 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800/50 transition-colors"
+                                onClick={() => setIsCategoriesOpen(false)}
+                              >
+                                {item.name}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Seções */}
-                      <div>
-                        <h4 className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
-                          Seções
-                        </h4>
-                        <div className="space-y-1">
-                          {[
-                            { name: 'Lançamentos', href: '/news' },
-                            { name: 'Populares', href: '/popular' }
-                          ].map((item) => (
-                            <Link
-                              key={item.name}
-                              href={item.href}
-                              className="block px-2 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800/50 transition-colors"
-                              onClick={() => setIsCategoriesOpen(false)}
-                            >
-                              {item.name}
-                            </Link>
-                          ))}
+                        {/* Seções */}
+                        <div>
+                          <h4 className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-3">
+                            Seções
+                          </h4>
+                          <div className="space-y-1">
+                            {[
+                              { name: 'Lançamentos', href: '/news' },
+                              { name: 'Populares', href: '/popular' }
+                            ].map((item) => (
+                              <Link
+                                key={item.name}
+                                href={item.href}
+                                className="block px-2 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800/50 transition-colors"
+                                onClick={() => setIsCategoriesOpen(false)}
+                              >
+                                {item.name}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </nav>
+                )}
+              </div>
+            </nav>
+          )}
 
           {/* User Menu and Mobile Button */}
           <div className="flex items-center space-x-1">
@@ -477,7 +489,9 @@ export function Header({ forceSolid = false }: { forceSolid?: boolean }) {
                   </div>
                 </>
               ) : (
-                <Button variant="primary" className="text-sm py-1.5 px-3">Entrar</Button>
+                <Link href="/login">
+                  <Button variant="primary" className="text-sm py-1.5 px-3">Entrar</Button>
+                </Link>
               )}
             </div>
 
@@ -548,59 +562,66 @@ export function Header({ forceSolid = false }: { forceSolid?: boolean }) {
             {/* Conteúdo com Scroll Próprio */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pb-10">
               {/* Barra de Pesquisa Integrada */}
-              <div className="p-4 mt-2">
-                <SearchBar variant="header" className="w-full" />
-              </div>
-
-              {/* Navegação Principal */}
-              <div className="px-4 space-y-1">
-                <Link
-                  href="/news"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-xl bg-gray-900/40 hover:bg-blue-600/10 text-gray-200 hover:text-white transition-all group"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <div className="p-2 rounded-lg bg-blue-600/20 text-blue-400 transition-transform group-hover:scale-110">
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <span className="font-bold">Novidades</span>
-                  <span className="ml-auto text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black uppercase">Novo</span>
-                </Link>
-
-                <Link
-                  href="/popular"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-xl bg-gray-900/40 hover:bg-orange-600/10 text-gray-200 hover:text-white transition-all group"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <div className="p-2 rounded-lg bg-orange-600/20 text-orange-400 transition-transform group-hover:scale-110">
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0113 21.314c3.155-2.22 3.155-4.441 3-6.661" />
-                    </svg>
-                  </div>
-                  <span className="font-bold">Populares</span>
-                </Link>
-              </div>
-
-              {/* Categorias - Estilo Grid de App */}
-              <div className="mt-8 px-4">
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <span className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Categorias Populares</span>
+              {user && (
+                <div className="p-4 mt-2">
+                  <SearchBar variant="header" className="w-full" />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {genres.slice(0, 8).map((genre) => (
+              )}
+
+              {/* Navegação Restrita a Usuários Logados */}
+              {user && (
+                <>
+                  {/* Navegação Principal */}
+                  <div className="px-4 space-y-1">
                     <Link
-                      key={genre.name}
-                      href={`/categoria/${encodeURIComponent(genre.name)}`}
-                      className="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-4 hover:bg-gray-800 transition-all flex flex-col gap-1 active:scale-95 group"
+                      href="/news"
+                      className="flex items-center gap-4 px-4 py-3.5 rounded-xl bg-gray-900/40 hover:bg-blue-600/10 text-gray-200 hover:text-white transition-all group"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <span className="text-sm font-bold text-white group-hover:text-blue-400">{genre.displayName}</span>
-                      <span className="text-[10px] text-gray-500">{genre.count} animes</span>
+                      <div className="p-2 rounded-lg bg-blue-600/20 text-blue-400 transition-transform group-hover:scale-110">
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      </div>
+                      <span className="font-bold">Novidades</span>
+                      <span className="ml-auto text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black uppercase">Novo</span>
                     </Link>
-                  ))}
-                </div>
-              </div>
+
+                    <Link
+                      href="/popular"
+                      className="flex items-center gap-4 px-4 py-3.5 rounded-xl bg-gray-900/40 hover:bg-orange-600/10 text-gray-200 hover:text-white transition-all group"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="p-2 rounded-lg bg-orange-600/20 text-orange-400 transition-transform group-hover:scale-110">
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0113 21.314c3.155-2.22 3.155-4.441 3-6.661" />
+                        </svg>
+                      </div>
+                      <span className="font-bold">Populares</span>
+                    </Link>
+                  </div>
+
+                  {/* Categorias - Estilo Grid de App */}
+                  <div className="mt-8 px-4">
+                    <div className="flex items-center justify-between mb-4 px-1">
+                      <span className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Categorias Populares</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {genres.slice(0, 8).map((genre) => (
+                        <Link
+                          key={genre.name}
+                          href={`/categoria/${encodeURIComponent(genre.name)}`}
+                          className="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-4 hover:bg-gray-800 transition-all flex flex-col gap-1 active:scale-95 group"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <span className="text-sm font-bold text-white group-hover:text-blue-400">{genre.displayName}</span>
+                          <span className="text-[10px] text-gray-500">{genre.count} animes</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Seção de Conta - Estilo Widget */}
               {user && (

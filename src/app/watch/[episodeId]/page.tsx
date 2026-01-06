@@ -14,8 +14,8 @@ import { PlayIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 export default function WatchPage() {
   const params = useParams()
   const router = useRouter()
-  const { loading } = useAuth()
-  
+  const { user, loading: authLoading } = useAuth()
+
   const [episode, setEpisode] = useState<Episode | null>(null)
   const [anime, setAnime] = useState<Anime | null>(null)
   const [allEpisodes, setAllEpisodes] = useState<Episode[]>([])
@@ -25,8 +25,16 @@ export default function WatchPage() {
 
   const episodeId = params.episodeId as string
 
+  // Auth Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [user, authLoading, router])
+
   useEffect(() => {
     async function loadEpisodeData() {
+      if (!user) return
       try {
         // Buscar episódio
         const episodeData = await api.getEpisode(episodeId)
@@ -53,7 +61,7 @@ export default function WatchPage() {
         })
 
         setAllEpisodes(episodes)
-        
+
         // Encontrar índice do episódio atual
         const currentIndex = episodes.findIndex(ep => ep.id === episodeId)
         setCurrentEpisodeIndex(currentIndex)
@@ -124,7 +132,7 @@ export default function WatchPage() {
     }
   }
 
-  if (loading || dataLoading) {
+  if (authLoading || dataLoading) {
     return <LoadingScreen message="Carregando episódio..." />
   }
 
@@ -176,7 +184,7 @@ export default function WatchPage() {
                   height={32}
                   className="h-8 w-auto"
                 />
-                <span 
+                <span
                   className="hidden text-xl font-bold text-white"
                   style={{ display: 'none' }}
                 >
@@ -211,7 +219,7 @@ export default function WatchPage() {
                 >
                   <ChevronLeftIcon className="w-5 h-5" />
                 </button>
-                
+
                 <button
                   onClick={handleNextEpisode}
                   disabled={!hasNextAvailableEpisode()}
@@ -222,7 +230,7 @@ export default function WatchPage() {
                 </button>
               </div>
             </div>
-            
+
             {/* Center Section - Episode Info */}
             <div className="hidden md:block text-center">
               <div className="text-sm text-gray-400">
@@ -245,7 +253,7 @@ export default function WatchPage() {
                 >
                   <ChevronLeftIcon className="w-4 h-4" />
                 </button>
-                
+
                 <button
                   onClick={handleNextEpisode}
                   disabled={!hasNextAvailableEpisode()}
@@ -266,11 +274,10 @@ export default function WatchPage() {
               {/* Episode List Toggle */}
               <button
                 onClick={() => setShowEpisodeList(!showEpisodeList)}
-                className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
-                  showEpisodeList 
-                    ? 'bg-blue-600 text-white shadow-blue-600/25 shadow-lg' 
-                    : 'text-gray-300 hover:text-white hover:bg-gray-800'
-                }`}
+                className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${showEpisodeList
+                  ? 'bg-blue-600 text-white shadow-blue-600/25 shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                  }`}
                 title={showEpisodeList ? 'Ocultar lista' : 'Mostrar lista de episódios'}
               >
                 <ListBulletIcon className="w-5 h-5" />
@@ -284,7 +291,7 @@ export default function WatchPage() {
                 >
                   <EllipsisVerticalIcon className="w-5 h-5" />
                 </button>
-                
+
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-2">
@@ -344,10 +351,9 @@ export default function WatchPage() {
 
         {/* Episode Info & Navigation */}
         <div className="relative">
-          <div className={`grid transition-all duration-300 ${
-            showEpisodeList ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3'
-          } gap-8`}>
-            
+          <div className={`grid transition-all duration-300 ${showEpisodeList ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3'
+            } gap-8`}>
+
             {/* Episode Details */}
             <div className={`${showEpisodeList ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
               {/* Episode Header with Quick Actions */}
@@ -364,7 +370,7 @@ export default function WatchPage() {
                     <span>{currentEpisodeIndex + 1} de {allEpisodes.length}</span>
                   </div>
                 </div>
-                
+
                 {/* Quick Navigation */}
                 <div className="flex items-center space-x-2">
                   <button
@@ -375,7 +381,7 @@ export default function WatchPage() {
                   >
                     <ChevronLeftIcon className="w-5 h-5" />
                   </button>
-                  
+
                   <button
                     onClick={handleNextEpisode}
                     disabled={!hasNextAvailableEpisode()}
@@ -442,28 +448,27 @@ export default function WatchPage() {
                     {allEpisodes.length}
                   </span>
                 </div>
-                
+
                 <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-gray-800 overflow-hidden">
                   <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
                     {allEpisodes.map((ep, index) => {
                       const isCurrentEpisode = ep.id === episodeId
                       const isWatched = index < currentEpisodeIndex
                       const isAvailable = ep.duration && ep.title && ep.id
-                      
+
                       return (
                         <button
                           key={ep.id}
                           onClick={() => isAvailable && router.push(`/watch/${ep.id}`)}
                           disabled={!isAvailable}
-                          className={`w-full text-left p-4 transition-all duration-200 border-b border-gray-800/50 last:border-b-0 group ${
-                            !isAvailable
-                              ? 'opacity-50 cursor-not-allowed bg-gray-900/50'
-                              : isCurrentEpisode 
-                                ? 'bg-blue-600/20 hover:bg-blue-600/30 border-blue-600/30 hover:bg-gray-800/60' 
-                                : isWatched 
-                                  ? 'bg-green-600/10 hover:bg-gray-800/60' 
-                                  : 'hover:bg-gray-800/60'
-                          }`}
+                          className={`w-full text-left p-4 transition-all duration-200 border-b border-gray-800/50 last:border-b-0 group ${!isAvailable
+                            ? 'opacity-50 cursor-not-allowed bg-gray-900/50'
+                            : isCurrentEpisode
+                              ? 'bg-blue-600/20 hover:bg-blue-600/30 border-blue-600/30 hover:bg-gray-800/60'
+                              : isWatched
+                                ? 'bg-green-600/10 hover:bg-gray-800/60'
+                                : 'hover:bg-gray-800/60'
+                            }`}
                         >
                           <div className="flex items-center space-x-4">
                             {/* Episode Thumbnail */}
@@ -474,43 +479,41 @@ export default function WatchPage() {
                                 fill
                                 className="bg-gray-700 rounded-lg object-cover transition-transform group-hover:scale-105"
                               />
-                              
+
                               {/* Status Indicators - Only one per episode */}
                               {isCurrentEpisode && (
                                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                                   <PlayIcon className="w-2 h-2 text-white" />
                                 </div>
                               )}
-                              
+
                               {!isCurrentEpisode && isWatched && isAvailable && (
                                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                                   <span className="text-white text-xs">✓</span>
                                 </div>
                               )}
-                              
+
                               {/* Clean unavailable overlay */}
                               {!isAvailable && (
                                 <div className="absolute inset-0 bg-black/70 rounded-lg"></div>
                               )}
-                              
+
                               {/* Episode Number Badge */}
-                              <div className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-xs font-bold ${
-                                !isAvailable ? 'bg-red-600 text-white' : 'bg-black/80 text-white'
-                              }`}>
+                              <div className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-xs font-bold ${!isAvailable ? 'bg-red-600 text-white' : 'bg-black/80 text-white'
+                                }`}>
                                 {ep.episodeNumber}
                               </div>
                             </div>
-                            
+
                             {/* Episode Info */}
                             <div className="flex-grow min-w-0">
-                              <div className={`font-medium truncate transition-colors ${
-                                !isAvailable 
-                                  ? 'text-gray-500' 
-                                  : isCurrentEpisode 
-                                    ? 'text-blue-300' 
-                                    : 'text-white group-hover:text-blue-300'
-                              }`}>
-{ep.title}
+                              <div className={`font-medium truncate transition-colors ${!isAvailable
+                                ? 'text-gray-500'
+                                : isCurrentEpisode
+                                  ? 'text-blue-300'
+                                  : 'text-white group-hover:text-blue-300'
+                                }`}>
+                                {ep.title}
                               </div>
                               <div className={`text-sm mt-1 ${!isAvailable ? 'text-gray-600' : 'text-gray-400'}`}>
                                 Temporada {ep.seasonNumber} • Episódio {ep.episodeNumber}
@@ -541,19 +544,18 @@ export default function WatchPage() {
                     const isCurrentEpisode = ep.id === episodeId
                     const isWatched = index < currentEpisodeIndex
                     const isAvailable = ep.videoUrl || ep.r2Key
-                    
+
                     return (
                       <button
                         key={ep.id}
                         onClick={() => isAvailable && router.push(`/watch/${ep.id}`)}
                         disabled={!isAvailable}
-                        className={`w-full text-left p-3 transition-colors border-b border-gray-800/50 last:border-b-0 ${
-                          !isAvailable
-                            ? 'opacity-50 cursor-not-allowed bg-gray-900/50'
-                            : isCurrentEpisode 
-                              ? 'bg-blue-600/20 border-blue-600/30 hover:bg-gray-800/60' 
-                              : 'hover:bg-gray-800/60'
-                        }`}
+                        className={`w-full text-left p-3 transition-colors border-b border-gray-800/50 last:border-b-0 ${!isAvailable
+                          ? 'opacity-50 cursor-not-allowed bg-gray-900/50'
+                          : isCurrentEpisode
+                            ? 'bg-blue-600/20 border-blue-600/30 hover:bg-gray-800/60'
+                            : 'hover:bg-gray-800/60'
+                          }`}
                       >
                         <div className="flex items-center space-x-3">
                           <div className="relative w-16 h-10">
@@ -563,35 +565,34 @@ export default function WatchPage() {
                               fill
                               className="bg-gray-700 rounded object-cover"
                             />
-                            
+
                             {/* Status Indicators */}
                             {isCurrentEpisode && (
                               <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
                                 <PlayIcon className="w-1.5 h-1.5 text-white" />
                               </div>
                             )}
-                            
+
                             {!isCurrentEpisode && isWatched && isAvailable && (
                               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
                                 <span className="text-white text-xs">✓</span>
                               </div>
                             )}
-                            
+
                             {/* Clean unavailable overlay */}
                             {!isAvailable && (
                               <div className="absolute inset-0 bg-black/70 rounded"></div>
                             )}
                           </div>
-                          
+
                           <div className="flex-grow min-w-0">
-                            <div className={`text-sm font-medium truncate ${
-                              !isAvailable 
-                                ? 'text-gray-500'
-                                : isCurrentEpisode 
-                                  ? 'text-blue-300' 
-                                  : 'text-white'
-                            }`}>
-{ep.title}
+                            <div className={`text-sm font-medium truncate ${!isAvailable
+                              ? 'text-gray-500'
+                              : isCurrentEpisode
+                                ? 'text-blue-300'
+                                : 'text-white'
+                              }`}>
+                              {ep.title}
                             </div>
                             <div className={`text-xs ${!isAvailable ? 'text-gray-600' : 'text-gray-400'}`}>
                               T{ep.seasonNumber} • EP {ep.episodeNumber}

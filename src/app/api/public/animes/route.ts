@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const limit = parseInt(searchParams.get('limit') || '50')
     const page = parseInt(searchParams.get('page') || '1')
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc'
 
     const skip = (page - 1) * limit
 
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
           // NÃO expor: r2BucketPath, posterR2Key, bannerR2Key, logoR2Key, etc
         },
         orderBy: {
-          createdAt: 'desc'
+          [sortBy]: sortOrder
         },
         take: limit,
         skip,

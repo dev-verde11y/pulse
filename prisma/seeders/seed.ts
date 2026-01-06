@@ -96,7 +96,7 @@ async function main() {
           'Assista em até 4 telas simultâneas',
           'Download para assistir offline',
           'Acesse a Pulse Game Vault',
-          'Qualidade 4K Ultra HD'
+          'Qualidade Superior'
         ],
         active: true,
         displayOrder: 2,
@@ -129,7 +129,7 @@ async function main() {
           'Assista em até 4 telas simultâneas',
           'Download para assistir offline',
           'Acesse a Pulse Game Vault',
-          'Qualidade 4K Ultra HD',
+          'Qualidade Superior',
           '16% de desconto (cobrado anualmente)',
           'Economia de R$ 39,89/ano'
         ],

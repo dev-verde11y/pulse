@@ -8,6 +8,8 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { MediumAnimeCard } from '@/components/streaming/AnimeCards'
 import { api } from '@/lib/api'
 import { Anime } from '@/types/anime'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import {
   TagIcon,
   StarIcon,
@@ -17,6 +19,8 @@ import {
 
 export default function CategoriaPage() {
   const params = useParams()
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const genero = params.genero as string
   const [animes, setAnimes] = useState<Anime[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,9 +32,16 @@ export default function CategoriaPage() {
   const generoDecoded = decodeURIComponent(genero || '')
   const generoFormatted = generoDecoded.charAt(0).toUpperCase() + generoDecoded.slice(1).toLowerCase()
 
+  // Auth Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [user, authLoading, router])
+
   useEffect(() => {
     const loadAnimes = async () => {
-      if (!generoDecoded) return
+      if (!generoDecoded || !user) return
 
       try {
         setLoading(true)
@@ -52,7 +63,7 @@ export default function CategoriaPage() {
     }
 
     loadAnimes()
-  }, [generoDecoded, sortBy, sortOrder])
+  }, [generoDecoded, sortBy, sortOrder, user])
 
   const handleSortChange = (newSortBy: 'title' | 'year' | 'rating' | 'createdAt', newSortOrder: 'asc' | 'desc' = 'desc') => {
     setSortBy(newSortBy)
@@ -114,8 +125,8 @@ export default function CategoriaPage() {
             <button
               onClick={() => handleSortChange('rating')}
               className={`px-3 py-1 rounded text-sm transition-colors ${sortBy === 'rating'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
                 }`}
             >
               <StarIcon className="h-4 w-4 inline mr-1" />
@@ -125,8 +136,8 @@ export default function CategoriaPage() {
             <button
               onClick={() => handleSortChange('year')}
               className={`px-3 py-1 rounded text-sm transition-colors ${sortBy === 'year'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
                 }`}
             >
               <CalendarIcon className="h-4 w-4 inline mr-1" />
@@ -136,8 +147,8 @@ export default function CategoriaPage() {
             <button
               onClick={() => handleSortChange('title', 'asc')}
               className={`px-3 py-1 rounded text-sm transition-colors ${sortBy === 'title'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
                 }`}
             >
               A-Z
