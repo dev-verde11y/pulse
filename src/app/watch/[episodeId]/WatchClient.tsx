@@ -6,8 +6,8 @@ import Image from 'next/image'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { api } from '@/lib/api'
 import { Episode, Anime, Season } from '@/types/anime'
-import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, StarIcon, HomeIcon } from '@heroicons/react/24/solid'
-import { PlayIcon } from '@heroicons/react/24/solid'
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, StarIcon, HomeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid'
+import { PlayIcon, XMarkIcon } from '@heroicons/react/24/solid'
 
 interface WatchClientProps {
     initialEpisode: Episode
@@ -33,11 +33,17 @@ export function WatchClient({
     const [isSwitchingEpisode, setIsSwitchingEpisode] = useState(false)
     const [initialProgress, setInitialProgress] = useState(initialProgressSaved)
     const [visibleRange, setVisibleRange] = useState({ start: 0, end: 15 })
+    const [searchQuery, setSearchQuery] = useState('')
 
     // Sincronizar progresso quando mudar de episódio
     useEffect(() => {
         setInitialProgress(initialProgressSaved)
     }, [initialProgressSaved])
+
+    const filteredEpisodes = allEpisodes.filter(ep =>
+        ep.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ep.episodeNumber.toString() === searchQuery
+    )
 
     const currentEpisodeIndex = allEpisodes.findIndex(ep => ep.id === episodeId)
 
@@ -53,12 +59,12 @@ export function WatchClient({
         const scrollTop = target.scrollTop
         const itemHeight = 120 // Altura aproximada de cada card de episódio
         const newStart = Math.max(0, Math.floor(scrollTop / itemHeight) - 5)
-        const newEnd = Math.min(allEpisodes.length, newStart + 15)
+        const newEnd = Math.min(filteredEpisodes.length, newStart + 15)
 
         if (newStart !== visibleRange.start) {
             setVisibleRange({ start: newStart, end: newEnd })
         }
-    }, [allEpisodes.length, visibleRange.start])
+    }, [filteredEpisodes.length, visibleRange.start])
 
     const findNextAvailableIndex = useCallback(() => {
         for (let i = currentEpisodeIndex + 1; i < allEpisodes.length; i++) {
@@ -302,13 +308,37 @@ export function WatchClient({
                                 </div>
                             </div>
 
+                            {/* Barra de Busca Premium */}
+                            <div className="px-8 pb-4">
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className={`w-5 h-5 transition-colors duration-500 ${searchQuery ? 'text-blue-500' : 'text-white/10 group-focus-within:text-blue-500'}`} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por episódio..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-white/[0.02] border border-white/5 rounded-[32px] py-5 pl-16 pr-14 text-sm font-black text-white placeholder:text-white/10 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:bg-white/[0.05] focus:border-blue-500/30 transition-all duration-500 uppercase tracking-widest italic"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            className="absolute inset-y-0 right-6 flex items-center text-white/20 hover:text-white transition-colors"
+                                        >
+                                            <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
                             <div
                                 ref={sidebarScrollRef}
                                 onScroll={handleScroll}
                                 className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-4"
                             >
-                                <div style={{ height: `${allEpisodes.length * 120}px`, position: 'relative' }}>
-                                    {allEpisodes.slice(visibleRange.start, visibleRange.end).map((ep, idx) => {
+                                <div style={{ height: `${filteredEpisodes.length * 120}px`, position: 'relative' }}>
+                                    {filteredEpisodes.slice(visibleRange.start, visibleRange.end).map((ep, idx) => {
                                         const actualIdx = visibleRange.start + idx
                                         const isCurrent = ep.id === episodeId
                                         const isWatched = actualIdx < currentEpisodeIndex

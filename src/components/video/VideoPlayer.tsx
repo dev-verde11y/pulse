@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import {
   PlayIcon,
   PauseIcon,
@@ -85,7 +86,10 @@ export function VideoPlayer({
   const [hasSeekedInitial, setHasSeekedInitial] = useState(false)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
   const [hasPrefetchedNext, setHasPrefetchedNext] = useState(false)
+  const [isAmbilightEnabled, setIsAmbilightEnabled] = useState(true)
+  const [previewThumb, setPreviewThumb] = useState<{ x: number, time: number } | null>(null)
   const lastApiSyncRef = useRef<number>(0)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const { user } = useAuth()
 
@@ -174,6 +178,38 @@ export function VideoPlayer({
       document.head.appendChild(prefetchLink)
     }
   }, [currentTime, duration, hasNextEpisode, isPlaying, onNextEpisode, autoPlayCountdown, nextEpisodeId, hasPrefetchedNext])
+
+  // Efeito Ambilight Premium
+  useEffect(() => {
+    if (!isAmbilightEnabled || !videoRef.current || !canvasRef.current || !isPlaying) return
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d', { alpha: false })
+    if (!ctx) return
+
+    let animationFrameId: number
+
+    const updateAmbilight = () => {
+      if (video.paused || video.ended) return
+
+      // Draw a small portion to the canvas for the blur effect
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      animationFrameId = requestAnimationFrame(updateAmbilight)
+    }
+
+    const startLoop = () => {
+      animationFrameId = requestAnimationFrame(updateAmbilight)
+    }
+
+    video.addEventListener('play', startLoop)
+    if (!video.paused) startLoop()
+
+    return () => {
+      video.removeEventListener('play', startLoop)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [isAmbilightEnabled, isPlaying])
 
   // Auto-hide controls
   useEffect(() => {
@@ -321,9 +357,18 @@ export function VideoPlayer({
       className="relative w-full bg-black rounded-3xl overflow-hidden group shadow-2xl border border-white/5"
       style={{ aspectRatio: '16/9' }}
     >
+      {/* Ambilight Canvas Background */}
+      {isAmbilightEnabled && (
+        <canvas
+          ref={canvasRef}
+          width="32"
+          height="18"
+          className="absolute inset-0 w-full h-full opacity-30 blur-[100px] scale-110 pointer-events-none transition-opacity duration-1000 z-0"
+        />
+      )}
       <video
         ref={videoRef}
-        className="w-full h-full cursor-none"
+        className="relative w-full h-full cursor-none z-10"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
@@ -466,14 +511,44 @@ export function VideoPlayer({
       {/* Control Bar */}
       <div className={`absolute bottom-0 left-0 right-0 z-40 p-8 transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
 
-        {/* Progress Slider */}
-        <div className="flex flex-col gap-4 mb-6">
+        {/* Progress Slider with Thumb Preview */}
+        <div className="flex flex-col gap-4 mb-6 relative">
+          {previewThumb && (
+            <div
+              className="absolute bottom-full mb-4 animate-fade-in pointer-events-none"
+              style={{ left: `${previewThumb.x}%`, transform: 'translateX(-50%)' }}
+            >
+              <div className="relative group/thumb">
+                <div className="absolute inset-0 bg-blue-600 blur-xl opacity-20 group-hover/thumb:opacity-40 transition-opacity" />
+                <div className="relative bg-gray-900 border border-white/20 rounded-2xl overflow-hidden shadow-2xl w-48 h-28">
+                  <Image
+                    src={(episode.thumbnailUrl || episode.thumbnail)!}
+                    alt="Preview"
+                    fill
+                    className="object-cover opacity-60"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 text-center">
+                    <span className="text-[10px] font-black font-mono text-white tracking-widest">{formatTime(previewThumb.time)}</span>
+                  </div>
+                </div>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-gray-900 border-r border-b border-white/20 rotate-45" />
+              </div>
+            </div>
+          )}
+
           <input
             type="range"
             min="0"
             max={duration || 0}
             value={currentTime}
             onChange={(e) => { if (videoRef.current) videoRef.current.currentTime = parseFloat(e.target.value); }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect()
+              const x = ((e.clientX - rect.left) / rect.width) * 100
+              const time = ((e.clientX - rect.left) / rect.width) * duration
+              setPreviewThumb({ x, time })
+            }}
+            onMouseLeave={() => setPreviewThumb(null)}
             className="video-slider w-full h-1.5 pointer-events-auto"
             style={{ '--progress': `${(currentTime / (duration || 1)) * 100}%` } as any}
           />
