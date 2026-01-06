@@ -11,7 +11,8 @@ import {
   BackwardIcon,
   ForwardIcon,
   Cog6ToothIcon,
-  LanguageIcon
+  LanguageIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/solid'
 import { Episode } from '@/types/anime'
 import { api } from '@/lib/api'
@@ -30,7 +31,6 @@ interface AudioTrackList extends EventTarget {
   [index: number]: AudioTrackAPI
 }
 
-// Tipo estendido para HTMLVideoElement com audioTracks
 interface ExtendedHTMLVideoElement extends HTMLVideoElement {
   audioTracks?: AudioTrackList
 }
@@ -49,6 +49,7 @@ interface VideoPlayerProps {
   hasNextEpisode?: boolean
   hasPreviousEpisode?: boolean
   animeId: string
+  initialProgress?: number
 }
 
 export function VideoPlayer({
@@ -57,11 +58,11 @@ export function VideoPlayer({
   onPreviousEpisode,
   hasNextEpisode,
   hasPreviousEpisode,
-  animeId
+  animeId,
+  initialProgress = 0
 }: VideoPlayerProps) {
   const videoRef = useRef<ExtendedHTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const progressRef = useRef<HTMLDivElement>(null)
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -75,137 +76,123 @@ export function VideoPlayer({
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([])
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(0)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
+  const [showQualityMenu, setShowQualityMenu] = useState(false)
   const [lastProgressUpdate, setLastProgressUpdate] = useState(0)
+  const [showSkipIntro, setShowSkipIntro] = useState(false)
+  const [autoPlayCountdown, setAutoPlayCountdown] = useState<number | null>(null)
+  const [hasSeekedInitial, setHasSeekedInitial] = useState(false)
+  const [showResumePrompt, setShowResumePrompt] = useState(false)
 
   const { user } = useAuth()
 
   // Função para salvar progresso na API
-  const saveProgress = useCallback(async (currentTime: number, duration: number) => {
+  const saveProgress = useCallback(async (currTime: number, dur: number) => {
     if (!user || !episode.id || !animeId) return
-
-    const progressPercent = (currentTime / duration) * 100
-
+    if (dur <= 0) return
+    const progressPercent = (currTime / dur) * 100
     try {
-      await api.updateWatchHistory(
-        animeId,
-        episode.id,
-        progressPercent
-      )
+      await api.updateWatchHistory(animeId, episode.id, progressPercent)
     } catch (error) {
       console.error('Erro ao salvar progresso:', error)
     }
   }, [user, episode.id, animeId])
 
-  // Salvar progresso a cada 10 segundos durante reprodução
+  // Salvar progresso periódico
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-
     if (isPlaying && user && videoRef.current) {
-      // Aguardar um momento para garantir que o vídeo carregou
-      const checkAndStart = () => {
-        if (videoRef.current && videoRef.current.duration > 0 && videoRef.current.currentTime >= 0) {
-          interval = setInterval(() => {
-            if (videoRef.current) {
-              const currentVideoTime = videoRef.current.currentTime
-              const videoDuration = videoRef.current.duration
-              saveProgress(currentVideoTime, videoDuration)
-              setLastProgressUpdate(currentVideoTime)
-            }
-          }, 10000) // 10 segundos
+      interval = setInterval(() => {
+        if (videoRef.current) {
+          saveProgress(videoRef.current.currentTime, videoRef.current.duration)
+          setLastProgressUpdate(videoRef.current.currentTime)
         }
-      }
-
-      // Aguardar 1 segundo para o vídeo carregar completamente
-      setTimeout(checkAndStart, 1000)
+      }, 10000)
     }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval)
-      }
-    }
+    return () => { if (interval) clearInterval(interval) }
   }, [isPlaying, user, saveProgress])
 
-  // Salvar quando pausar
+  // Lógica de "Pular Intro" e "Auto-Play"
   useEffect(() => {
-    if (!isPlaying && currentTime > 0 && duration > 0 && user) {
-      // Salvar quando pausar (se passou mais de 5 segundos desde última atualização)
-      if (Math.abs(currentTime - lastProgressUpdate) >= 5) {
-        saveProgress(currentTime, duration)
-        setLastProgressUpdate(currentTime)
-      }
+    if (currentTime > 40 && currentTime < 110) {
+      setShowSkipIntro(true)
+    } else {
+      setShowSkipIntro(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, currentTime, duration, lastProgressUpdate, user])
 
-  // Salvar quando episódio terminar (90%+)
-  useEffect(() => {
-    if (duration > 0 && currentTime > 0 && user) {
-      const progressPercent = (currentTime / duration) * 100
+    if (duration > 0 && duration - currentTime < 15 && hasNextEpisode) {
+      if (autoPlayCountdown === null) setAutoPlayCountdown(15)
+      const secondsLeft = Math.floor(duration - currentTime)
+      if (secondsLeft >= 0) setAutoPlayCountdown(secondsLeft)
 
-      if (progressPercent >= 90) {
-        saveProgress(currentTime, duration)
+      if (secondsLeft <= 1 && isPlaying) {
+        onNextEpisode?.()
       }
+    } else {
+      setAutoPlayCountdown(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTime, duration, user])
+  }, [currentTime, duration, hasNextEpisode, isPlaying, onNextEpisode, autoPlayCountdown])
 
   // Auto-hide controls
   useEffect(() => {
     let timeout: NodeJS.Timeout
-
-    const handleMouseMove = () => {
+    const handleActivity = () => {
       setShowControls(true)
       clearTimeout(timeout)
       if (isPlaying) {
         timeout = setTimeout(() => setShowControls(false), 3000)
       }
     }
-
-    const handleMouseLeave = () => {
-      if (isPlaying) {
-        timeout = setTimeout(() => setShowControls(false), 1000)
-      }
-    }
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowAudioMenu(false)
-      }
-    }
-
     const container = containerRef.current
     if (container) {
-      container.addEventListener('mousemove', handleMouseMove)
-      container.addEventListener('mouseleave', handleMouseLeave)
-      document.addEventListener('mousedown', handleClickOutside)
+      container.addEventListener('mousemove', handleActivity)
+      container.addEventListener('click', handleActivity)
     }
-
     return () => {
       if (container) {
-        container.removeEventListener('mousemove', handleMouseMove)
-        container.removeEventListener('mouseleave', handleMouseLeave)
+        container.removeEventListener('mousemove', handleActivity)
+        container.removeEventListener('click', handleActivity)
       }
-      document.removeEventListener('mousedown', handleClickOutside)
       clearTimeout(timeout)
     }
   }, [isPlaying])
 
-  // Video event handlers
+  // Resetar busca inicial ao trocar de episódio
+  useEffect(() => {
+    setHasSeekedInitial(false)
+    setShowResumePrompt(false)
+    setLoading(true)
+  }, [episode.id])
+
+  // Verificar progresso inicial quando o vídeo estiver pronto
+  useEffect(() => {
+    if (duration > 0 && initialProgress > 0 && !hasSeekedInitial) {
+      console.log('Detectado progresso inicial:', initialProgress)
+      setShowResumePrompt(true)
+      const timer = setTimeout(() => setShowResumePrompt(false), 10000)
+      return () => clearTimeout(timer)
+    }
+  }, [duration, initialProgress, hasSeekedInitial])
+
   const handlePlay = async () => {
     if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
+      if (videoRef.current.paused) {
+        await videoRef.current.play().catch(e => console.error('Erro ao dar play:', e))
+        setIsPlaying(true)
       } else {
-        try {
-          await videoRef.current.play()
-        } catch (error) {
-          // Ignorar erros de AbortError que ocorrem quando play() é interrompido por pause()
-          if (error instanceof Error && error.name !== 'AbortError') {
-            console.error('Erro ao reproduzir vídeo:', error)
-          }
-        }
+        videoRef.current.pause()
+        setIsPlaying(false)
       }
+    }
+  }
+
+  const handleResume = () => {
+    if (videoRef.current && duration > 0) {
+      const seekTime = (initialProgress / 100) * duration
+      videoRef.current.currentTime = seekTime
+      setHasSeekedInitial(true)
+      setShowResumePrompt(false)
+      handlePlay()
+      console.log(`Resumindo em ${initialProgress}% (${seekTime}s)`)
     }
   }
 
@@ -219,89 +206,38 @@ export function VideoPlayer({
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
       setLoading(false)
-
-      // Detectar trilhas de áudio disponíveis no arquivo MKV
       const video = videoRef.current
 
-      // Aguardar carregamento completo das trilhas
+      // Carregar áudios após um delay para garantir que o stream estabilizou
       setTimeout(() => {
         const tracks: AudioTrack[] = []
-
         if (video.audioTracks && video.audioTracks.length > 1) {
           for (let i = 0; i < video.audioTracks.length; i++) {
-            const track = video.audioTracks[i]
-
             tracks.push({
               id: i,
-              label: track.label || (i === 0 ? 'Japonês (Original)' : 'Português (Dublado)'),
-              language: track.language || (i === 0 ? 'ja' : 'pt-BR'),
-              enabled: track.enabled
+              label: video.audioTracks[i].label || (i === 0 ? 'Japonês (Original)' : `Áudio ${i + 1}`),
+              language: video.audioTracks[i].language || 'unknown',
+              enabled: video.audioTracks[i].enabled
             })
-
-            if (track.enabled) {
-              setSelectedAudioTrack(i)
-            }
+            if (video.audioTracks[i].enabled) setSelectedAudioTrack(i)
           }
         } else {
-          tracks.push({
-            id: 0,
-            label: 'Japonês (Original)',
-            language: 'ja',
-            enabled: true
-          })
-
-          if (video.audioTracks && video.audioTracks.length === 0) {
-            tracks.push({
-              id: 1,
-              label: 'Português (Dublado)',
-              language: 'pt-BR',
-              enabled: false
-            })
-          }
+          tracks.push({ id: 0, label: 'Japonês (Original)', language: 'ja', enabled: true })
         }
-
         setAudioTracks(tracks)
-      }, 2000)
-
-      // Trilha inicial
-      const initialTracks: AudioTrack[] = [{
-        id: 0,
-        label: 'Carregando...',
-        language: 'loading',
-        enabled: true
-      }]
-      setAudioTracks(initialTracks)
+      }, 1000)
     }
   }
 
-  const handleProgressClick = (e: React.MouseEvent) => {
-    if (progressRef.current && videoRef.current) {
-      const rect = progressRef.current.getBoundingClientRect()
-      const clickX = e.clientX - rect.left
-      const newTime = (clickX / rect.width) * duration
-      videoRef.current.currentTime = newTime
-    }
+  const skipIntro = () => {
+    if (videoRef.current) videoRef.current.currentTime = 110
   }
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value)
     setVolume(newVolume)
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume
-    }
+    if (videoRef.current) videoRef.current.volume = newVolume
     setIsMuted(newVolume === 0)
-  }
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      if (isMuted) {
-        videoRef.current.volume = volume
-        setIsMuted(false)
-      } else {
-        videoRef.current.volume = 0
-        setIsMuted(true)
-      }
-    }
   }
 
   const toggleFullscreen = () => {
@@ -314,94 +250,34 @@ export function VideoPlayer({
     }
   }
 
-  const skipTime = (seconds: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, Math.min(duration, currentTime + seconds))
-    }
-  }
-
   const handleAudioTrackChange = (trackId: number) => {
-    if (videoRef.current && videoRef.current.audioTracks && videoRef.current.audioTracks.length > 1) {
-      // Desabilitar todas as trilhas
+    if (videoRef.current?.audioTracks && videoRef.current.audioTracks.length > 1) {
       for (let i = 0; i < videoRef.current.audioTracks.length; i++) {
-        videoRef.current.audioTracks[i].enabled = false
-      }
-
-      // Habilitar trilha selecionada
-      if (trackId >= 0 && trackId < videoRef.current.audioTracks.length) {
-        videoRef.current.audioTracks[trackId].enabled = true
+        videoRef.current.audioTracks[i].enabled = (i === trackId)
       }
     }
-
     setSelectedAudioTrack(trackId)
-    setAudioTracks(prev => prev.map(track => ({
-      ...track,
-      enabled: track.id === trackId
-    })))
+    setAudioTracks(prev => prev.map(track => ({ ...track, enabled: track.id === trackId })))
     setShowAudioMenu(false)
   }
 
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return
-
-      switch (e.code) {
-        case 'Space':
-          e.preventDefault()
-          handlePlay()
-          break
-        case 'ArrowLeft':
-          e.preventDefault()
-          skipTime(-10)
-          break
-        case 'ArrowRight':
-          e.preventDefault()
-          skipTime(10)
-          break
-        case 'ArrowUp':
-          e.preventDefault()
-          setVolume(prev => Math.min(1, prev + 0.1))
-          break
-        case 'ArrowDown':
-          e.preventDefault()
-          setVolume(prev => Math.max(0, prev - 0.1))
-          break
-        case 'KeyM':
-          e.preventDefault()
-          toggleMute()
-          break
-        case 'KeyF':
-          e.preventDefault()
-          toggleFullscreen()
-          break
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyPress)
-    return () => document.removeEventListener('keydown', handleKeyPress)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTime, duration])
-
   const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    const h = Math.floor(time / 3600)
+    const m = Math.floor((time % 3600) / 60)
+    const s = Math.floor(time % 60)
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    return `${m}:${s.toString().padStart(2, '0')}`
   }
-
-  const videoSrc = `/api/video/${episode.id}`
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-black rounded-lg overflow-hidden group"
+      className="relative w-full bg-black rounded-3xl overflow-hidden group shadow-2xl border border-white/5"
       style={{ aspectRatio: '16/9' }}
     >
-      {/* Video Element */}
       <video
         ref={videoRef}
-        className="w-full h-full"
+        className="w-full h-full cursor-none"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
@@ -409,217 +285,202 @@ export function VideoPlayer({
         onWaiting={() => setLoading(true)}
         onCanPlay={() => setLoading(false)}
         onClick={handlePlay}
+        playsInline
       >
-        <source src={videoSrc} type="video/mp4" />
-        Seu navegador não suporta o elemento de vídeo.
+        <source src={`/api/video/${episode.id}`} type="video/mp4" />
       </video>
 
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+      {/* Premium Overlays */}
+      <div className={`absolute inset-0 z-10 pointer-events-none transition-opacity duration-700 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/90 via-black/40 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
+      </div>
+
+      {/* Top Bar */}
+      <div className={`absolute top-0 left-0 right-0 z-20 p-8 flex justify-between items-start transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded tracking-widest uppercase">Episódio {episode.episodeNumber}</span>
+            <h3 className="text-white text-xl font-black tracking-tight drop-shadow-lg">{episode.title}</h3>
+          </div>
+          <span className="text-white/40 text-xs font-bold uppercase tracking-widest">Pulse Unlimited • UHD Streaming</span>
+        </div>
+
+        <div className="flex gap-4">
+          {/* Quality Selector */}
+          <div className="relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowQualityMenu(!showQualityMenu); setShowAudioMenu(false); }}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 text-white px-4 py-2 rounded-xl text-xs font-black transition-all pointer-events-auto"
+            >
+              <Cog6ToothIcon className="w-4 h-4 text-blue-500" />
+              <span>{quality}</span>
+            </button>
+            {showQualityMenu && (
+              <div className="absolute top-full right-0 mt-2 bg-gray-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl min-w-[160px] overflow-hidden shadow-2xl animate-fade-in pointer-events-auto">
+                {['4K', '1080p', '720p', '480p'].map(q => (
+                  <button
+                    key={q}
+                    onClick={() => { setQuality(q); setShowQualityMenu(false); }}
+                    className={`w-full text-left px-4 py-3 text-xs font-bold transition-all hover:bg-white/5 ${quality === q ? 'text-blue-500 bg-blue-500/5' : 'text-white/60'}`}
+                  >
+                    {q} {q === '1080p' && <span className="text-[10px] opacity-40 ml-1">HD</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Audio Selector */}
+          {audioTracks.length > 1 && (
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowAudioMenu(!showAudioMenu); setShowQualityMenu(false); }}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 text-white px-4 py-2 rounded-xl text-xs font-black transition-all pointer-events-auto"
+              >
+                <LanguageIcon className="w-4 h-4 text-blue-500" />
+                <span>{audioTracks[selectedAudioTrack]?.label}</span>
+              </button>
+              {showAudioMenu && (
+                <div className="absolute top-full right-0 mt-2 bg-gray-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl min-w-[200px] overflow-hidden shadow-2xl animate-fade-in pointer-events-auto">
+                  {audioTracks.map(track => (
+                    <button
+                      key={track.id}
+                      onClick={() => handleAudioTrackChange(track.id)}
+                      className={`w-full text-left px-4 py-3 text-xs font-bold transition-all hover:bg-white/5 ${selectedAudioTrack === track.id ? 'text-blue-500 bg-blue-500/5' : 'text-white/60'}`}
+                    >
+                      {track.label.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Center Play Animation */}
+      <div className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-auto transition-all duration-500 bg-black/20 ${!isPlaying && !loading && !showResumePrompt ? 'scale-100 opacity-100' : 'scale-150 opacity-0 pointer-events-none'}`}>
+        <button onClick={handlePlay} className="bg-blue-600/20 backdrop-blur-xl border border-blue-500/20 rounded-full p-8 focus:outline-none pulse-primary">
+          <PlayIcon className="w-12 h-12 text-white ml-2" />
+        </button>
+      </div>
+
+      {/* Skip Intro Button */}
+      {showSkipIntro && (
+        <button
+          onClick={skipIntro}
+          className="absolute bottom-32 left-8 z-30 bg-gray-950/80 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 text-white px-6 py-3 rounded-2xl font-black text-xs tracking-[0.2em] transition-all hover:scale-105 active:scale-95 animate-slide-up-soft flex items-center gap-3 pointer-events-auto"
+        >
+          PULAR INTRODUÇÃO
+          <ChevronRightIcon className="w-4 h-4 text-blue-500" />
+        </button>
+      )}
+
+      {/* Auto-Play Countdown */}
+      {autoPlayCountdown !== null && (
+        <div className="absolute bottom-32 right-8 z-30 bg-blue-600/90 backdrop-blur-xl text-white p-6 rounded-3xl border border-white/20 animate-slide-up-soft shadow-2xl flex flex-col items-center min-w-[180px]">
+          <span className="text-[10px] font-black tracking-widest uppercase opacity-70 mb-2">Próximo Episódio</span>
+          <div className="text-4xl font-black mb-4 font-mono">{autoPlayCountdown}s</div>
+          <button
+            onClick={() => onNextEpisode?.()}
+            className="bg-white text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors pointer-events-auto"
+          >
+            ASSISTIR AGORA
+          </button>
         </div>
       )}
 
-      {/* Controls Overlay */}
-      <div
-        className={`absolute inset-0 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'
-          }`}
-      >
-        {/* Top Gradient */}
-        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black/80 to-transparent" />
+      {/* Resume Playback Prompt (Premium Style) */}
+      {showResumePrompt && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gray-900/95 backdrop-blur-3xl border border-white/10 p-8 rounded-[40px] shadow-[0_40px_100px_rgba(0,0,0,0.9)] animate-slide-up-soft flex flex-col items-center max-w-sm text-center pointer-events-auto">
+          <div className="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 ring-4 ring-blue-600/10">
+            <PlayIcon className="w-10 h-10 text-blue-500 ml-1" />
+          </div>
+          <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-2">Resume Play?</h4>
+          <p className="text-gray-400 text-sm font-medium mb-8 leading-relaxed">Detectamos progresso anterior ({Math.round(initialProgress)}%). Deseja retomar de onde parou ou recomeçar?</p>
 
-        {/* Bottom Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
-
-        {/* Episode Title */}
-        <div className="absolute top-4 left-4 right-4">
-          <h3 className="text-white text-lg font-bold truncate">
-            {episode.title}
-          </h3>
-          <p className="text-gray-300 text-sm">
-            Episódio {episode.episodeNumber}
-          </p>
-        </div>
-
-        {/* Center Play Button */}
-        {!isPlaying && !loading && (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex flex-col w-full gap-3">
             <button
-              onClick={handlePlay}
-              className="w-20 h-20 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              onClick={handleResume}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20"
             >
-              <PlayIcon className="w-8 h-8 text-white ml-1" />
+              RETOMAR REPRODUÇÃO
+            </button>
+            <button
+              onClick={() => { setShowResumePrompt(false); setHasSeekedInitial(true); }}
+              className="w-full bg-white/5 hover:bg-white/10 text-white/60 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all"
+            >
+              RECOMEÇAR DO ZERO
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Bottom Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          {/* Progress Bar */}
-          <div
-            ref={progressRef}
-            className="w-full h-1 bg-gray-600 rounded-full cursor-pointer mb-4 group"
-            onClick={handleProgressClick}
-          >
-            <div
-              className="h-full bg-blue-600 rounded-full relative group-hover:h-2 transition-all"
-              style={{ width: `${(currentTime / duration) * 100}%` }}
-            >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Control Bar */}
+      <div className={`absolute bottom-0 left-0 right-0 z-40 p-8 transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+
+        {/* Progress Slider */}
+        <div className="flex flex-col gap-4 mb-6">
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            value={currentTime}
+            onChange={(e) => { if (videoRef.current) videoRef.current.currentTime = parseFloat(e.target.value); }}
+            className="video-slider w-full h-1.5 pointer-events-auto"
+            style={{ '--progress': `${(currentTime / (duration || 1)) * 100}%` } as any}
+          />
+          <div className="flex justify-between items-center text-[10px] font-black font-mono text-white/50 tracking-widest">
+            <span>{formatTime(currentTime)}</span>
+            <span className="text-white/80">{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pointer-events-auto">
+          <div className="flex items-center gap-8">
+            <button onClick={handlePlay} className="text-white hover:text-blue-500 transition-all hover:scale-110 active:scale-90">
+              {isPlaying ? <PauseIcon className="w-8 h-8" /> : <PlayIcon className="w-8 h-8 ml-1" />}
+            </button>
+
+            <div className="flex items-center gap-4">
+              {hasPreviousEpisode && <button onClick={onPreviousEpisode} className="text-white/60 hover:text-white transition-all"><BackwardIcon className="w-6 h-6" /></button>}
+              {hasNextEpisode && <button onClick={onNextEpisode} className="text-white/60 hover:text-white transition-all"><ForwardIcon className="w-6 h-6" /></button>}
+            </div>
+
+            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+              <button onClick={() => setIsMuted(!isMuted)} className="text-white/80 hover:text-white">
+                {isMuted || volume === 0 ? <SpeakerXMarkIcon className="w-5 h-5 text-red-500" /> : <SpeakerWaveIcon className="w-5 h-5" />}
+              </button>
+              <input
+                type="range"
+                min="0" max="1" step="0.05"
+                value={isMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="video-slider w-16"
+              />
             </div>
           </div>
 
-          {/* Control Buttons */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {/* Play/Pause */}
-              <button
-                onClick={handlePlay}
-                className="text-white hover:text-blue-400 transition-colors"
-                aria-label={isPlaying ? "Pausar" : "Reproduzir"}
-              >
-                {isPlaying ? (
-                  <PauseIcon className="w-6 h-6" />
-                ) : (
-                  <PlayIcon className="w-6 h-6" />
-                )}
-              </button>
-
-              {/* Previous Episode */}
-              {hasPreviousEpisode && (
-                <button
-                  onClick={onPreviousEpisode}
-                  className="text-white hover:text-blue-400 transition-colors"
-                  aria-label="Episódio anterior"
-                >
-                  <BackwardIcon className="w-5 h-5" />
-                </button>
-              )}
-
-              {/* Next Episode */}
-              {hasNextEpisode && (
-                <button
-                  onClick={onNextEpisode}
-                  className="text-white hover:text-blue-400 transition-colors"
-                  aria-label="Próximo episódio"
-                >
-                  <ForwardIcon className="w-5 h-5" />
-                </button>
-              )}
-
-              {/* Volume */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={toggleMute}
-                  className="text-white hover:text-blue-400 transition-colors"
-                  aria-label={isMuted ? "Ativar som" : "Mudo"}
-                >
-                  {isMuted || volume === 0 ? (
-                    <SpeakerXMarkIcon className="w-5 h-5" />
-                  ) : (
-                    <SpeakerWaveIcon className="w-5 h-5" />
-                  )}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 h-1 bg-gray-600 rounded-full appearance-none cursor-pointer slider"
-                  aria-label="Volume"
-                />
-              </div>
-
-              {/* Time Display */}
-              <span className="text-white text-sm font-mono">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              {/* Audio Track Selector - HIDDEN for v1 */}
-              {false && audioTracks.length >= 1 && (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowAudioMenu(!showAudioMenu)}
-                    className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm"
-                    aria-label="Selecionar áudio"
-                    aria-expanded={showAudioMenu}
-                  >
-                    <LanguageIcon className="w-4 h-4" />
-                    <span>Áudio</span>
-                  </button>
-
-                  {showAudioMenu && (
-                    <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-48 z-50">
-                      <div className="p-2">
-                        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-2">
-                          Trilha de Áudio
-                        </div>
-                        {audioTracks.map((track) => (
-                          <button
-                            key={track.id}
-                            onClick={() => handleAudioTrackChange(track.id)}
-                            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${track.enabled || selectedAudioTrack === track.id
-                                ? 'bg-blue-600 text-white'
-                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>{track.label}</span>
-                              {track.language !== 'default' && track.language !== 'unknown' && (
-                                <span className="text-xs text-gray-400 uppercase">
-                                  {track.language}
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Quality Selector - HIDDEN for v1 */}
-              {false && (
-                <select
-                  value={quality}
-                  onChange={(e) => setQuality(e.target.value)}
-                  className="bg-transparent text-white text-sm border border-gray-600 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
-                  aria-label="Qualidade de vídeo"
-                >
-                  <option value="720p" className="bg-gray-800">720p</option>
-                  <option value="1080p" className="bg-gray-800">1080p</option>
-                </select>
-              )}
-
-              {/* Settings - HIDDEN for v1 */}
-              {false && (
-                <button className="text-white hover:text-blue-400 transition-colors" aria-label="Configurações">
-                  <Cog6ToothIcon className="w-5 h-5" />
-                </button>
-              )}
-
-              {/* Fullscreen */}
-              <button
-                onClick={toggleFullscreen}
-                className="text-white hover:text-blue-400 transition-colors"
-                aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-              >
-                {isFullscreen ? (
-                  <ArrowsPointingInIcon className="w-5 h-5" />
-                ) : (
-                  <ArrowsPointingOutIcon className="w-5 h-5" />
-                )}
-              </button>
-            </div>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={toggleFullscreen}
+              className="text-white/60 hover:text-white transition-all hover:scale-110"
+            >
+              {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6" /> : <ArrowsPointingOutIcon className="w-6 h-6" />}
+            </button>
           </div>
         </div>
       </div>
+
+      {loading && !showResumePrompt && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-blue-500 tracking-tighter">PULSE</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

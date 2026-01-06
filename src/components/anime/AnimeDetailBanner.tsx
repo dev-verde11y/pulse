@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { Anime, Episode } from '@/types/anime'
-import { PlayIcon } from '@heroicons/react/24/solid'
+import { PlayIcon, StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { StarIcon } from '@heroicons/react/24/outline'
 import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
@@ -30,13 +30,6 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   const [isFavorite, setIsFavorite] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
 
-  const backgroundStyle = {
-    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%), url(${anime.bannerUrl || anime.banner || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
-  }
-
   // Carregar histórico de visualização quando o componente montar
   useEffect(() => {
     const loadWatchHistory = async () => {
@@ -45,23 +38,9 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
       setLoading(true)
       try {
         const allHistory = await api.getWatchHistory(1, 50)
-        console.log('All History Debug:', {
-          totalRecords: allHistory.history?.length,
-          currentAnimeId: anime.id,
-          allRecords: allHistory.history?.map((h: { id: string; animeId: string; episodeId: string; progress: number; completed: boolean }) => ({
-            id: h.id,
-            animeId: h.animeId,
-            episodeId: h.episodeId,
-            progress: h.progress,
-            completed: h.completed
-          }))
-        })
-
         const animeHistory = allHistory.history?.filter((h: { animeId: string }) => h.animeId === anime.id) || []
-        console.log('Filtered History:', animeHistory)
 
         if (animeHistory.length === 0) {
-          console.log('No history found for anime:', anime.id)
           setWatchHistory(null)
           return
         }
@@ -72,7 +51,6 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
           lastWatched: animeHistory[0]
         })
       } catch {
-        // Usuário nunca assistiu - history fica null
         setWatchHistory(null)
       } finally {
         setLoading(false)
@@ -80,7 +58,6 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     }
 
     loadWatchHistory()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, anime.id])
 
   // Verificar se o anime está nos favoritos
@@ -101,7 +78,6 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     checkFavoriteStatus()
   }, [user, anime.id])
 
-  // Função para alternar favoritos
   const toggleFavorite = async () => {
     if (!user) {
       router.push('/login')
@@ -117,27 +93,15 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
         await api.removeFromFavorites(anime.id)
         setIsFavorite(false)
         toast.success('Removido dos favoritos', {
-          duration: 4000,
-          position: 'bottom-right',
           icon: '🗑️',
-          style: {
-            background: '#ef4444',
-            color: '#fff',
-            zIndex: 99999,
-          },
+          style: { background: '#ef4444', color: '#fff' },
         })
       } else {
         await api.addToFavorites(anime.id)
         setIsFavorite(true)
         toast.success('Adicionado aos favoritos', {
-          duration: 4000,
-          position: 'bottom-right',
           icon: '❤️',
-          style: {
-            background: '#22c55e',
-            color: '#fff',
-            zIndex: 99999,
-          },
+          style: { background: '#3b82f6', color: '#fff' },
         })
       }
     } catch (error) {
@@ -148,295 +112,194 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     }
   }
 
-  // Encontrar primeiro episódio de uma temporada
   const getFirstEpisodeOfSeason = (seasonNumber: number) => {
     const season = anime.seasons?.find(s => s.seasonNumber === seasonNumber)
     if (season?.episodes && season.episodes.length > 0) {
-      const sortedEpisodes = [...season.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber)
-      return sortedEpisodes[0]
+      return [...season.episodes].sort((a, b) => a.episodeNumber - b.episodeNumber)[0]
     }
     return null
   }
 
-  // Determinar estado do botão e próximo episódio
   const getButtonState = () => {
-    if (!user) {
-      return {
-        text: 'FAZER LOGIN PARA ASSISTIR',
-        action: () => router.push('/auth/login'),
-        disabled: false
+    if (!user) return { text: 'ENTRAR PARA ASSISTIR', action: () => router.push('/login') }
+    if (!watchHistory) return {
+      text: 'COMEÇAR A ASSISTIR',
+      action: () => {
+        const firstEpisode = getFirstEpisodeOfSeason(1)
+        if (firstEpisode) router.push(`/watch/${firstEpisode.id}`)
       }
     }
 
-    if (!watchHistory) {
-      // Nunca assistiu
-      return {
-        text: 'ASSISTIR',
-        action: () => {
-          const firstEpisode = getFirstEpisodeOfSeason(1)
-          if (firstEpisode) {
-            router.push(`/watch/${firstEpisode.id}`)
-          }
-        },
-        disabled: false
-      }
-    }
-
-    // Debug temporário
-    console.log('Watch History Debug:', {
-      watchHistory,
-      lastWatched: watchHistory.lastWatched,
-      progress: watchHistory.lastWatched?.progress,
-      completed: watchHistory.lastWatched?.completed,
-      episodeId: watchHistory.lastWatched?.episodeId,
-      animeId: anime.id,
-      totalEpisodes: anime.seasons?.[0]?.episodes?.length
-    })
-
-    // Usuário já assistiu algo
     const { lastWatched } = watchHistory
-
-    // Organizar todos os episódios por temporada e número
     const allEpisodes: Episode[] = []
-    anime.seasons?.forEach((season: { seasonNumber?: number; episodes?: Episode[] }) => {
-      season.episodes?.forEach((ep: Episode) => {
-        allEpisodes.push({ ...ep, seasonNumber: season.seasonNumber })
-      })
+    anime.seasons?.forEach(season => {
+      season.episodes?.forEach(ep => allEpisodes.push({ ...ep, seasonNumber: season.seasonNumber }))
     })
-    allEpisodes.sort((a, b) => {
-      const aSeasonNumber = a.seasonNumber || 1
-      const bSeasonNumber = b.seasonNumber || 1
+    allEpisodes.sort((a, b) => (a.seasonNumber || 1) !== (b.seasonNumber || 1) ? (a.seasonNumber || 1) - (b.seasonNumber || 1) : a.episodeNumber - b.episodeNumber)
 
-      if (aSeasonNumber !== bSeasonNumber) {
-        return aSeasonNumber - bSeasonNumber
-      }
-      return a.episodeNumber - b.episodeNumber
-    })
-
-    // Encontrar último episódio assistido
-    const lastEpisodeId = lastWatched.episodeId
-    const lastEpisodeIndex = allEpisodes.findIndex(ep => ep.id === lastEpisodeId)
-
-    if (lastEpisodeIndex === -1) {
-      // Episódio não encontrado na estrutura atual, voltar ao início
-      return {
-        text: 'ASSISTIR',
-        action: () => {
-          const firstEpisode = getFirstEpisodeOfSeason(1)
-          if (firstEpisode) {
-            router.push(`/watch/${firstEpisode.id}`)
-          }
-        },
-        disabled: false
+    const lastEpisodeIndex = allEpisodes.findIndex(ep => ep.id === lastWatched.episodeId)
+    if (lastEpisodeIndex === -1) return {
+      text: 'COMEÇAR A ASSISTIR',
+      action: () => {
+        const firstEpisode = getFirstEpisodeOfSeason(1)
+        if (firstEpisode) router.push(`/watch/${firstEpisode.id}`)
       }
     }
 
     const lastEpisode = allEpisodes[lastEpisodeIndex]
-    const nextEpisodeIndex = lastEpisodeIndex + 1
-
-    // Verificar se o último episódio foi completado
-    // Usar campo 'completed' se disponível, senão usar progress < 90%
     const isLastEpisodeComplete = lastWatched.completed || (lastWatched.progress && lastWatched.progress >= 90)
 
-    if (!isLastEpisodeComplete) {
+    if (!isLastEpisodeComplete) return {
+      text: `CONTINUAR T${lastEpisode.seasonNumber} E${lastEpisode.episodeNumber}`,
+      action: () => router.push(`/watch/${lastEpisode.id}`)
+    }
+
+    if (lastEpisodeIndex + 1 < allEpisodes.length) {
+      const nextEpisode = allEpisodes[lastEpisodeIndex + 1]
       return {
-        text: `CONTINUAR T${lastEpisode.seasonNumber} E${lastEpisode.episodeNumber}`,
-        action: () => router.push(`/watch/${lastEpisodeId}`),
-        disabled: false
+        text: `PRÓXIMO: T${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`,
+        action: () => router.push(`/watch/${nextEpisode.id}`)
       }
     }
 
-    // Se tem próximo episódio disponível
-    if (nextEpisodeIndex < allEpisodes.length) {
-      const nextEpisode = allEpisodes[nextEpisodeIndex]
-      return {
-        text: `ASSISTIR T${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`,
-        action: () => router.push(`/watch/${nextEpisode.id}`),
-        disabled: false
-      }
-    }
-
-    // Terminou todos os episódios disponíveis, assistir novamente
     return {
-      text: 'ASSISTIR NOVAMENTE T1 E1',
+      text: 'REASSISTIR SÉRIE',
       action: () => {
         const firstEpisode = getFirstEpisodeOfSeason(1)
-        if (firstEpisode) {
-          router.push(`/watch/${firstEpisode.id}`)
-        }
-      },
-      disabled: false
+        if (firstEpisode) router.push(`/watch/${firstEpisode.id}`)
+      }
     }
   }
 
   const buttonState = getButtonState()
-
-  // Calcular rating dinâmico (mockado por enquanto)
-  const getRating = () => {
-    return anime._count?.favorites ? Math.min(5.0, 3.5 + (anime._count.favorites / 10000)) : 4.2
-  }
-
-  const getRatingCount = () => {
-    return anime._count?.favorites ? (anime._count.favorites * 2.5).toLocaleString('pt-BR') : '1.2K'
-  }
-
-  // Determinar idiomas disponíveis baseado no anime (mockado)
-  const getAvailableLanguages = () => {
-    const baseLanguages = ['Japanese', 'Português (Brasil)']
-    // Adicionar mais idiomas baseado na popularidade/ano
-    if (anime.year >= 2020) {
-      baseLanguages.push('English', 'Español (América Latina)')
-    }
-    if (anime._count?.favorites && anime._count.favorites > 100) {
-      baseLanguages.push('Français', 'Deutsch')
-    }
-    return baseLanguages
-  }
+  const rating = anime._count?.favorites ? Math.min(5.0, 3.8 + (anime._count.favorites / 5000)) : 4.5
+  const ratingCount = anime._count?.favorites ? (anime._count.favorites * 3).toLocaleString('pt-BR') : '2.4K'
 
   return (
-    <section
-      className="relative min-h-[70vh] flex items-center"
-      style={backgroundStyle}
-    >
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+    <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+      {/* Cinematic Background */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={(anime.bannerUrl || anime.banner || anime.posterUrl || anime.thumbnail)!}
+          alt=""
+          fill
+          className="object-cover scale-105 blur-[2px] opacity-40 transition-transform duration-[10s] ease-linear group-hover:scale-110"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
+        <div className="absolute inset-0 bg-black/40 z-0" />
+      </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex flex-col lg:flex-row items-start gap-8 pt-28 pb-12">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full pt-32 pb-20">
+        <div className="flex flex-col lg:flex-row items-center lg:items-end gap-10 md:gap-16">
 
-          {/* Poster */}
-          <div className="flex-shrink-0 relative w-72 h-96">
-            <Image
-              src={(anime.posterUrl || anime.thumbnail || anime.banner || '/images/episode-placeholder.svg')!}
-              alt={anime.title}
-              fill
-              className="object-cover rounded-xl shadow-2xl border border-white/10"
-            />
+          {/* Hero Poster with Premium Glow */}
+          <div className="flex-shrink-0 relative group animate-fade-in">
+            <div className="absolute -inset-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative w-64 h-96 md:w-80 md:h-[480px]">
+              <Image
+                src={(anime.posterUrl || anime.thumbnail || anime.banner)!}
+                alt={anime.title}
+                fill
+                className="object-cover rounded-2xl shadow-2xl border border-white/10"
+                priority
+              />
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/20"></div>
+            </div>
           </div>
 
-          {/* Info Content */}
-          <div className="flex-1 max-w-3xl">
+          {/* Right Content */}
+          <div className="flex-1 text-center lg:text-left animate-slide-up">
+            {/* Breadcrumbs / Small Label */}
+            <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
+              <span className="h-[2px] w-8 bg-blue-500 rounded-full"></span>
+              <span className="text-blue-400 text-xs font-black uppercase tracking-[0.3em]">
+                {(anime.totalEpisodes || 0) <= 1 ? 'Filme Original' : 'Série de Animação'}
+              </span>
+            </div>
 
-            {/* Title */}
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 drop-shadow-2xl">
+            {/* Main Title */}
+            <h1 className="text-5xl md:text-8xl font-black text-white mb-6 leading-[0.9] tracking-tighter drop-shadow-2xl">
               {anime.title}
             </h1>
 
-            {/* Meta Info */}
-            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
-              <span className="bg-orange-600 text-white px-3 py-1 rounded font-bold">
-                {anime.rating}+
-              </span>
-              <span className="text-white">Leg | Dub</span>
-              <span className="text-white">•</span>
-              {anime.genres?.slice(0, 5).map((g, index) => (
-                <span key={index} className="text-blue-300 hover:text-blue-200 cursor-pointer">
-                  {g}
-                </span>
-              ))}
-            </div>
+            {/* Metadata Badges */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-8">
+              <div className="flex items-center gap-1.5 bg-white/5 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full ring-1 ring-white/5">
+                <StarIconSolid className="w-4 h-4 text-yellow-500 fill-current" />
+                <span className="text-white font-bold text-sm tracking-tight">{rating.toFixed(1)}</span>
+                <span className="text-white/40 text-xs font-medium border-l border-white/10 pl-1.5 ml-0.5">{ratingCount}</span>
+              </div>
 
-            {/* Rating */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    className={`w-5 h-5 ${i < Math.floor(getRating())
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-600'
-                      }`}
-                  />
+              <div className="flex items-center gap-3 bg-blue-500/10 backdrop-blur-md border border-blue-500/20 px-4 py-1.5 rounded-full">
+                <span className="text-blue-400 font-black text-[10px] tracking-widest">{anime.rating}+</span>
+                <span className="h-3 w-[1px] bg-blue-500/30"></span>
+                <span className="text-blue-400 font-bold text-[10px] tracking-widest uppercase">Leg | Dub</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {anime.genres?.slice(0, 3).map((g, i) => (
+                  <span key={i} className="text-xs font-black text-white/60 uppercase tracking-widest hover:text-blue-400 transition-colors cursor-pointer">
+                    {g}
+                  </span>
                 ))}
               </div>
-              <span className="text-white font-medium">
-                Classificação média: <span className="text-yellow-400">{getRating().toFixed(1)}</span> ({getRatingCount()})
-              </span>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 mb-8">
-              <button
-                onClick={buttonState.action}
-                disabled={buttonState.disabled || loading}
-                className={`flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 ${buttonState.disabled || loading
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-orange-600 hover:bg-orange-700'
-                  } text-white`}
-              >
-                <PlayIcon className="w-6 h-6" />
-                {loading ? 'CARREGANDO...' : buttonState.text}
-              </button>
-
-              <button
-                onClick={toggleFavorite}
-                disabled={favoriteLoading}
-                className={`flex items-center justify-center p-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${isFavorite
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-gray-800 hover:bg-gray-700 text-white'
-                  } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-              >
-                {favoriteLoading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                ) : isFavorite ? (
-                  <HeartIconSolid className="w-6 h-6" />
-                ) : (
-                  <HeartIcon className="w-6 h-6" />
-                )}
-              </button>
             </div>
 
             {/* Description */}
-            <div className="mb-8">
-              <p className="text-gray-200 text-lg leading-relaxed mb-4">
-                {anime.description || `Milhares de anos após um misterioso fenômeno transformar a humanidade inteira em pedra, desperta um garoto extraordinariamente inteligente e amante da ciência chamado ${anime.title}.`}
-              </p>
+            <p className="text-lg md:text-xl text-gray-300 leading-relaxed mb-10 max-w-2xl font-medium line-clamp-3">
+              {anime.description || `Explore o épico universo de ${anime.title}. Uma jornada inesquecível repleta de aventura, superação e momentos lendários que marcaram gerações.`}
+            </p>
 
-              {anime.description && anime.description.length > 200 && (
-                <p className="text-gray-300 leading-relaxed">
-                  {anime.description.slice(200).split('.')[0]}...
-                </p>
-              )}
-
-              <button className="text-orange-400 hover:text-orange-300 font-bold mt-4 transition-colors">
-                MAIS DETALHES
+            {/* Action Group */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <button
+                onClick={buttonState.action}
+                disabled={loading}
+                className="group relative w-full sm:w-auto px-10 py-5 bg-blue-600 rounded-full font-black text-sm uppercase tracking-[0.2em] text-white hover:bg-blue-500 transition-all active:scale-95 shadow-2xl shadow-blue-600/30 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div className="flex items-center justify-center gap-3">
+                  <PlayIcon className="w-5 h-5" />
+                  {loading ? 'Sincronizando...' : buttonState.text}
+                </div>
               </button>
-            </div>
 
-            {/* Audio and Subtitle Info */}
-            <div className="grid md:grid-cols-2 gap-6 text-sm">
-              <div>
-                <h3 className="text-white font-bold mb-2">Áudio:</h3>
-                <p className="text-gray-300">
-                  {getAvailableLanguages().join(', ')}
-                </p>
-              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={toggleFavorite}
+                  disabled={favoriteLoading}
+                  className={`flex items-center justify-center w-14 h-14 rounded-full border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-110 active:scale-90 ${isFavorite ? 'bg-red-500/20 border-red-500/40 text-red-500' : 'bg-white/5 text-white hover:bg-white/10'
+                    }`}
+                >
+                  {favoriteLoading ? (
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  ) : isFavorite ? (
+                    <HeartIconSolid className="w-6 h-6" />
+                  ) : (
+                    <HeartIcon className="w-6 h-6" />
+                  )}
+                </button>
 
-              <div>
-                <h3 className="text-white font-bold mb-2">Legendas:</h3>
-                <p className="text-gray-300">
-                  {getAvailableLanguages().join(', ')}
-                </p>
-              </div>
+                <div className="h-10 w-[1px] bg-white/10 mx-2 hidden sm:block"></div>
 
-              {/* Informações adicionais */}
-              <div>
-                <h3 className="text-white font-bold mb-2">Ano de Lançamento:</h3>
-                <p className="text-gray-300">{anime.year}</p>
-              </div>
-
-              <div>
-                <h3 className="text-white font-bold mb-2">Total de Episódios:</h3>
-                <p className="text-gray-300">
-                  {anime.totalEpisodes || anime.seasons?.reduce((total, season) => total + (season.episodes?.length || 0), 0) || 'N/A'}
-                </p>
+                <div className="flex flex-col text-xs font-bold text-white/40 uppercase tracking-widest leading-none gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span>{anime.year}</span>
+                  </div>
+                  <div>{anime.totalEpisodes || 'Movie'} EPISÓDIOS</div>
+                </div>
               </div>
             </div>
-
           </div>
+
         </div>
       </div>
+
+      {/* Detail Grid Overlay - Bottom Section for extra info */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-10 hidden lg:block"></div>
     </section>
   )
 }
