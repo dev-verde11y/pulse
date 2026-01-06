@@ -8,7 +8,7 @@ import Image from 'next/image'
 // Helper para obter imagem do anime priorizando R2
 function getAnimeImage(anime: Anime): string {
   // Prioridade: posterUrl (R2) > thumbnail (legacy) > placeholder
-  return anime.thumbnail || anime.posterUrl || '/images/anime-placeholder.svg'
+  return anime.posterUrl || anime.thumbnail || '/images/anime-placeholder.svg'
 }
 
 // Card Pequeno e compacto

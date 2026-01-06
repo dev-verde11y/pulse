@@ -34,8 +34,8 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
         setItemsToScroll(5)
         setIsMobile(false)
       } else {
-        setItemsToShow(8)
-        setItemsToScroll(5)
+        setItemsToShow(6)
+        setItemsToScroll(3)
         setIsMobile(false)
       }
     }
@@ -111,7 +111,7 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
           {animes.map((anime) => (
             <div
               key={anime.id}
-              className={`flex-shrink-0 ${isMobile ? 'snap-start' : 'px-1'}`}
+              className={`flex-shrink-0 ${isMobile ? 'snap-start' : 'px-3 sm:px-4'}`}
               style={!isMobile ? {
                 width: `${100 / animes.length}%`
               } : {

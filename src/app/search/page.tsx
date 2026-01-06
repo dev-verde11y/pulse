@@ -110,14 +110,18 @@ function SearchPageContent() {
         sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
         sortOrder: sortOrder as "asc" | "desc",
         page,
-        limit: 20
+        limit: 20,
+        yearFrom: yearFrom ? parseInt(yearFrom) : undefined,
+        yearTo: yearTo ? parseInt(yearTo) : undefined,
+        isDubbed: isDubbed === true ? true : undefined,
+        isSubbed: isSubbed === true ? true : undefined,
       }
 
       console.log('API call with filters:', filters)
       const response = await api.getAnimes(filters)
       console.log('API response:', response)
 
-      // Filtrar por múltiplos gêneros no frontend se necessário
+      // Filtrar por múltiplos gêneros no frontend se API só suporta 1 (futuro: suportar múltiplos na API)
       let filteredAnimes = response.animes
       if (selectedGenres.length > 1) {
         filteredAnimes = response.animes.filter(anime =>
@@ -125,24 +129,11 @@ function SearchPageContent() {
         )
       }
 
-      // Filtrar por ano
-      if (yearFrom || yearTo) {
-        filteredAnimes = filteredAnimes.filter(anime => {
-          const animeYear = anime.year
-          const fromYear = yearFrom ? parseInt(yearFrom) : 0
-          const toYear = yearTo ? parseInt(yearTo) : 9999
-          return animeYear >= fromYear && animeYear <= toYear
-        })
-      }
-
       console.log('Final filtered animes:', filteredAnimes)
-      console.log('About to call setAnimes with:', filteredAnimes)
       setAnimes(filteredAnimes)
       setTotalResults(response.pagination.totalItems)
       setCurrentPage(response.pagination.currentPage)
       setTotalPages(response.pagination.totalPages)
-      console.log('State updated - animes count:', filteredAnimes.length)
-      console.log('After setAnimes, animes state should be:', filteredAnimes.length)
     } catch (error) {
       console.error('Search error:', error)
       setAnimes([])
@@ -184,7 +175,11 @@ function SearchPageContent() {
         sortBy: sortField as "title" | "year" | "rating" | "createdAt" | undefined,
         sortOrder: sortOrder as "asc" | "desc",
         page: currentPage,
-        limit: 20
+        limit: 20,
+        yearFrom: yearFrom ? parseInt(yearFrom) : undefined,
+        yearTo: yearTo ? parseInt(yearTo) : undefined,
+        isDubbed: isDubbed === true ? true : undefined,
+        isSubbed: isSubbed === true ? true : undefined,
       }
 
       try {
@@ -196,24 +191,6 @@ function SearchPageContent() {
           filteredAnimes = response.animes.filter(anime =>
             selectedGenres.every(genre => anime.genres?.includes(genre))
           )
-        }
-
-        // Filter by year
-        if (yearFrom || yearTo) {
-          filteredAnimes = filteredAnimes.filter(anime => {
-            const animeYear = anime.year
-            const fromYear = yearFrom ? parseInt(yearFrom) : 0
-            const toYear = yearTo ? parseInt(yearTo) : 9999
-            return animeYear >= fromYear && animeYear <= toYear
-          })
-        }
-
-        // Filter by Language
-        if (isDubbed !== null) {
-          filteredAnimes = filteredAnimes.filter(anime => anime.isDubbed === isDubbed)
-        }
-        if (isSubbed !== null) {
-          filteredAnimes = filteredAnimes.filter(anime => anime.isSubbed === isSubbed)
         }
 
         setAnimes(filteredAnimes)
@@ -273,6 +250,8 @@ function SearchPageContent() {
     setSortBy('title')
     setYearFrom('')
     setYearTo('')
+    setIsDubbed(null)
+    setIsSubbed(null)
     setCurrentPage(1)
   }
 

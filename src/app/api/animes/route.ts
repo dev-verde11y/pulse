@@ -11,7 +11,7 @@ const createAnimeSchema = z.object({
   rating: z.string().min(1, 'Classificação é obrigatória'),
   genres: z.array(z.string()).min(1, 'Pelo menos um gênero é obrigatório'),
   slug: z.string().min(1, 'Slug é obrigatório').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
-  
+
   // Campos opcionais
   thumbnail: z.string().url().optional().nullable(),
   banner: z.string().url().optional().nullable(),
@@ -22,7 +22,7 @@ const createAnimeSchema = z.object({
   tags: z.array(z.string()).default([]),
   director: z.string().optional().nullable(),
   studio: z.string().optional().nullable(),
-  
+
   // Cloudflare R2 fields
   posterUrl: z.string().url().optional().nullable(),
   posterR2Key: z.string().optional().nullable(),
@@ -46,7 +46,9 @@ const animesQuerySchema = z.object({
   rating: z.string().optional(),
   search: z.string().optional(),
   sortBy: z.enum(['title', 'year', 'rating', 'createdAt']).optional().default('title'),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('asc')
+  sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
+  isDubbed: z.string().optional().transform(val => val === 'true'),
+  isSubbed: z.string().optional().transform(val => val === 'true')
 })
 
 export async function GET(request: NextRequest) {
@@ -82,13 +84,15 @@ export async function GET(request: NextRequest) {
       rating,
       search,
       sortBy,
-      sortOrder
+      sortOrder,
+      isDubbed,
+      isSubbed
     } = validationResult.data
 
     const skip = (page - 1) * limit
-    
+
     const where: Record<string, unknown> = {}
-    
+
     // Filtro por gêneros (múltiplos)
     if (genre) {
       where.genres = {
@@ -100,34 +104,42 @@ export async function GET(request: NextRequest) {
         hasEvery: genreList // Deve ter TODOS os gêneros
       }
     }
-    
+
     // Filtro por ano específico
     if (year) {
       where.year = year
     }
-    
+
     // Filtro por range de anos
     if (yearFrom || yearTo) {
       where.year = {} as { gte?: number; lte?: number }
       if (yearFrom) (where.year as { gte?: number; lte?: number }).gte = yearFrom
       if (yearTo) (where.year as { gte?: number; lte?: number }).lte = yearTo
     }
-    
+
     // Filtro por status
     if (status) {
       where.status = status
     }
-    
+
     // Filtro por tipo
     if (type) {
       where.type = type
     }
-    
+
     // Filtro por classificação
     if (rating) {
       where.rating = rating
     }
-    
+
+    // Filtros de áudio/legenda
+    if (isDubbed) {
+      where.isDubbed = true
+    }
+    if (isSubbed) {
+      where.isSubbed = true
+    }
+
     // Filtro por busca de texto
     if (search) {
       where.OR = [
@@ -220,22 +232,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     // Validar dados de entrada
     const validatedData = createAnimeSchema.parse(body)
-    
+
     // Verificar se slug é único
     const existingSlug = await prisma.anime.findUnique({
       where: { slug: validatedData.slug }
     })
-    
+
     if (existingSlug) {
       return NextResponse.json(
         { error: 'Slug já está em uso' },
         { status: 409 }
       )
     }
-    
+
     // Criar anime
     const newAnime = await prisma.anime.create({
       data: validatedData,
@@ -248,19 +260,19 @@ export async function POST(request: NextRequest) {
         }
       }
     })
-    
+
     return NextResponse.json(newAnime, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation error',
           details: error.errors
         },
         { status: 400 }
       )
     }
-    
+
     console.error('Error creating anime:', error)
     return NextResponse.json(
       { error: 'Internal server error' },

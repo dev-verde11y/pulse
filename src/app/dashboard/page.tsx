@@ -11,13 +11,13 @@ export default async function DashboardPage() {
 
   // Fetch all categories in parallel for performance
   const [trending, newReleases, topRated, action, comedy] = await Promise.all([
-    // Trending: Rating 16+ or 18+ (Simulating "Trending" based on adult ratings as per original logic)
+    // Trending: Based on Global Popularity (Favorites + Watch History)
     prisma.anime.findMany({
-      where: {
-        rating: { in: ['16+', '18+'] }
-      },
       take: 10,
-      orderBy: { createdAt: 'desc' }
+      orderBy: [
+        { favorites: { _count: 'desc' } },
+        { watchHistory: { _count: 'desc' } }
+      ]
     }),
 
     // New Releases: Created in the last year
@@ -29,11 +29,12 @@ export default async function DashboardPage() {
       orderBy: { createdAt: 'desc' }
     }),
 
-    // "Top Rated" (Original logic was just sorting by date desc, likely "Latest" effectively)
-    // We'll keep it as latest for consistency with previous behavior, or if we had a rating field we'd sort by it.
-    // The previous code did: sort by createdAt desc.
+    // Top Rated (Effective sorting by rating and popularity)
     prisma.anime.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { favorites: { _count: 'desc' } },
+        { createdAt: 'desc' }
+      ],
       take: 10
     }),
 

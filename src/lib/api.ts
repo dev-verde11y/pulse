@@ -11,6 +11,10 @@ interface AnimeFilters {
   sortBy?: 'title' | 'year' | 'rating' | 'createdAt'
   sortOrder?: 'asc' | 'desc'
   rating?: string
+  isDubbed?: boolean
+  isSubbed?: boolean
+  yearFrom?: number
+  yearTo?: number
 }
 
 interface PaginationInfo {
@@ -74,41 +78,41 @@ export const api = {
 
   async getAnime(id: string) {
     const response = await fetch(`/api/animes/${id}`)
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch anime')
     }
-    
+
     return response.json()
   },
 
   async getSeason(id: string) {
     const response = await fetch(`/api/seasons/${id}`)
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch season')
     }
-    
+
     return response.json()
   },
 
   async getEpisode(id: string) {
     const response = await fetch(`/api/episodes/${id}`)
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch episode')
     }
-    
+
     return response.json()
   },
 
   async getFavorites() {
     const response = await fetch('/api/favorites')
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch favorites')
     }
-    
+
     return response.json()
   },
 
@@ -120,11 +124,11 @@ export const api = {
       },
       body: JSON.stringify({ animeId })
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to add to favorites')
     }
-    
+
     return response.json()
   },
 
@@ -132,11 +136,11 @@ export const api = {
     const response = await fetch(`/api/favorites/${animeId}`, {
       method: 'DELETE'
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to remove from favorites')
     }
-    
+
     return response.json()
   },
 
@@ -144,11 +148,11 @@ export const api = {
     const response = await fetch('/api/favorites', {
       method: 'DELETE'
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to clear all favorites')
     }
-    
+
     return response.json()
   },
 
@@ -171,11 +175,11 @@ export const api = {
     })
 
     const response = await fetch(`/api/watch-history?${params}`)
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch watch history')
     }
-    
+
     return response.json()
   },
 
@@ -192,24 +196,24 @@ export const api = {
         progress
       })
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to update watch history')
     }
-    
+
     return response.json()
   },
 
   async getAnimeWatchHistory(animeId: string) {
     const response = await fetch(`/api/watch-history/anime/${animeId}`)
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         return null // Nunca assistiu
       }
       throw new Error('Failed to fetch anime watch history')
     }
-    
+
     return response.json()
   },
 
@@ -221,12 +225,12 @@ export const api = {
       },
       body: JSON.stringify({ name })
     })
-    
+
     if (!response.ok) {
       const error = await response.json()
       throw new Error(error.error || 'Failed to update profile')
     }
-    
+
     return response.json()
   },
 
@@ -238,12 +242,12 @@ export const api = {
       },
       body: JSON.stringify({ currentPassword, newPassword })
     })
-    
+
     if (!response.ok) {
       const error = await response.json()
       throw new Error(error.error || 'Failed to change password')
     }
-    
+
     return response.json()
   }
 }

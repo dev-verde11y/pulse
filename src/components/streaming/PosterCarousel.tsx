@@ -35,9 +35,9 @@ export function PosterCarousel({ title, animes, isTop10 = false }: PosterCarouse
         setItemsToScroll(3)
         setIsMobile(false)
       } else {
-        // No Desktop Top 10: Mostramos 4.2 itens para eles ficarem BEM GRANDES
-        setItemsToShow(isTop10 ? 4.2 : 7)
-        setItemsToScroll(isTop10 ? 2 : 4)
+        // No Desktop: 4.2 para Top 10 (grande) e 6 para normal (equilibrado)
+        setItemsToShow(isTop10 ? 4.2 : 6)
+        setItemsToScroll(isTop10 ? 2 : 3)
         setIsMobile(false)
       }
     }
@@ -120,7 +120,7 @@ export function PosterCarousel({ title, animes, isTop10 = false }: PosterCarouse
           {animes.map((anime, idx) => (
             <div
               key={anime.id}
-              className={`flex-shrink-0 relative ${isMobile ? 'snap-start' : (isTop10 ? 'px-4 sm:px-6' : 'px-1.5')}`}
+              className={`flex-shrink-0 relative ${isMobile ? 'snap-start' : (isTop10 ? 'px-4 sm:px-6' : 'px-3 sm:px-4')}`}
               style={!isMobile ? {
                 width: `${100 / animes.length}%`
               } : {
