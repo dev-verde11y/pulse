@@ -246,12 +246,19 @@ export function VideoPlayerV2({
   }, [isPlaying])
 
   // Video event handlers
-  const handlePlay = () => {
+  const handlePlay = async () => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause()
       } else {
-        videoRef.current.play()
+        try {
+          await videoRef.current.play()
+        } catch (error) {
+          // Ignorar erros de AbortError que ocorrem quando play() é interrompido por pause()
+          if (error instanceof Error && error.name !== 'AbortError') {
+            console.error('Erro ao reproduzir vídeo:', error)
+          }
+        }
       }
     }
   }

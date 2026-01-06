@@ -36,7 +36,7 @@ export interface Anime {
 export interface Season {
   id: string
   seasonNumber: number
-  title: string
+  title?: string | null
   description?: string | null
   episodes?: Episode[]
 }

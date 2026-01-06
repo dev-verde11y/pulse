@@ -78,11 +78,11 @@ export default function LandingPage() {
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-l from-blue-500/15 to-indigo-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight">
               O Maior Acervo de
-              <span className="block bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent animate-gradient-x">
+              <span className="block mt-2 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent animate-gradient-x">
                 Anime do Mundo
               </span>
             </h1>
@@ -150,21 +150,19 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-4 bg-slate-900/50 p-2 rounded-full border border-blue-500/30">
               <button
                 onClick={() => setBillingCycle('monthly')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  billingCycle === 'monthly'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+                className={`px-6 py-2 rounded-full font-medium transition-all ${billingCycle === 'monthly'
+                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                  : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 Mensal
               </button>
               <button
                 onClick={() => setBillingCycle('annual')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  billingCycle === 'annual'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+                className={`px-6 py-2 rounded-full font-medium transition-all ${billingCycle === 'annual'
+                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                  : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 Anual
                 <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
@@ -175,7 +173,7 @@ export default function LandingPage() {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
             {/* Free Plan - 7 Days Trial */}
             <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-blue-400/30 transition-all">
               <div className="text-center mb-6">

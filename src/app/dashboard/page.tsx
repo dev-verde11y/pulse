@@ -94,7 +94,7 @@ function DashboardContent() {
   const comedy = animes.filter(anime => anime.genres?.includes('Comédia')).slice(0, 10)
   const continueWatchingAnimes = watchHistory
     .map(item => item.anime)
-    .filter((anime, index, self) => 
+    .filter((anime, index, self) =>
       index === self.findIndex(a => a.id === anime.id)
     )
     .slice(0, 10)
@@ -128,54 +128,54 @@ function DashboardContent() {
 
       {/* Content Sections */}
       <main className="bg-black text-white">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 space-y-8 sm:space-y-10">
-          
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 space-y-12 sm:space-y-16">
+
           {/* Continue Assistindo */}
-          <SmallCardCarousel 
-            title="Continue Assistindo" 
-            animes={continueWatchingAnimes} 
+          <SmallCardCarousel
+            title="Continue Assistindo"
+            animes={continueWatchingAnimes}
           />
 
           {/* Em Alta */}
-          <PosterCarousel 
-            title="Em Alta" 
-            animes={trending} 
+          <PosterCarousel
+            title="Em Alta"
+            animes={trending}
           />
 
           {/* Minha Lista */}
-          <SmallCardCarousel 
-            title="Minha Lista" 
-            animes={myList} 
+          <SmallCardCarousel
+            title="Minha Lista"
+            animes={myList}
           />
 
           {/* Recomendados para Você */}
-          <PosterCarousel 
-            title="Recomendados para Você" 
-            animes={recommendations} 
+          <PosterCarousel
+            title="Recomendados para Você"
+            animes={recommendations}
           />
 
           {/* Lançamentos */}
-          <BannerCarousel 
-            title="Novos Lançamentos" 
-            animes={newReleases} 
+          <BannerCarousel
+            title="Novos Lançamentos"
+            animes={newReleases}
           />
 
           {/* Mais Avaliados */}
-          <PosterCarousel 
-            title="Mais Avaliados" 
-            animes={topRated} 
+          <PosterCarousel
+            title="Mais Avaliados"
+            animes={topRated}
           />
 
           {/* Ação */}
-          <CardCarousel 
-            title="Ação & Aventura" 
-            animes={action} 
+          <CardCarousel
+            title="Ação & Aventura"
+            animes={action}
           />
 
           {/* Comédia */}
-          <CardCarousel 
-            title="Comédia" 
-            animes={comedy} 
+          <CardCarousel
+            title="Comédia"
+            animes={comedy}
           />
 
           {/* Categorias Populares */}

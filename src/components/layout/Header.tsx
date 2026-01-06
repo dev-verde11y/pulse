@@ -32,9 +32,9 @@ export function Header() {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [genres, setGenres] = useState<{name: string, displayName: string, count: number}[]>([])
+  const [genres, setGenres] = useState<{ name: string, displayName: string, count: number }[]>([])
   const [loadingGenres, setLoadingGenres] = useState(false)
-  
+
   const { user, logout } = useAuth()
   const { favoritesCount } = useFavorites()
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, loading: notificationsLoading } = useNotifications()
@@ -102,11 +102,10 @@ export function Header() {
   // const navLinkUnderlineClass = "absolute bottom-0 left-0 h-0.5 w-0 bg-blue-500 group-hover:w-full transition-all duration-300 ease-in-out"
 
   return (
-    <header className={`text-white sticky top-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-gray-950/95 backdrop-blur-md border-b border-gray-800 shadow-2xl' 
+    <header className={`text-white sticky top-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-gray-950/95 backdrop-blur-md border-b border-gray-800 shadow-2xl'
         : 'bg-gray-950/90 backdrop-blur-sm'
-    }`}>
+      }`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
@@ -154,18 +153,19 @@ export function Header() {
                   setIsCategoriesOpen(!isCategoriesOpen)
                   if (!isCategoriesOpen) loadGenres()
                 }}
-                className={`relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center ${
-                  isCategoriesOpen 
-                    ? 'bg-gray-800/50 backdrop-blur-sm' 
+                className={`relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center ${isCategoriesOpen
+                    ? 'bg-gray-800/50 backdrop-blur-sm'
                     : 'hover:bg-gray-800/30 hover:backdrop-blur-sm'
-                }`}
+                  }`}
+                aria-expanded={isCategoriesOpen}
+                aria-haspopup="true"
               >
                 Categorias
-                <svg className={`ml-2 h-4 w-4 transform transition-all duration-300 ${isCategoriesOpen ? 'rotate-180 text-gray-300' : 'group-hover:text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className={`ml-2 h-4 w-4 transform transition-all duration-300 ${isCategoriesOpen ? 'rotate-180 text-gray-300' : 'group-hover:text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              
+
               {isCategoriesOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-gray-950/98 backdrop-blur-lg border border-gray-800/50 rounded-xl shadow-2xl z-50">
                   {/* Header */}
@@ -271,11 +271,12 @@ export function Header() {
           {/* User Menu and Mobile Button */}
           <div className="flex items-center space-x-1">
             {/* Search Button for Mobile/Tablet */}
-            <Link 
-              href="/search" 
+            <Link
+              href="/search"
               className="md:hidden p-1.5 sm:p-2 text-gray-400 hover:text-white transition-all duration-200 rounded-lg hover:bg-gray-800/50 group"
+              aria-label="Pesquisar"
             >
-              <svg className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </Link>
@@ -286,11 +287,14 @@ export function Header() {
                 <>
                   {/* Notifications */}
                   <div className="relative" ref={notificationsRef}>
-                    <button 
+                    <button
                       onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                       className="relative p-2 rounded-lg text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-800/50"
+                      aria-label="Notificações"
+                      aria-expanded={isNotificationsOpen}
+                      aria-haspopup="true"
                     >
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z" clipRule="evenodd" />
                       </svg>
                       {unreadCount > 0 && (
@@ -299,14 +303,14 @@ export function Header() {
                         </div>
                       )}
                     </button>
-                    
+
                     {/* Notifications Dropdown */}
                     {isNotificationsOpen && (
                       <div className="absolute right-0 mt-2 w-80 bg-gray-900/95 backdrop-blur-md border border-gray-700 rounded-lg shadow-2xl overflow-hidden z-50">
                         <div className="p-4 border-b border-gray-700">
                           <div className="flex items-center justify-between">
                             <h3 className="text-lg font-bold text-white">Notificações</h3>
-                            <button 
+                            <button
                               onClick={markAllAsRead}
                               className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
                             >
@@ -314,7 +318,7 @@ export function Header() {
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="max-h-96 overflow-y-auto">
                           {notificationsLoading ? (
                             <div className="p-8 text-center">
@@ -348,6 +352,9 @@ export function Header() {
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                       className="flex items-center p-2 rounded-xl hover:bg-gray-800/30 transition-all duration-300 group border border-transparent hover:border-gray-700/50 backdrop-blur-sm"
+                      aria-label="Menu do usuário"
+                      aria-expanded={isUserMenuOpen}
+                      aria-haspopup="true"
                     >
                       <div className="relative">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-indigo-600/30 rounded-full blur-sm group-hover:blur-md transition-all duration-300"></div>
@@ -365,7 +372,7 @@ export function Header() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    
+
                     {isUserMenuOpen && (
                       <div className="origin-top-right absolute right-0 mt-2 w-56 bg-gray-950/98 backdrop-blur-lg border border-gray-800/50 rounded-xl shadow-2xl overflow-hidden">
                         {/* Header do Menu */}
@@ -388,22 +395,21 @@ export function Header() {
                                     Admin
                                   </span>
                                 )}
-                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                                  user?.currentPlan === 'FREE' 
+                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${user?.currentPlan === 'FREE'
                                     ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
                                     : user?.currentPlan === 'FAN'
-                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                                    : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
-                                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
-                                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
-                                }`}>
+                                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                      : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
+                                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                                        : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                                  }`}>
                                   {formatPlanName(user?.currentPlan)}
                                 </span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Menu Items */}
                         <div className="p-3 space-y-1">
                           <Link href="/profile" className="flex items-center space-x-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 group">
@@ -414,7 +420,7 @@ export function Header() {
                             </div>
                             <span>Perfil</span>
                           </Link>
-                          
+
                           <Link href="/dashboard/subscription" className="flex items-center space-x-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 group">
                             <div className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors">
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -423,7 +429,7 @@ export function Header() {
                             </div>
                             <span>Minha Assinatura</span>
                           </Link>
-                          
+
                           <Link href="/favorites" className="flex items-center space-x-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 group">
                             <div className="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors">
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -451,9 +457,9 @@ export function Header() {
                               </Link>
                             </div>
                           )}
-                          
+
                           <div className="pt-2 border-t border-gray-800/30">
-                            <button 
+                            <button
                               onClick={handleLogout}
                               className="flex items-center space-x-3 w-full px-3 py-2.5 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-600/10 rounded-lg transition-all duration-200 group"
                             >
@@ -479,11 +485,12 @@ export function Header() {
             <div className="md:hidden">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`inline-flex items-center justify-center p-2 rounded-lg transition-all duration-300 group ${
-                  isMobileMenuOpen 
-                    ? 'text-white bg-gray-800/50' 
+                className={`inline-flex items-center justify-center p-2 rounded-lg transition-all duration-300 group ${isMobileMenuOpen
+                    ? 'text-white bg-gray-800/50'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                }`}
+                  }`}
+                aria-expanded={isMobileMenuOpen}
+                aria-haspopup="true"
               >
                 <span className="sr-only">Abrir menu principal</span>
                 {!isMobileMenuOpen ? (
@@ -506,8 +513,8 @@ export function Header() {
         <div className="md:hidden bg-gray-950/98 backdrop-blur-lg border-t border-gray-800/50 animate-slide-down">
           {/* Mobile Quick Search */}
           <div className="px-4 py-3 border-b border-gray-800/30">
-            <Link 
-              href="/search" 
+            <Link
+              href="/search"
               className="flex items-center w-full px-4 py-3 text-gray-400 bg-gray-900/50 hover:bg-gray-800/50 rounded-lg transition-all duration-200 group"
               onClick={() => setIsMobileMenuOpen(false)}
             >
@@ -517,12 +524,12 @@ export function Header() {
               <span className="group-hover:text-white transition-colors">Pesquisar animes, filmes, séries...</span>
             </Link>
           </div>
-          
+
           <div className="p-4 space-y-2">
             {/* Navigation Links */}
             <div className="space-y-1">
-              <Link 
-                href="/news" 
+              <Link
+                href="/news"
                 className="text-white font-semibold hover:text-blue-400 hover:bg-gray-800/30 block px-4 py-3 rounded-lg text-sm transition-all duration-200 flex items-center group"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -533,9 +540,9 @@ export function Header() {
                 </div>
                 Novidades
               </Link>
-              
-              <Link 
-                href="/popular" 
+
+              <Link
+                href="/popular"
                 className="text-white font-semibold hover:text-blue-400 hover:bg-gray-800/30 block px-4 py-3 rounded-lg text-sm transition-all duration-200 flex items-center group"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -589,20 +596,19 @@ export function Header() {
                         {user?.role === 'ADMIN' && (
                           <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-0.5 rounded flex items-center">
                             <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 1l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-1.74L12 1z"/>
+                              <path d="M12 1l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-1.74L12 1z" />
                             </svg>
                             ADMIN
                           </span>
                         )}
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                          user?.currentPlan === 'FREE' 
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${user?.currentPlan === 'FREE'
                             ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
                             : user?.currentPlan === 'FAN'
-                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                            : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
-                            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
-                            : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
-                        }`}>
+                              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                              : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
+                                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                                : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                          }`}>
                           {formatPlanName(user?.currentPlan)}
                         </span>
                       </div>
@@ -627,7 +633,7 @@ export function Header() {
                       </span>
                     )}
                   </Link>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:text-white hover:bg-red-600/20 transition-all"
                   >

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { 
-  PlayIcon, 
-  PauseIcon, 
-  SpeakerWaveIcon, 
+import {
+  PlayIcon,
+  PauseIcon,
+  SpeakerWaveIcon,
   SpeakerXMarkIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
@@ -51,11 +51,11 @@ interface VideoPlayerProps {
   animeId: string
 }
 
-export function VideoPlayer({ 
-  episode, 
-  onNextEpisode, 
-  onPreviousEpisode, 
-  hasNextEpisode, 
+export function VideoPlayer({
+  episode,
+  onNextEpisode,
+  onPreviousEpisode,
+  hasNextEpisode,
   hasPreviousEpisode,
   animeId
 }: VideoPlayerProps) {
@@ -76,7 +76,7 @@ export function VideoPlayer({
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(0)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
   const [lastProgressUpdate, setLastProgressUpdate] = useState(0)
-  
+
   const { user } = useAuth()
 
   // Função para salvar progresso na API
@@ -99,7 +99,7 @@ export function VideoPlayer({
   // Salvar progresso a cada 10 segundos durante reprodução
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
+
     if (isPlaying && user && videoRef.current) {
       // Aguardar um momento para garantir que o vídeo carregou
       const checkAndStart = () => {
@@ -114,7 +114,7 @@ export function VideoPlayer({
           }, 10000) // 10 segundos
         }
       }
-      
+
       // Aguardar 1 segundo para o vídeo carregar completamente
       setTimeout(checkAndStart, 1000)
     }
@@ -135,7 +135,7 @@ export function VideoPlayer({
         setLastProgressUpdate(currentTime)
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, currentTime, duration, lastProgressUpdate, user])
 
   // Salvar quando episódio terminar (90%+)
@@ -147,13 +147,13 @@ export function VideoPlayer({
         saveProgress(currentTime, duration)
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration, user])
 
   // Auto-hide controls
   useEffect(() => {
     let timeout: NodeJS.Timeout
-    
+
     const handleMouseMove = () => {
       setShowControls(true)
       clearTimeout(timeout)
@@ -192,12 +192,19 @@ export function VideoPlayer({
   }, [isPlaying])
 
   // Video event handlers
-  const handlePlay = () => {
+  const handlePlay = async () => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause()
       } else {
-        videoRef.current.play()
+        try {
+          await videoRef.current.play()
+        } catch (error) {
+          // Ignorar erros de AbortError que ocorrem quando play() é interrompido por pause()
+          if (error instanceof Error && error.name !== 'AbortError') {
+            console.error('Erro ao reproduzir vídeo:', error)
+          }
+        }
       }
     }
   }
@@ -212,25 +219,25 @@ export function VideoPlayer({
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
       setLoading(false)
-      
+
       // Detectar trilhas de áudio disponíveis no arquivo MKV
       const video = videoRef.current
-      
+
       // Aguardar carregamento completo das trilhas
       setTimeout(() => {
         const tracks: AudioTrack[] = []
-        
+
         if (video.audioTracks && video.audioTracks.length > 1) {
           for (let i = 0; i < video.audioTracks.length; i++) {
             const track = video.audioTracks[i]
-            
+
             tracks.push({
               id: i,
               label: track.label || (i === 0 ? 'Japonês (Original)' : 'Português (Dublado)'),
               language: track.language || (i === 0 ? 'ja' : 'pt-BR'),
               enabled: track.enabled
             })
-            
+
             if (track.enabled) {
               setSelectedAudioTrack(i)
             }
@@ -242,7 +249,7 @@ export function VideoPlayer({
             language: 'ja',
             enabled: true
           })
-          
+
           if (video.audioTracks && video.audioTracks.length === 0) {
             tracks.push({
               id: 1,
@@ -252,10 +259,10 @@ export function VideoPlayer({
             })
           }
         }
-        
+
         setAudioTracks(tracks)
       }, 2000)
-      
+
       // Trilha inicial
       const initialTracks: AudioTrack[] = [{
         id: 0,
@@ -319,13 +326,13 @@ export function VideoPlayer({
       for (let i = 0; i < videoRef.current.audioTracks.length; i++) {
         videoRef.current.audioTracks[i].enabled = false
       }
-      
+
       // Habilitar trilha selecionada
       if (trackId >= 0 && trackId < videoRef.current.audioTracks.length) {
         videoRef.current.audioTracks[trackId].enabled = true
       }
     }
-    
+
     setSelectedAudioTrack(trackId)
     setAudioTracks(prev => prev.map(track => ({
       ...track,
@@ -374,7 +381,7 @@ export function VideoPlayer({
 
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration])
 
   const formatTime = (time: number) => {
@@ -386,7 +393,7 @@ export function VideoPlayer({
   const videoSrc = `/api/video/${episode.id}`
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative w-full bg-black rounded-lg overflow-hidden group"
       style={{ aspectRatio: '16/9' }}
@@ -415,14 +422,13 @@ export function VideoPlayer({
       )}
 
       {/* Controls Overlay */}
-      <div 
-        className={`absolute inset-0 transition-opacity duration-300 ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
+      <div
+        className={`absolute inset-0 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'
+          }`}
       >
         {/* Top Gradient */}
         <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black/80 to-transparent" />
-        
+
         {/* Bottom Gradient */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
 
@@ -451,12 +457,12 @@ export function VideoPlayer({
         {/* Bottom Controls */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           {/* Progress Bar */}
-          <div 
+          <div
             ref={progressRef}
             className="w-full h-1 bg-gray-600 rounded-full cursor-pointer mb-4 group"
             onClick={handleProgressClick}
           >
-            <div 
+            <div
               className="h-full bg-blue-600 rounded-full relative group-hover:h-2 transition-all"
               style={{ width: `${(currentTime / duration) * 100}%` }}
             >
@@ -471,6 +477,7 @@ export function VideoPlayer({
               <button
                 onClick={handlePlay}
                 className="text-white hover:text-blue-400 transition-colors"
+                aria-label={isPlaying ? "Pausar" : "Reproduzir"}
               >
                 {isPlaying ? (
                   <PauseIcon className="w-6 h-6" />
@@ -484,6 +491,7 @@ export function VideoPlayer({
                 <button
                   onClick={onPreviousEpisode}
                   className="text-white hover:text-blue-400 transition-colors"
+                  aria-label="Episódio anterior"
                 >
                   <BackwardIcon className="w-5 h-5" />
                 </button>
@@ -494,6 +502,7 @@ export function VideoPlayer({
                 <button
                   onClick={onNextEpisode}
                   className="text-white hover:text-blue-400 transition-colors"
+                  aria-label="Próximo episódio"
                 >
                   <ForwardIcon className="w-5 h-5" />
                 </button>
@@ -504,6 +513,7 @@ export function VideoPlayer({
                 <button
                   onClick={toggleMute}
                   className="text-white hover:text-blue-400 transition-colors"
+                  aria-label={isMuted ? "Ativar som" : "Mudo"}
                 >
                   {isMuted || volume === 0 ? (
                     <SpeakerXMarkIcon className="w-5 h-5" />
@@ -519,6 +529,7 @@ export function VideoPlayer({
                   value={isMuted ? 0 : volume}
                   onChange={handleVolumeChange}
                   className="w-20 h-1 bg-gray-600 rounded-full appearance-none cursor-pointer slider"
+                  aria-label="Volume"
                 />
               </div>
 
@@ -535,11 +546,13 @@ export function VideoPlayer({
                   <button
                     onClick={() => setShowAudioMenu(!showAudioMenu)}
                     className="flex items-center space-x-1 text-white hover:text-blue-400 transition-colors text-sm"
+                    aria-label="Selecionar áudio"
+                    aria-expanded={showAudioMenu}
                   >
                     <LanguageIcon className="w-4 h-4" />
                     <span>Áudio</span>
                   </button>
-                  
+
                   {showAudioMenu && (
                     <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl min-w-48 z-50">
                       <div className="p-2">
@@ -550,11 +563,10 @@ export function VideoPlayer({
                           <button
                             key={track.id}
                             onClick={() => handleAudioTrackChange(track.id)}
-                            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                              track.enabled || selectedAudioTrack === track.id
+                            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${track.enabled || selectedAudioTrack === track.id
                                 ? 'bg-blue-600 text-white'
                                 : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <span>{track.label}</span>
@@ -578,6 +590,7 @@ export function VideoPlayer({
                   value={quality}
                   onChange={(e) => setQuality(e.target.value)}
                   className="bg-transparent text-white text-sm border border-gray-600 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
+                  aria-label="Qualidade de vídeo"
                 >
                   <option value="720p" className="bg-gray-800">720p</option>
                   <option value="1080p" className="bg-gray-800">1080p</option>
@@ -586,7 +599,7 @@ export function VideoPlayer({
 
               {/* Settings - HIDDEN for v1 */}
               {false && (
-                <button className="text-white hover:text-blue-400 transition-colors">
+                <button className="text-white hover:text-blue-400 transition-colors" aria-label="Configurações">
                   <Cog6ToothIcon className="w-5 h-5" />
                 </button>
               )}
@@ -595,6 +608,7 @@ export function VideoPlayer({
               <button
                 onClick={toggleFullscreen}
                 className="text-white hover:text-blue-400 transition-colors"
+                aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
               >
                 {isFullscreen ? (
                   <ArrowsPointingInIcon className="w-5 h-5" />

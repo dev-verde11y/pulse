@@ -7,16 +7,16 @@ const createHeroBannerSchema = z.object({
   subtitle: z.string().min(1, 'Subtítulo é obrigatório'),
   description: z.string().min(1, 'Descrição é obrigatória'),
   backgroundImage: z.string().url('URL da imagem de fundo inválida'),
-  logo: z.string().url().optional().or(z.literal('').transform(() => null)),
+  logo: z.string().transform(val => val === '' ? null : val).pipe(z.string().url().nullable()).nullable(),
   type: z.string().default('anime'),
   year: z.number().int().min(1900).max(new Date().getFullYear() + 5),
   rating: z.string().default('16+'),
   duration: z.string().default('24 min'),
-  episode: z.string().optional().or(z.literal('').transform(() => null)),
+  episode: z.string().transform(val => val === '' ? null : val).nullable(),
   genres: z.array(z.string()).default([]),
   displayOrder: z.number().int().default(0),
   isActive: z.boolean().default(true),
-  animeId: z.string().optional().or(z.literal('').transform(() => null))
+  animeId: z.string().transform(val => val === '' ? null : val).nullable()
 });
 
 export async function GET(request: NextRequest) {

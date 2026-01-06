@@ -2,7 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import dynamic from 'next/dynamic';
+
+// Lazy load PWA prompt - não é crítico para FCP
+const PWAInstallPrompt = dynamic(() => import('@/components/PWAInstallPrompt'), {
+  loading: () => null
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -82,8 +87,16 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-blue-600 text-white rounded-md font-medium outline-none focus:ring-2 focus:ring-white"
+        >
+          Pular para o conteúdo principal
+        </a>
         <AuthProvider>
-          {children}
+          <div id="main-content">
+            {children}
+          </div>
           <PWAInstallPrompt />
         </AuthProvider>
       </body>

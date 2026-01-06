@@ -19,9 +19,9 @@ export function PosterCarousel({ title, animes }: PosterCarouselProps) {
   useEffect(() => {
     const updateItemsConfig = () => {
       const width = window.innerWidth
-      
+
       if (width < 640) {
-        setItemsToShow(2)
+        setItemsToShow(3)
         setItemsToScroll(2)
       } else if (width < 768) {
         setItemsToShow(3)
@@ -77,32 +77,31 @@ export function PosterCarousel({ title, animes }: PosterCarouselProps) {
         )}
       </div>
 
-      <div 
+      <div
         ref={scrollContainerRef}
         className="overflow-hidden py-3"
       >
-        <div 
+        <div
           className={`flex gap-3 ${showNavigation ? 'transition-transform duration-300 ease-in-out' : ''}`}
-          style={showNavigation ? { 
+          style={showNavigation ? {
             transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
             width: `${(animes.length * 100) / itemsToShow + 70}%`,
             paddingRight: `${(700 / itemsToShow)}%`
           } : {}}
         >
           {animes.map((anime) => (
-            <div 
-              key={anime.id} 
-              className={`flex-shrink-0 px-1 ${
-                showNavigation 
-                  ? "w-1/2 sm:w-1/3 md:w-1/5 lg:w-1/7"
-                  : animes.length === 1 
-                    ? "w-full sm:w-2/3 md:w-1/2 lg:w-1/3"
-                    : animes.length === 2
-                      ? "w-1/2 sm:w-1/2 md:w-1/2 lg:w-1/3"
-                      : animes.length === 3
-                        ? "w-1/2 sm:w-1/3 md:w-1/3 lg:w-1/3"
-                        : "w-1/2 sm:w-1/3 md:w-1/5 lg:w-1/7"
-              }`}
+            <div
+              key={anime.id}
+              className={`flex-shrink-0 ${showNavigation
+                ? "w-1/3 sm:w-1/3 md:w-1/5 lg:w-1/7"
+                : animes.length === 1
+                  ? "w-full sm:w-2/3 md:w-1/2 lg:w-1/3"
+                  : animes.length === 2
+                    ? "w-1/2 sm:w-1/2 md:w-1/2 lg:w-1/3"
+                    : animes.length === 3
+                      ? "w-1/3 sm:w-1/3 md:w-1/3 lg:w-1/3"
+                      : "w-1/3 sm:w-1/3 md:w-1/5 lg:w-1/7"
+                }`}
             >
               <MediumAnimeCard anime={anime} />
             </div>

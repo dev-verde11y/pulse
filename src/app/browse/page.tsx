@@ -48,7 +48,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     fetchAnimes()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGenre, selectedType])
 
   const fetchAnimes = async () => {
@@ -87,6 +87,7 @@ export default function BrowsePage() {
                 width={40}
                 height={40}
                 className="rounded-lg"
+                priority
               />
               <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 PULSE

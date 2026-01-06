@@ -22,13 +22,13 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
   const { user } = useAuth()
   const [watchHistory, setWatchHistory] = useState<Array<{ episodeId: string; progress: number; completed: boolean }>>([])
   const [, setLoading] = useState(false)
-  
+
   // Buscar temporada selecionada
   const selectedSeason = anime.seasons?.find(s => s.seasonNumber === season)
-  
+
   // Episódios da temporada selecionada
   const episodes: Episode[] = selectedSeason?.episodes || []
-  
+
   // Verificar disponibilidade do episódio baseado em videoUrl ou hasVideo
   const isEpisodeAvailable = (episode: Episode) => {
     // Episódio só está disponível se tiver o vídeo carregado
@@ -41,7 +41,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
   useEffect(() => {
     const loadWatchHistory = async () => {
       if (!user) return
-      
+
       setLoading(true)
       try {
         const history = await api.getWatchHistory(1, 100) // Buscar histórico
@@ -64,7 +64,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
     if (!historyItem) {
       return { watched: false, progress: 0, completed: false }
     }
-    
+
     return {
       watched: true,
       progress: Math.round(historyItem.progress || 0),
@@ -85,7 +85,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
   })
 
   // Apply sorting
-  const sortedEpisodes = sortOrder === 'desc' 
+  const sortedEpisodes = sortOrder === 'desc'
     ? episodesWithWatchStatus.sort((a, b) => b.episodeNumber - a.episodeNumber)
     : episodesWithWatchStatus.sort((a, b) => a.episodeNumber - b.episodeNumber)
 
@@ -105,7 +105,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
           break
       }
     }
-    
+
     // Availability filter
     if (filters.availability !== 'all') {
       switch (filters.availability) {
@@ -117,7 +117,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
           break
       }
     }
-    
+
     return true
   })
 
@@ -134,14 +134,13 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
         <div
           key={episode.id}
           onClick={() => handleEpisodeClick(episode)}
-          className={`bg-gray-900 rounded-lg p-4 transition-all duration-300 group ${
-            episode.available 
-              ? 'hover:bg-gray-800 cursor-pointer' 
+          className={`bg-gray-900 rounded-lg p-4 transition-all duration-300 group ${episode.available
+              ? 'hover:bg-gray-800 cursor-pointer'
               : 'opacity-50 cursor-not-allowed grayscale'
-          }`}
+            }`}
         >
           <div className="flex gap-4">
-            
+
             {/* Episode Thumbnail */}
             <div className="relative flex-shrink-0 w-40 h-24 bg-gray-800 rounded-lg overflow-hidden">
               <Image
@@ -150,7 +149,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
                 fill
                 className="object-cover"
               />
-              
+
               {/* Play Button Overlay */}
               {episode.available ? (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -164,28 +163,27 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
                   </div>
                 </div>
               )}
-              
+
               {/* Progress Bar */}
               {episode.progress > 0 && (
                 <div className="absolute bottom-1 left-1 right-1">
                   <div className="w-full bg-gray-600 rounded-full h-1.5">
-                    <div 
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        episode.completed ? 'bg-green-500' : 'bg-orange-600'
-                      }`}
+                    <div
+                      className={`h-1.5 rounded-full transition-all duration-300 ${episode.completed ? 'bg-green-500' : 'bg-orange-600'
+                        }`}
                       style={{ width: `${episode.progress}%` }}
                     />
                   </div>
                 </div>
               )}
-              
+
               {/* Progress Percentage */}
               {episode.progress > 0 && (
                 <div className="absolute bottom-2 right-2 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium">
                   {episode.progress}%
                 </div>
               )}
-              
+
               {/* Watched Badge */}
               {episode.completed && (
                 <div className="absolute top-2 right-2">
@@ -193,7 +191,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
                 </div>
               )}
             </div>
-            
+
             {/* Episode Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between mb-2">
@@ -204,11 +202,11 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
                   {episode.duration || 24} min
                 </span>
               </div>
-              
+
               <p className="text-gray-300 text-sm line-clamp-2 mb-3">
                 {episode.description || `Episódio ${episode.episodeNumber} de ${anime.title}`}
               </p>
-              
+
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>LEG | DUB</span>
                 {!episode.available && (
@@ -232,16 +230,15 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
   )
 
   const renderGridView = () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {filteredEpisodes.map((episode) => (
         <div
           key={episode.id}
           onClick={() => handleEpisodeClick(episode)}
-          className={`bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 group ${
-            episode.available 
-              ? 'hover:bg-gray-800 cursor-pointer' 
+          className={`bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 group ${episode.available
+              ? 'hover:bg-gray-800 cursor-pointer'
               : 'opacity-50 cursor-not-allowed grayscale'
-          }`}
+            }`}
         >
           {/* Episode Thumbnail */}
           <div className="relative aspect-video bg-gray-800">
@@ -251,7 +248,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
               fill
               className="object-cover"
             />
-            
+
             {/* Play Button Overlay */}
             {episode.available ? (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -265,38 +262,37 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
                 </div>
               </div>
             )}
-            
+
             {/* Episode Number */}
             <div className="absolute top-2 left-2 bg-black/80 text-white px-2 py-1 rounded text-sm font-bold">
               EP {episode.episodeNumber}
             </div>
-            
+
             {/* Duration */}
             <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-xs">
               {episode.duration} min
             </div>
-            
+
             {/* Progress Bar */}
             {episode.progress > 0 && (
               <div className="absolute bottom-0 left-0 right-0">
                 <div className="w-full bg-gray-600 h-1.5">
-                  <div 
-                    className={`h-1.5 transition-all duration-300 ${
-                      episode.completed ? 'bg-green-500' : 'bg-orange-600'
-                    }`}
+                  <div
+                    className={`h-1.5 transition-all duration-300 ${episode.completed ? 'bg-green-500' : 'bg-orange-600'
+                      }`}
                     style={{ width: `${episode.progress}%` }}
                   />
                 </div>
               </div>
             )}
-            
+
             {/* Progress Percentage */}
             {episode.progress > 0 && (
               <div className="absolute bottom-2 left-2 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium">
                 {episode.progress}%
               </div>
             )}
-            
+
             {/* Watched Badge */}
             {episode.completed && (
               <div className="absolute bottom-2 right-2">
@@ -304,7 +300,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
               </div>
             )}
           </div>
-          
+
           {/* Episode Info */}
           <div className="p-3">
             <h3 className="text-sm font-bold text-white group-hover:text-orange-400 transition-colors truncate mb-1">
@@ -313,7 +309,7 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
             <p className="text-xs text-gray-400 line-clamp-2 mb-2">
               {episode.description || `Episódio ${episode.episodeNumber} de ${anime.title}`}
             </p>
-            
+
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>LEG | DUB</span>
               {!episode.available && (
@@ -343,8 +339,8 @@ export function EpisodeList({ anime, season, sortOrder, viewMode, filters }: Epi
           {hasEpisodes ? 'Nenhum episódio corresponde aos filtros' : 'Nenhum episódio encontrado'}
         </div>
         <div className="text-gray-500 text-sm">
-          {hasEpisodes 
-            ? 'Tente ajustar os filtros para ver mais episódios.' 
+          {hasEpisodes
+            ? 'Tente ajustar os filtros para ver mais episódios.'
             : 'Esta temporada ainda não possui episódios cadastrados.'
           }
         </div>

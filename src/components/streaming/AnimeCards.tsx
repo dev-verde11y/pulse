@@ -3,6 +3,7 @@
 import { Anime } from '@/types/anime'
 import { PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 // Helper para obter imagem do anime priorizando R2
 function getAnimeImage(anime: Anime): string {
@@ -13,23 +14,27 @@ function getAnimeImage(anime: Anime): string {
 // Card Pequeno e compacto
 export function SmallAnimeCard({ anime }: { anime: Anime }) {
   const router = useRouter()
-  
+
   const handleClick = () => {
     router.push(`/anime/${anime.id}`)
   }
-  
+
   return (
-    <div 
+    <div
       onClick={handleClick}
       className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
     >
       <div className="aspect-[2/3] bg-gray-800 rounded-md overflow-hidden relative mb-2">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${getAnimeImage(anime)})` }}
+        <Image
+          src={getAnimeImage(anime)}
+          alt={anime.title}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          className="object-cover"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-        
+
         {/* Play Button - Center */}
         <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
           <div className="bg-blue-600 rounded-full p-2 hover:bg-blue-500 transition-all duration-300 transform hover:scale-110 shadow-lg">
@@ -59,7 +64,7 @@ export function SmallAnimeCard({ anime }: { anime: Anime }) {
             {(anime.totalEpisodes || 1) > 1 ? `${anime.totalEpisodes} eps` : 'Filme'}
           </span>
         </div>
-        
+
         {/* Gêneros - só o primeiro */}
         <div className="mt-1">
           <span className="text-xs text-gray-500 truncate block">
@@ -74,23 +79,27 @@ export function SmallAnimeCard({ anime }: { anime: Anime }) {
 // Card Médio (padrão atual)
 export function MediumAnimeCard({ anime }: { anime: Anime }) {
   const router = useRouter()
-  
+
   const handleClick = () => {
     router.push(`/anime/${anime.id}`)
   }
-  
+
   return (
-    <div 
+    <div
       onClick={handleClick}
       className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
     >
       <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative mb-3">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${getAnimeImage(anime)})` }}
+        <Image
+          src={getAnimeImage(anime)}
+          alt={anime.title}
+          fill
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-        
+
         {/* Play Button - Center */}
         <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
           <div className="bg-blue-600 rounded-full p-4 hover:bg-blue-500 transition-all duration-300 transform hover:scale-110 shadow-2xl">
@@ -128,7 +137,7 @@ export function MediumAnimeCard({ anime }: { anime: Anime }) {
             <span>Filme</span>
           )}
         </div>
-        
+
         {/* Genres */}
         <div className="flex flex-wrap gap-1">
           {anime.genres?.slice(0, 2).map((g, index) => (
@@ -147,20 +156,24 @@ export function ContinueWatchingCard({ anime }: { anime: Anime }) {
   const router = useRouter()
   const progress = 45 // Mock progress - future: get from watch history
   const remainingTime = Math.round((100 - progress) / 100 * (anime.duration || 24))
-  
+
   const handleClick = () => {
     router.push(`/anime/${anime.id}`)
   }
-  
+
   return (
-    <div 
+    <div
       onClick={handleClick}
       className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group"
     >
       <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative mb-3">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${getAnimeImage(anime)})` }}
+        <Image
+          src={getAnimeImage(anime)}
+          alt={anime.title}
+          fill
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
 
@@ -174,9 +187,9 @@ export function ContinueWatchingCard({ anime }: { anime: Anime }) {
         {/* Episode and Progress */}
         <div className="absolute bottom-3 left-3 right-3">
           <div className="w-full bg-gray-600 rounded-full h-1.5 mb-2">
-            <div 
-              className="progress-bar h-1.5 rounded-full" 
-              style={{width: `${progress}%`}}
+            <div
+              className="progress-bar h-1.5 rounded-full"
+              style={{ width: `${progress}%` }}
             />
           </div>
           <p className="text-xs text-gray-300 font-medium">EP 12</p>
