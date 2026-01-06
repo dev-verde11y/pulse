@@ -38,6 +38,7 @@ export function DashboardClient({
     const searchParams = useSearchParams()
     const [favorites, setFavorites] = useState<Anime[]>([])
     const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([])
+    const [personalizedRecommendations, setPersonalizedRecommendations] = useState<Anime[]>([])
     const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(false)
     const [userContentLoading, setUserContentLoading] = useState(true)
 
@@ -71,7 +72,10 @@ export function DashboardClient({
 
     useEffect(() => {
         async function loadUserData() {
-            if (!user) return
+            if (!user) {
+                setUserContentLoading(false)
+                return
+            }
 
             try {
                 const [favoritesData, historyData] = await Promise.all([
@@ -79,8 +83,32 @@ export function DashboardClient({
                     api.getWatchHistory(1, 20).then(res => res.history).catch(() => [])
                 ])
 
-                setFavorites(favoritesData || [])
+                const favs = (favoritesData as Anime[]) || []
+                setFavorites(favs)
                 setWatchHistory(historyData || [])
+
+                // Lógica de Recomendações Personalizadas
+                if (favs.length > 0) {
+                    // 1. Extrair todos os gêneros dos favoritos
+                    const allGenres = favs.flatMap((anime: Anime) => anime.genres || [])
+                    // 2. Contar frequência de cada gênero
+                    const genreCounts = allGenres.reduce((acc: Record<string, number>, genre: string) => {
+                        acc[genre] = (acc[genre] || 0) + 1
+                        return acc
+                    }, {})
+                    // 3. Pegar o gênero mais frequente
+                    const topGenre = Object.entries(genreCounts)
+                        .sort((a, b) => b[1] - a[1])[0]?.[0]
+
+                    if (topGenre) {
+                        const recs = await api.getAnimes({ genre: topGenre, limit: 10 })
+                        // Filtrar animes que já estão nos favoritos
+                        const filteredRecs = recs.animes.filter((a: Anime) => !favs.some((f: Anime) => f.id === a.id))
+                        setPersonalizedRecommendations(filteredRecs.length > 0 ? filteredRecs : (trending.slice(0, 10) as Anime[]))
+                    }
+                } else {
+                    setPersonalizedRecommendations(topRated.slice(0, 10) as Anime[])
+                }
             } catch (error) {
                 console.error('Error loading user data:', error)
             } finally {
@@ -91,7 +119,7 @@ export function DashboardClient({
         if (!loading) {
             loadUserData()
         }
-    }, [user, loading])
+    }, [user, loading, trending, topRated])
 
     // Continue Watching logic
     const continueWatchingAnimes = watchHistory
@@ -102,7 +130,7 @@ export function DashboardClient({
         .slice(0, 10)
 
     const myList = favorites.slice(0, 10)
-    const recommendations = trending // Fallback or separate logic? Original code used specific logic or slice? Original used 'animes.slice(0, 10)'. We can use trending or top rated as fallback.
+    const recommendations = personalizedRecommendations.length > 0 ? personalizedRecommendations : trending.slice(0, 10)
 
     if (loading) {
         return <LoadingScreen message="Verificando autenticação..." />
@@ -142,7 +170,8 @@ export function DashboardClient({
                     <RevealSection delay="delay-100">
                         <PosterCarousel
                             title="Em Alta"
-                            animes={trending}
+                            animes={trending.slice(0, 10)}
+                            isTop10
                         />
                     </RevealSection>
 

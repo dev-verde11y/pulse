@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { mockAnimes, type Anime } from '@/data/mockData'
+import { api } from '@/lib/api'
+import { Anime } from '@/types/anime'
 
 interface SearchBarProps {
   className?: string
@@ -14,26 +15,33 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [results, setResults] = useState<Anime[]>([])
+  const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (query.length > 1) {
-      const filteredResults = mockAnimes.filter(anime =>
-        anime.title.toLowerCase().includes(query.toLowerCase()) ||
-        anime.genre?.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
-        anime.description.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 6)
-      
-      setResults(filteredResults)
-      setIsOpen(true)
+    const handler = setTimeout(async () => {
+      if (query.trim().length > 1) {
+        setLoading(true)
+        try {
+          const response = await api.getAnimes({ search: query.trim(), limit: 6 })
+          setResults(response.animes || [])
+          setIsOpen(true)
+        } catch (error) {
+          console.error('Search error:', error)
+          setResults([])
+        } finally {
+          setLoading(false)
+        }
+      } else {
+        setResults([])
+        setIsOpen(false)
+      }
       setSelectedIndex(-1)
-    } else {
-      setResults([])
-      setIsOpen(false)
-      setSelectedIndex(-1)
-    }
+    }, 300)
+
+    return () => clearTimeout(handler)
   }, [query])
 
   useEffect(() => {
@@ -93,10 +101,10 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
 
   const highlightText = (text: string, highlight: string) => {
     if (!highlight) return text
-    
+
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'))
-    return parts.map((part, i) => 
-      part.toLowerCase() === highlight.toLowerCase() ? 
+    return parts.map((part, i) =>
+      part.toLowerCase() === highlight.toLowerCase() ?
         <span key={i} className="bg-blue-600 text-white px-1 rounded">{part}</span> : part
     )
   }
@@ -117,93 +125,94 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query.length > 1 && setIsOpen(true)}
-          className={`w-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-            variant === 'header' 
-              ? 'bg-gray-800/50 border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm backdrop-blur-sm'
-              : 'bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-xl pl-10 pr-20 py-2.5'
-          }`}
+          className={`w-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${variant === 'header'
+            ? 'bg-gray-800/50 border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm backdrop-blur-sm'
+            : 'bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-xl pl-10 pr-20 py-2.5'
+            }`}
         />
         {variant !== 'header' && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-2">
             {query && (
-            <>
-              <button
-                onClick={handleSearch}
-                className="p-1 text-gray-400 hover:text-blue-400 transition-colors mr-1"
-                title="Buscar"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => {
-                  setQuery('')
-                  setIsOpen(false)
-                  setSelectedIndex(-1)
-                }}
-                className="p-1 text-gray-400 hover:text-white transition-colors"
-                title="Limpar"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <>
+                <button
+                  onClick={handleSearch}
+                  className="p-1 text-gray-400 hover:text-blue-400 transition-colors mr-1"
+                  title="Buscar"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => {
+                    setQuery('')
+                    setIsOpen(false)
+                    setSelectedIndex(-1)
+                  }}
+                  className="p-1 text-gray-400 hover:text-white transition-colors"
+                  title="Limpar"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </>
             )}
           </div>
         )}
+        {loading && (
+          <div className="absolute right-3 top-2.5">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
       </div>
 
-      {variant !== 'header' && isOpen && results.length > 0 && (
-        <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-700 rounded-xl shadow-2xl backdrop-blur-sm z-50 overflow-hidden">
-          <div className="p-3 border-b border-gray-700">
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-              Resultados da busca ({results.length})
+      {isOpen && results.length > 0 && (
+        <div className={`absolute top-full mt-2 w-full bg-gray-900/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden ${variant === 'header' ? 'max-w-md' : ''}`}>
+          <div className="p-3 border-b border-gray-800/50">
+            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              Sugestões ({results.length})
             </div>
           </div>
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-[70vh] overflow-y-auto">
             {results.map((anime, index) => (
               <button
                 key={anime.id}
                 onClick={() => handleSelectResult(anime)}
-                className={`w-full flex items-center p-3 hover:bg-gray-700 transition-colors text-left border-b border-gray-700 last:border-b-0 ${
-                  index === selectedIndex ? 'bg-gray-700' : ''
-                }`}
+                className={`w-full flex items-center p-3 hover:bg-white/5 transition-all text-left border-b border-gray-800/30 last:border-b-0 ${index === selectedIndex ? 'bg-white/10' : ''
+                  }`}
               >
                 <div
-                  className="w-12 h-16 bg-gray-700 rounded-md flex-shrink-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${anime.thumbnail || '/images/anime-placeholder.svg'})` }}
+                  className="w-10 h-14 bg-gray-800 rounded flex-shrink-0 bg-cover bg-center shadow-lg"
+                  style={{ backgroundImage: `url(${anime.thumbnail || anime.posterUrl || '/images/anime-placeholder.svg'})` }}
                 />
                 <div className="ml-3 flex-grow min-w-0">
-                  <div className="text-sm font-medium text-white truncate">
+                  <div className="text-sm font-semibold text-white truncate">
                     {highlightText(anime.title, query)}
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {anime.year} • {(anime.episodes || 1) > 1 ? `${anime.episodes} eps` : 'Filme'}
+                  <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-1">
+                    <span>{anime.year}</span>
+                    <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                    <span>{(anime.totalEpisodes || 1) > 1 ? `${anime.totalEpisodes} eps` : 'Filme'}</span>
+                    {anime.isDubbed && (
+                      <span className="bg-blue-500/10 text-blue-400 px-1 py-0.5 rounded border border-blue-500/20">DUB</span>
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {anime.genre?.slice(0, 3).map((g, i) => (
-                      <span key={i} className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {anime.genres?.slice(0, 2).map((g, i) => (
+                      <span key={i} className="text-[9px] bg-white/5 text-gray-400 px-2 py-0.5 rounded-full border border-white/10">
                         {g}
                       </span>
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center ml-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    anime.status === 'watching' ? 'bg-green-400' :
-                    anime.status === 'completed' ? 'bg-blue-400' :
-                    'bg-gray-400'
-                  }`} />
-                </div>
               </button>
             ))}
           </div>
-          <div className="p-3 border-t border-gray-700 bg-gray-750">
-            <button 
+          <div className="p-3 bg-white/[0.02] border-t border-gray-800">
+            <button
               onClick={handleSearch}
-              className="w-full text-center text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              className="w-full text-center text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors py-1"
             >
               Ver todos os resultados para &quot;{query}&quot;
             </button>
@@ -211,14 +220,14 @@ export function SearchBar({ className = '', variant = 'default' }: SearchBarProp
         </div>
       )}
 
-      {variant !== 'header' && isOpen && query.length > 1 && results.length === 0 && (
-        <div className="absolute top-full mt-2 w-full bg-gray-800 border border-gray-700 rounded-xl shadow-2xl backdrop-blur-sm z-50 overflow-hidden">
-          <div className="p-6 text-center">
-            <div className="text-gray-400 text-sm">
-              Nenhum resultado encontrado para &quot;{query}&quot;
+      {isOpen && query.length > 1 && results.length === 0 && !loading && (
+        <div className="absolute top-full mt-2 w-full bg-gray-950/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+          <div className="p-8 text-center">
+            <div className="text-gray-400 text-sm font-medium">
+              Nenhum resultado para &quot;{query}&quot;
             </div>
-            <div className="text-xs text-gray-500 mt-2">
-              Tente buscar por título, gênero ou ano
+            <div className="text-xs text-gray-500 mt-1">
+              Tente buscar por outro título
             </div>
           </div>
         </div>

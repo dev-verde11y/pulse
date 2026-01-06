@@ -302,7 +302,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex flex-col lg:flex-row items-start gap-8 pt-10">
+        <div className="flex flex-col lg:flex-row items-start gap-8 pt-28 pb-12">
 
           {/* Poster */}
           {/* TODO: 💤✨ dormir!!! voltar aqui para ver esse detalhe! */}
