@@ -31,20 +31,20 @@ export function BannerCarousel({ title, animes }: BannerCarouselProps) {
   return (
     <section className="mb-16 relative">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-4xl font-bold text-white tracking-tight">{title}</h2>
+        <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">{title}</h2>
         {showNavigation && (
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <button
               onClick={prevSlide}
-              className="p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
+              className="p-2 md:p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
             >
-              <ChevronLeftIcon className="w-6 h-6 text-white" />
+              <ChevronLeftIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </button>
             <button
               onClick={nextSlide}
-              className="p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
+              className="p-2 md:p-3 rounded-full bg-gray-800/80 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm"
             >
-              <ChevronRightIcon className="w-6 h-6 text-white" />
+              <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </button>
           </div>
         )}
@@ -52,22 +52,23 @@ export function BannerCarousel({ title, animes }: BannerCarouselProps) {
 
       <div className="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{ backgroundImage: `url(${currentAnime.banner || currentAnime.thumbnail})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-transparent" />
-        
-        <div className="relative flex items-center min-h-[320px] p-8">
-          {/* Poster à esquerda */}
-          <div className="flex-shrink-0 mr-8">
-            <div className="w-48 h-72 rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 relative group">
-              <div 
+        {/* Gradient for Mobile (Bottom Up) and Desktop (Left Right) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent md:bg-gradient-to-r md:from-gray-900 md:via-gray-900/80 md:to-transparent" />
+
+        <div className="relative flex flex-col md:flex-row items-center min-h-[400px] md:min-h-[320px] p-4 md:p-8">
+          {/* Poster à esquerda (Escondido no Mobile para dar espaço) */}
+          <div className="flex-shrink-0 mb-6 md:mb-0 md:mr-8 hidden md:block">
+            <div className="w-32 h-48 md:w-48 md:h-72 rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 relative group">
+              <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${currentAnime.thumbnail})` }}
               />
               {/* Rating Badge */}
-              <div className="absolute top-3 left-3 bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+              <div className="absolute top-3 left-3 bg-orange-600 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-bold shadow-lg">
                 {currentAnime.rating}+
               </div>
               {/* Play Button Overlay */}
@@ -80,42 +81,49 @@ export function BannerCarousel({ title, animes }: BannerCarouselProps) {
           </div>
 
           {/* Conteúdo principal */}
-          <div className="flex-1 max-w-2xl">
-            <h3 className="text-4xl font-bold text-white mb-4 leading-tight">
+          <div className="flex-1 w-full md:max-w-2xl text-left md:text-left z-10 flex flex-col justify-end h-full mt-auto md:mt-0 pt-20 md:pt-0">
+            {/* Mobile Rating Badge Component (Visible only on mobile) */}
+            <div className="md:hidden mb-2">
+              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-xs font-bold inline-block">
+                {currentAnime.rating}+
+              </span>
+            </div>
+
+            <h3 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4 leading-tight line-clamp-2 drop-shadow-lg">
               {currentAnime.title}
             </h3>
-            
-            <div className="flex items-center gap-6 mb-6">
+
+            <div className="flex flex-wrap items-center justify-start gap-4 md:gap-6 mb-4 md:mb-6">
               <div className="flex items-center gap-3">
                 {currentAnime.isSubbed && (
-                  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-blue-600 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-semibold">
                     LEG
                   </span>
                 )}
                 {currentAnime.isDubbed && (
-                  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-blue-600 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-semibold">
                     DUB
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-4 text-gray-300">
-                <span className="text-lg font-semibold">{currentAnime.year}</span>
+              <div className="flex items-center gap-2 md:gap-4 text-gray-300 text-sm md:text-lg">
+                <span className="font-semibold">{currentAnime.year}</span>
                 <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                <span className="text-lg">
+                <span>
                   {currentAnime.totalEpisodes && currentAnime.totalEpisodes > 1 ? `${currentAnime.totalEpisodes} episódios` : 'Filme'}
                 </span>
               </div>
             </div>
 
-            <p className="text-xl text-gray-200 mb-8 leading-relaxed line-clamp-3">
+            <p className="text-sm md:text-xl text-gray-200 mb-6 md:mb-8 leading-relaxed line-clamp-3 md:line-clamp-3 max-w-xl shadow-black drop-shadow-md">
               {currentAnime.description}
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap justify-start gap-2 md:gap-3 mb-6 md:mb-8 hidden sm:flex">
               {currentAnime.genres?.slice(0, 4).map((genre, index) => (
-                <span 
-                  key={index} 
-                  className="bg-gray-700/80 text-gray-200 px-4 py-2 rounded-full text-sm backdrop-blur-sm"
+                <span
+                  key={index}
+                  className="bg-gray-700/80 text-gray-200 px-3 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm backdrop-blur-sm"
                 >
                   {genre}
                 </span>
@@ -123,42 +131,21 @@ export function BannerCarousel({ title, animes }: BannerCarouselProps) {
             </div>
 
             {/* Botões de ação */}
-            <div className="flex gap-4">
-              <button 
+            <div className="flex flex-row gap-3 md:gap-4 w-full md:w-auto">
+              <button
                 onClick={() => router.push(`/anime/${currentAnime.id}`)}
-                className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-xl flex items-center gap-3 text-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="flex-1 md:flex-none bg-orange-600 hover:bg-orange-500 text-white px-4 py-3 md:px-8 md:py-4 rounded-xl flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <PlayIcon className="w-6 h-6" />
-                Assistir Agora
+                <PlayIcon className="w-5 h-5 md:w-6 md:h-6" />
+                Assistir
               </button>
-              <button className="bg-gray-800/80 hover:bg-gray-700/80 text-white px-8 py-4 rounded-xl flex items-center gap-3 text-lg font-semibold transition-all duration-300 backdrop-blur-sm border border-gray-600 hover:border-gray-500">
-                <PlusIcon className="w-6 h-6" />
-                Minha Lista
+              <button className="flex-1 md:flex-none bg-gray-800/80 hover:bg-gray-700/80 text-white px-4 py-3 md:px-8 md:py-4 rounded-xl flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg font-semibold transition-all duration-300 backdrop-blur-sm border border-gray-600 hover:border-gray-500">
+                <PlusIcon className="w-5 h-5 md:w-6 md:h-6" />
+                Lista
               </button>
             </div>
           </div>
 
-          {/* Indicadores de posição */}
-          {showNavigation && (
-            <div className="absolute bottom-6 right-8 flex gap-2">
-              {animes.slice(0, 5).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentIndex 
-                      ? 'bg-orange-600 scale-125' 
-                      : 'bg-gray-500 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
-              {animes.length > 5 && (
-                <span className="text-gray-400 text-sm ml-2">
-                  {currentIndex + 1}/{animes.length}
-                </span>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </section>

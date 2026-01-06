@@ -14,24 +14,29 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsToShow, setItemsToShow] = useState(8)
   const [itemsToScroll, setItemsToScroll] = useState(5)
+  const [isMobile, setIsMobile] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const updateItemsConfig = () => {
       const width = window.innerWidth
-      
+
       if (width < 640) {
-        setItemsToShow(3)
-        setItemsToScroll(3)
+        setItemsToShow(2.2) // Show partial next card for affordance
+        setItemsToScroll(2)
+        setIsMobile(true)
       } else if (width < 768) {
-        setItemsToShow(4)
-        setItemsToScroll(4)
+        setItemsToShow(3.2)
+        setItemsToScroll(3)
+        setIsMobile(true)
       } else if (width < 1024) {
         setItemsToShow(6)
         setItemsToScroll(5)
+        setIsMobile(false)
       } else {
         setItemsToShow(8)
         setItemsToScroll(5)
+        setIsMobile(false)
       }
     }
 
@@ -42,11 +47,25 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
 
   const nextSlide = () => {
     const maxIndex = Math.max(0, animes.length - itemsToShow)
-    setCurrentIndex(prev => Math.min(prev + itemsToScroll, maxIndex))
+    const newIndex = Math.min(currentIndex + itemsToScroll, maxIndex)
+    setCurrentIndex(newIndex)
+
+    if (isMobile && scrollContainerRef.current) {
+      const container = scrollContainerRef.current
+      const scrollAmount = container.clientWidth * 0.8
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+    }
   }
 
   const prevSlide = () => {
-    setCurrentIndex(prev => Math.max(prev - itemsToScroll, 0))
+    const newIndex = Math.max(currentIndex - itemsToScroll, 0)
+    setCurrentIndex(newIndex)
+
+    if (isMobile && scrollContainerRef.current) {
+      const container = scrollContainerRef.current
+      const scrollAmount = container.clientWidth * 0.8
+      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
+    }
   }
 
   if (animes.length === 0) return null
@@ -55,10 +74,10 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
 
   return (
     <section className="mb-10 relative carousel-section group">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-white tracking-tight">{title}</h2>
+      <div className="flex items-center justify-between mb-4 md:mb-6 pl-4 md:pl-0">
+        <h2 className="text-xl md:text-3xl font-bold text-white tracking-tight">{title}</h2>
         {showNavigation && (
-          <div className="flex gap-2 carousel-nav-custom">
+          <div className="flex gap-2 carousel-nav-custom pr-4 md:pr-0">
             <button
               onClick={prevSlide}
               disabled={currentIndex === 0}
@@ -77,34 +96,31 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
         )}
       </div>
 
-      <div 
+      <div
         ref={scrollContainerRef}
-        className="overflow-hidden py-2"
+        className={`overflow-x-auto ${isMobile ? 'snap-x snap-mandatory scrollbar-hide' : 'hidden-scrollbar'} py-4 -my-2`}
+        style={{ scrollBehavior: 'smooth' }}
       >
-        <div 
-          className={`flex gap-3 ${showNavigation ? 'transition-transform duration-300 ease-in-out' : ''}`}
-          style={showNavigation ? { 
-            transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
-            width: `${(animes.length * 100) / itemsToShow + 70}%`,
-            paddingRight: `${(700 / itemsToShow)}%`
-          } : {}}
+        <div
+          className={`flex ${isMobile ? 'gap-4 px-4' : ''} ${!isMobile && showNavigation ? 'transition-transform duration-500 ease-in-out' : ''}`}
+          style={{
+            transform: !isMobile && showNavigation ? `translateX(-${currentIndex * (100 / animes.length)}%)` : 'none',
+            width: !isMobile ? `${(animes.length * 100) / itemsToShow}%` : 'max-content',
+          }}
         >
           {animes.map((anime) => (
-            <div 
-              key={anime.id} 
-              className={`flex-shrink-0 px-1 ${
-                showNavigation 
-                  ? "w-1/3 sm:w-1/4 md:w-1/6 lg:w-1/8"
-                  : animes.length === 1 
-                    ? "w-full sm:w-1/2 md:w-1/3 lg:w-1/4"
-                    : animes.length === 2
-                      ? "w-1/2 sm:w-1/2 md:w-1/3 lg:w-1/4"
-                      : animes.length === 3
-                        ? "w-1/3 sm:w-1/3 md:w-1/3 lg:w-1/4"
-                        : "w-1/3 sm:w-1/4 md:w-1/6 lg:w-1/8"
-              }`}
+            <div
+              key={anime.id}
+              className={`flex-shrink-0 ${isMobile ? 'snap-start' : 'px-1'}`}
+              style={!isMobile ? {
+                width: `${100 / animes.length}%`
+              } : {
+                width: "40vw"
+              }}
             >
-              <SmallAnimeCard anime={anime} />
+              <div className={isMobile ? "sm:w-[28vw]" : "w-full"}>
+                <SmallAnimeCard anime={anime} />
+              </div>
             </div>
           ))}
         </div>

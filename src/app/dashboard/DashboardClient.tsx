@@ -16,6 +16,7 @@ import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
 import '@/styles/swiper.css'
+import { AnimeCardSkeleton, MediumAnimeCardSkeleton } from '@/components/ui/AnimeCardSkeleton'
 
 interface DashboardClientProps {
     trending: Anime[]
@@ -135,13 +136,6 @@ export function DashboardClient({
             <main className="bg-black text-white">
                 <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 space-y-12 sm:space-y-16">
 
-                    {/* Continue Assistindo (Only if logged in and has history) */}
-                    {user && continueWatchingAnimes.length > 0 && (
-                        <SmallCardCarousel
-                            title="Continue Assistindo"
-                            animes={continueWatchingAnimes}
-                        />
-                    )}
 
                     {/* Em Alta */}
                     <PosterCarousel
@@ -149,12 +143,48 @@ export function DashboardClient({
                         animes={trending}
                     />
 
+                    {/* Continue Assistindo (Only if logged in and has history) */}
+                    {userContentLoading && user ? (
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-bold text-white px-4 md:px-0">Continue Assistindo</h2>
+                            <div className="flex gap-4 overflow-hidden px-4 md:px-0">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="w-[160px] flex-shrink-0">
+                                        <MediumAnimeCardSkeleton />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        user && continueWatchingAnimes.length > 0 && (
+                            <SmallCardCarousel
+                                title="Continue Assistindo"
+                                animes={continueWatchingAnimes}
+                            />
+                        )
+                    )}
+
+
+
                     {/* Minha Lista (Only if logged in and has favorites) */}
-                    {user && myList.length > 0 && (
-                        <SmallCardCarousel
-                            title="Minha Lista"
-                            animes={myList}
-                        />
+                    {userContentLoading && user ? (
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-bold text-white px-4 md:px-0">Minha Lista</h2>
+                            <div className="flex gap-4 overflow-hidden px-4 md:px-0">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="w-[160px] flex-shrink-0">
+                                        <MediumAnimeCardSkeleton />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        user && myList.length > 0 && (
+                            <SmallCardCarousel
+                                title="Minha Lista"
+                                animes={myList}
+                            />
+                        )
                     )}
 
                     {/* Recomendados para Você */}
