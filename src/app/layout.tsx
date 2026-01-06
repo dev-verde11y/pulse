@@ -65,6 +65,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import { ToastProvider } from '@/components/ui/ToastProvider';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -99,6 +101,7 @@ export default function RootLayout({
           </div>
           <PWAInstallPrompt />
         </AuthProvider>
+        <ToastProvider />
       </body>
     </html>
   );

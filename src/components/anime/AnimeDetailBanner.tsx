@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
+import toast from 'react-hot-toast'
 
 interface AnimeDetailBannerProps {
   anime: Anime
@@ -28,7 +29,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   const [loading, setLoading] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
-  
+
   const backgroundStyle = {
     backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%), url(${anime.bannerUrl || anime.banner || anime.posterUrl || anime.thumbnail || '/images/episode-placeholder.svg'})`,
     backgroundSize: 'cover',
@@ -40,7 +41,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   useEffect(() => {
     const loadWatchHistory = async () => {
       if (!user || !anime.id) return
-      
+
       setLoading(true)
       try {
         const allHistory = await api.getWatchHistory(1, 50)
@@ -55,16 +56,16 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
             completed: h.completed
           }))
         })
-        
+
         const animeHistory = allHistory.history?.filter((h: { animeId: string }) => h.animeId === anime.id) || []
         console.log('Filtered History:', animeHistory)
-        
+
         if (animeHistory.length === 0) {
           console.log('No history found for anime:', anime.id)
           setWatchHistory(null)
           return
         }
-        
+
         setWatchHistory({
           watchHistory: animeHistory,
           anime: anime,
@@ -79,7 +80,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     }
 
     loadWatchHistory()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, anime.id])
 
   // Verificar se o anime está nos favoritos
@@ -111,16 +112,37 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
 
     try {
       setFavoriteLoading(true)
-      
+
       if (isFavorite) {
         await api.removeFromFavorites(anime.id)
         setIsFavorite(false)
+        toast.success('Removido dos favoritos', {
+          duration: 4000,
+          position: 'bottom-right',
+          icon: '🗑️',
+          style: {
+            background: '#ef4444',
+            color: '#fff',
+            zIndex: 99999,
+          },
+        })
       } else {
         await api.addToFavorites(anime.id)
         setIsFavorite(true)
+        toast.success('Adicionado aos favoritos', {
+          duration: 4000,
+          position: 'bottom-right',
+          icon: '❤️',
+          style: {
+            background: '#22c55e',
+            color: '#fff',
+            zIndex: 99999,
+          },
+        })
       }
     } catch (error) {
       console.error('Erro ao alterar favorito:', error)
+      toast.error('Erro ao atualizar favoritos')
     } finally {
       setFavoriteLoading(false)
     }
@@ -173,7 +195,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
 
     // Usuário já assistiu algo
     const { lastWatched } = watchHistory
-    
+
     // Organizar todos os episódios por temporada e número
     const allEpisodes: Episode[] = []
     anime.seasons?.forEach((season: { seasonNumber?: number; episodes?: Episode[] }) => {
@@ -184,7 +206,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     allEpisodes.sort((a, b) => {
       const aSeasonNumber = a.seasonNumber || 1
       const bSeasonNumber = b.seasonNumber || 1
-      
+
       if (aSeasonNumber !== bSeasonNumber) {
         return aSeasonNumber - bSeasonNumber
       }
@@ -194,7 +216,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     // Encontrar último episódio assistido
     const lastEpisodeId = lastWatched.episodeId
     const lastEpisodeIndex = allEpisodes.findIndex(ep => ep.id === lastEpisodeId)
-    
+
     if (lastEpisodeIndex === -1) {
       // Episódio não encontrado na estrutura atual, voltar ao início
       return {
@@ -211,11 +233,11 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
 
     const lastEpisode = allEpisodes[lastEpisodeIndex]
     const nextEpisodeIndex = lastEpisodeIndex + 1
-    
+
     // Verificar se o último episódio foi completado
     // Usar campo 'completed' se disponível, senão usar progress < 90%
     const isLastEpisodeComplete = lastWatched.completed || (lastWatched.progress && lastWatched.progress >= 90)
-    
+
     if (!isLastEpisodeComplete) {
       return {
         text: `CONTINUAR T${lastEpisode.seasonNumber} E${lastEpisode.episodeNumber}`,
@@ -223,7 +245,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
         disabled: false
       }
     }
-    
+
     // Se tem próximo episódio disponível
     if (nextEpisodeIndex < allEpisodes.length) {
       const nextEpisode = allEpisodes[nextEpisodeIndex]
@@ -233,7 +255,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
         disabled: false
       }
     }
-    
+
     // Terminou todos os episódios disponíveis, assistir novamente
     return {
       text: 'ASSISTIR NOVAMENTE T1 E1',
@@ -272,16 +294,16 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   }
 
   return (
-    <section 
+    <section
       className="relative min-h-[70vh] flex items-center"
       style={backgroundStyle}
     >
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex flex-col lg:flex-row items-start gap-8 pt-10">
-          
+
           {/* Poster */}
           {/* TODO: 💤✨ dormir!!! voltar aqui para ver esse detalhe! */}
           <div className="flex-shrink-0 relative w-72 h-96">
@@ -292,15 +314,15 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
               className="object-cover rounded-xl shadow-2xl"
             />
           </div>
-          
+
           {/* Info Content */}
           <div className="flex-1 max-w-3xl">
-            
+
             {/* Title */}
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 drop-shadow-2xl">
               {anime.title}
             </h1>
-            
+
             {/* Meta Info */}
             <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
               <span className="bg-orange-600 text-white px-3 py-1 rounded font-bold">
@@ -314,18 +336,17 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                 </span>
               ))}
             </div>
-            
+
             {/* Rating */}
             <div className="flex items-center gap-2 mb-6">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
-                  <StarIcon 
-                    key={i} 
-                    className={`w-5 h-5 ${
-                      i < Math.floor(getRating()) 
-                        ? 'text-yellow-400 fill-current' 
-                        : 'text-gray-600'
-                    }`} 
+                  <StarIcon
+                    key={i}
+                    className={`w-5 h-5 ${i < Math.floor(getRating())
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-gray-600'
+                      }`}
                   />
                 ))}
               </div>
@@ -333,30 +354,28 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                 Classificação média: <span className="text-yellow-400">{getRating().toFixed(1)}</span> ({getRatingCount()})
               </span>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 mb-8">
-              <button 
+              <button
                 onClick={buttonState.action}
                 disabled={buttonState.disabled || loading}
-                className={`flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
-                  buttonState.disabled || loading
-                    ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-orange-600 hover:bg-orange-700'
-                } text-white`}
+                className={`flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 ${buttonState.disabled || loading
+                  ? 'bg-gray-600 cursor-not-allowed'
+                  : 'bg-orange-600 hover:bg-orange-700'
+                  } text-white`}
               >
                 <PlayIcon className="w-6 h-6" />
                 {loading ? 'CARREGANDO...' : buttonState.text}
               </button>
-              
-              <button 
+
+              <button
                 onClick={toggleFavorite}
                 disabled={favoriteLoading}
-                className={`flex items-center justify-center p-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  isFavorite 
-                    ? 'bg-red-600 hover:bg-red-700 text-white' 
-                    : 'bg-gray-800 hover:bg-gray-700 text-white'
-                } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`flex items-center justify-center p-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${isFavorite
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-gray-800 hover:bg-gray-700 text-white'
+                  } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
               >
                 {favoriteLoading ? (
@@ -368,24 +387,24 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                 )}
               </button>
             </div>
-            
+
             {/* Description */}
             <div className="mb-8">
               <p className="text-gray-200 text-lg leading-relaxed mb-4">
                 {anime.description || `Milhares de anos após um misterioso fenômeno transformar a humanidade inteira em pedra, desperta um garoto extraordinariamente inteligente e amante da ciência chamado ${anime.title}.`}
               </p>
-              
+
               {anime.description && anime.description.length > 200 && (
                 <p className="text-gray-300 leading-relaxed">
                   {anime.description.slice(200).split('.')[0]}...
                 </p>
               )}
-              
+
               <button className="text-orange-400 hover:text-orange-300 font-bold mt-4 transition-colors">
                 MAIS DETALHES
               </button>
             </div>
-            
+
             {/* Audio and Subtitle Info */}
             <div className="grid md:grid-cols-2 gap-6 text-sm">
               <div>
@@ -394,20 +413,20 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                   {getAvailableLanguages().join(', ')}
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="text-white font-bold mb-2">Legendas:</h3>
                 <p className="text-gray-300">
                   {getAvailableLanguages().join(', ')}
                 </p>
               </div>
-              
+
               {/* Informações adicionais */}
               <div>
                 <h3 className="text-white font-bold mb-2">Ano de Lançamento:</h3>
                 <p className="text-gray-300">{anime.year}</p>
               </div>
-              
+
               <div>
                 <h3 className="text-white font-bold mb-2">Total de Episódios:</h3>
                 <p className="text-gray-300">
@@ -415,7 +434,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
                 </p>
               </div>
             </div>
-            
+
           </div>
         </div>
       </div>
