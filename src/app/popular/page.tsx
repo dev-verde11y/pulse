@@ -121,7 +121,7 @@ export default function PopularesPage() {
               return (
                 <div
                   key={anime.id}
-                  onClick={() => router.push(`/animes/${anime.slug}`)}
+                  onClick={() => router.push(`/anime/${anime.id}`)}
                   className={`group relative flex flex-col cursor-pointer transition-all duration-500 ${isTop3 ? 'scale-105 z-10' : ''}`}
                 >
                   {/* Position Badge Huge */}

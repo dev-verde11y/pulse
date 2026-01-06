@@ -124,7 +124,7 @@ export default function NovidadesPage() {
             {animes.map((anime) => (
               <div
                 key={anime.id}
-                onClick={() => router.push(`/animes/${anime.slug}`)}
+                onClick={() => router.push(`/anime/${anime.id}`)}
                 className="group relative flex flex-col cursor-pointer"
               >
                 {/* Anime Card Poster */}

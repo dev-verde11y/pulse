@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/layout/Header"
-import { Footer } from "@/components/layout/Footer"
+import { SimpleFooter } from "@/components/layout/SimpleFooter"
 import Image from "next/image"
 
 export default function PricingPage() {
@@ -193,7 +193,7 @@ export default function PricingPage() {
 
               <ul className="space-y-5 mb-12 flex-grow">
                 {[
-                  'Qualidade ULTRA HD 4K',
+                  'Qualidade Superior',
                   'Modo Offline (Downloads)',
                   '4 Telas simultâneas',
                   'Acesso antecipado a simulcasts'
@@ -266,7 +266,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <Footer />
+      <SimpleFooter />
 
       <style jsx global>{`
         .animate-gradient-x {

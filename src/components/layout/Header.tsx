@@ -152,10 +152,13 @@ export function Header({ forceSolid = false }: { forceSolid?: boolean }) {
                 Top Animes
                 <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
               </Link>
+              {/* 
               <Link href="/browse" className="relative group text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 hover:backdrop-blur-sm">
                 Comunidade
                 <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></div>
-              </Link>
+              </Link> 
+              */}
+              {/* TODO: Implementar blog de notícias aqui futuramente */}
 
               {/* Categories Dropdown */}
               <div className="relative" ref={categoriesRef}>

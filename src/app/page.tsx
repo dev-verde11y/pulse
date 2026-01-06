@@ -197,7 +197,7 @@ export default function LandingPage() {
               trendingAnimes.map((anime) => (
                 <div
                   key={anime.id}
-                  onClick={() => router.push(`/animes/${anime.slug}`)}
+                  onClick={() => router.push(`/anime/${anime.id}`)}
                   className="group relative aspect-[2/3] overflow-hidden rounded-2xl bg-slate-900 border border-white/5 cursor-pointer"
                 >
                   <Image

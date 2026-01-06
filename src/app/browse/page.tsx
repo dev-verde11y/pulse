@@ -50,11 +50,8 @@ export default function BrowsePage() {
   const [isScrolled, setIsScrolled] = useState(false)
 
   // Auth Redirect if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login')
-    }
-  }, [user, authLoading, router])
+  // Removido o redirecionamento automático para permitir acesso público
+  // O AnimeDetailClient já lida com a proteção das páginas de detalhes
 
   const genres = [
     'Ação', 'Aventura', 'Comédia', 'Drama', 'Fantasia', 'Terror',
@@ -70,11 +67,9 @@ export default function BrowsePage() {
   }, [])
 
   useEffect(() => {
-    if (user) {
-      fetchAnimes()
-    }
+    fetchAnimes()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGenre, selectedType, activeTab, user])
+  }, [selectedGenre, selectedType, activeTab])
 
   const fetchAnimes = async () => {
     setLoading(true)
@@ -250,7 +245,7 @@ export default function BrowsePage() {
             {animes.map((anime) => (
               <div
                 key={anime.id}
-                onClick={() => router.push(`/animes/${anime.slug}`)}
+                onClick={() => router.push(`/anime/${anime.id}`)}
                 className="group relative flex flex-col cursor-pointer"
               >
                 {/* Anime Card Poster */}
