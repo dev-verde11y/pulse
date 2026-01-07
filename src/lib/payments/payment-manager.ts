@@ -77,6 +77,12 @@ export class PaymentManager {
       return null
     }
 
+    // IDEMPOTENCY CHECK: If already complete and has subscription, skip
+    if (dbSession.stripeStatus === 'complete' && dbSession.subscriptionId) {
+      console.log('ℹ️ Session already processed. Skipping.')
+      return dbSession
+    }
+
     // Update session status
     await prisma.checkoutSession.update({
       where: { id: dbSession.id },
@@ -144,13 +150,17 @@ export class PaymentManager {
     }
 
     // Create subscription using existing manager
-    const subscription = await SubscriptionManager.upgradeUser(userId, planType, 'stripe')
+    const subscription = await SubscriptionManager.upgradeUser(
+      userId,
+      planType,
+      'stripe',
+      stripeSubscription.id
+    )
 
-    // Update with Stripe data
+    // Update with Stripe data (mostly redundant now but keeps data rich)
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
-        externalId: stripeSubscription.id,
         externalData: JSON.parse(JSON.stringify(stripeSubscription)),
         transactionId: stripeSubscription.id
       }
@@ -177,7 +187,7 @@ export class PaymentManager {
   }
 
   /**
-   * Create payment record
+   * Create payment record with idempotency check
    */
   static async createPaymentRecord(data: {
     subscriptionId: string
@@ -189,6 +199,18 @@ export class PaymentManager {
     paidAt?: Date
     dueDate?: Date
   }) {
+    // IDEMPOTENCY CHECK: Check if this payment (from external provider) already exists
+    if (data.externalId) {
+      const existingPayment = await prisma.payment.findFirst({
+        where: { externalId: data.externalId }
+      })
+
+      if (existingPayment) {
+        console.log(`ℹ️ Payment ${data.externalId} already exists. Skipping creation.`)
+        return existingPayment
+      }
+    }
+
     return await prisma.payment.create({
       data: {
         subscriptionId: data.subscriptionId,

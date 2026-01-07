@@ -11,7 +11,7 @@ export class SubscriptionManager {
    */
   static async checkAndUpdateExpiredSubscriptions() {
     const now = new Date()
-    
+
     // Find users with expired subscriptions
     const expiredUsers = await prisma.user.findMany({
       where: {
@@ -99,13 +99,24 @@ export class SubscriptionManager {
   /**
    * Upgrade user to a paid plan
    */
-  static async upgradeUser(userId: string, planType: PlanType, paymentMethod: string) {
+  static async upgradeUser(userId: string, planType: PlanType, paymentMethod: string, externalId?: string) {
     const plan = await prisma.plan.findUnique({
       where: { type: planType }
     })
 
     if (!plan) {
       throw new Error('Plan not found')
+    }
+
+    // IDEMPOTENCY CHECK: If subscription with this externalId already exists, return it
+    if (externalId) {
+      const existingSub = await prisma.subscription.findFirst({
+        where: { externalId: externalId }
+      })
+      if (existingSub) {
+        console.log(`ℹ️ Subscription ${externalId} already exists. Returning existing record.`)
+        return existingSub
+      }
     }
 
     const now = new Date()
@@ -117,7 +128,7 @@ export class SubscriptionManager {
     } else if (plan.billingCycle === 'ANNUALLY') {
       endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000) // 365 days
     } else {
-      throw new Error('Unsupported billing cycle')
+      endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
     }
 
     // Update user
@@ -151,6 +162,7 @@ export class SubscriptionManager {
         amount: plan.price,
         currency: plan.currency,
         paymentMethod: paymentMethod,
+        externalId: externalId, // Set externalId during creation
         nextBillingDate: endDate
       }
     })
@@ -281,11 +293,11 @@ export class SubscriptionManager {
    */
   static getDaysUntilExpiry(user: User): number | null {
     if (!user.subscriptionExpiry) return null
-    
+
     const now = new Date()
     const diffTime = user.subscriptionExpiry.getTime() - now.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     return diffDays > 0 ? diffDays : 0
   }
 
@@ -293,8 +305,8 @@ export class SubscriptionManager {
    * Check if user is in grace period
    */
   static isInGracePeriod(user: User): boolean {
-    return user.subscriptionStatus === 'GRACE_PERIOD' && 
-           !!user.gracePeriodEnd && 
-           user.gracePeriodEnd > new Date()
+    return user.subscriptionStatus === 'GRACE_PERIOD' &&
+      !!user.gracePeriodEnd &&
+      user.gracePeriodEnd > new Date()
   }
 }
