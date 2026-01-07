@@ -39,9 +39,17 @@ CLEANUP_API_KEY=cleanup_key_123
 stripe listen --forward-to localhost:3000/api/payments/webhook
 ```
 
-2. **Produção**: Configure no Stripe Dashboard
-- Endpoint: `https://seudominio.com/api/payments/webhook`  
-- Events: `checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`
+2. **Produção (VPS)**:
+   - ❌ **NÃO** precisa rodar nenhum comando (`stripe listen` é só para dev).
+   - ✅ Configure no [Stripe Dashboard > Developers > Webhooks](https://dashboard.stripe.com/webhooks):
+     - **Endpoint URL**: `https://seu-dominio.com/api/payments/webhook`
+     - **Select Events**: 
+       - `checkout.session.completed`
+       - `invoice.payment_succeeded`
+       - `invoice.payment_failed`
+       - `customer.subscription.deleted`
+       - `customer.subscription.updated`
+   - 🔑 **Importante**: Ao criar o webhook no painel, ele vai gerar um novo `Signing Secret` (começa com `whsec_`). Você deve atualizar a variável `STRIPE_WEBHOOK_SECRET` no seu arquivo `.env` de produção com esse novo valor. O secret de desenvolvimento **NÃO** funciona em produção.
 
 ## 📱 **URLs Principais**
 
