@@ -39,7 +39,7 @@ export function SimpleFooter() {
     ]
 
     return (
-        <footer className="relative bg-[#020617] backdrop-blur-sm border-t border-white/5">
+        <footer className="relative bg-black backdrop-blur-sm border-t border-white/5">
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="py-12 flex flex-col md:flex-row justify-between items-center gap-8">
                     {/* Logo and Copyright */}
@@ -63,13 +63,13 @@ export function SimpleFooter() {
 
                     {/* Legal Links */}
                     <div className="flex flex-wrap justify-center gap-6 text-[10px] uppercase tracking-widest font-black text-gray-500">
-                        <Link href="/termos" className="hover:text-blue-400 transition-colors">
+                        <Link href="/termos" className="hover:text-white transition-colors">
                             Termos de Uso
                         </Link>
-                        <Link href="/privacidade" className="hover:text-blue-400 transition-colors">
+                        <Link href="/privacidade" className="hover:text-white transition-colors">
                             Privacidade
                         </Link>
-                        <Link href="/cookies" className="hover:text-blue-400 transition-colors">
+                        <Link href="/cookies" className="hover:text-white transition-colors">
                             Cookies
                         </Link>
                         <span className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export function SimpleFooter() {
                                 href={social.href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-gray-500 hover:text-white transition-colors duration-200 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30"
+                                className="text-gray-500 hover:text-white transition-colors duration-200 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/20"
                                 aria-label={social.name}
                             >
                                 {social.icon}
@@ -93,11 +93,6 @@ export function SimpleFooter() {
                         ))}
                     </div>
                 </div>
-            </div>
-
-            {/* Aesthetic Background Detail */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_1px,transparent_1px)] bg-[length:24px_24px]"></div>
             </div>
         </footer>
     )

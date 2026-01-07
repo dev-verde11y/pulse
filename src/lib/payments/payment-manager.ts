@@ -4,6 +4,7 @@ import { SubscriptionManager } from '@/lib/subscription-utils'
 import { PlanType } from '@prisma/client'
 import { getPlanByPriceId, LEGACY_PRICE_MAPPING } from './plan-config'
 import Stripe from 'stripe'
+import { StripeGateway } from './gateways/stripe-gateway'
 
 type StripeSubscriptionExtended = Stripe.Subscription & {
   current_period_start?: number
@@ -15,6 +16,7 @@ type StripeInvoiceExtended = Stripe.Invoice & {
 }
 
 export class PaymentManager {
+  private static stripeGateway = new StripeGateway()
   /**
    * Create checkout session record in database
    */
@@ -25,23 +27,23 @@ export class PaymentManager {
     try {
       const priceId = sessionData.line_items?.data[0]?.price?.id || 'unknown'
       const amount = sessionData.amount_total ? sessionData.amount_total / 100 : 0
-      
+
       return await prisma.checkoutSession.create({
-      data: {
-        stripeSessionId: sessionData.id,
-        userId: userId || null,
-        stripeStatus: sessionData.status || 'open',
-        paymentStatus: sessionData.payment_status || 'unpaid',
-        mode: sessionData.mode,
-        priceId: priceId,
-        amount: amount,
-        currency: sessionData.currency?.toUpperCase() || 'BRL',
-        successUrl: sessionData.success_url,
-        cancelUrl: sessionData.cancel_url,
-        stripeData: JSON.parse(JSON.stringify(sessionData)),
-        expiresAt: sessionData.expires_at ? new Date(sessionData.expires_at * 1000) : null
-      }
-    })
+        data: {
+          stripeSessionId: sessionData.id,
+          userId: userId || null,
+          stripeStatus: sessionData.status || 'open',
+          paymentStatus: sessionData.payment_status || 'unpaid',
+          mode: sessionData.mode,
+          priceId: priceId,
+          amount: amount,
+          currency: sessionData.currency?.toUpperCase() || 'BRL',
+          successUrl: sessionData.success_url,
+          cancelUrl: sessionData.cancel_url,
+          stripeData: JSON.parse(JSON.stringify(sessionData)),
+          expiresAt: sessionData.expires_at ? new Date(sessionData.expires_at * 1000) : null
+        }
+      })
     } catch (error) {
       console.error('Failed to save checkout session to database:', error)
       console.log('This might be because the CheckoutSession table does not exist yet.')
@@ -53,18 +55,17 @@ export class PaymentManager {
   /**
    * Update checkout session when completed
    */
-  static async completeCheckoutSession(sessionId: string) {
-    console.log('🔍 Retrieving Stripe session:', sessionId)
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-    console.log('📋 Session details:', {
-      id: session.id,
-      status: session.status,
-      payment_status: session.payment_status,
-      mode: session.mode,
-      subscription: session.subscription,
-      client_reference_id: session.client_reference_id
-    })
-    
+  static async completeCheckoutSession(sessionId: string, provider: string = 'stripe') {
+    console.log(`🔍 Completing checkout session (${provider}):`, sessionId)
+
+    let sessionData: any
+
+    if (provider === 'stripe') {
+      sessionData = await this.stripeGateway.retrieveSession(sessionId)
+    } else {
+      throw new Error(`Provider ${provider} not fully implemented for completion yet`)
+    }
+
     console.log('🔍 Looking for session in database...')
     const dbSession = await prisma.checkoutSession.findUnique({
       where: { stripeSessionId: sessionId },
@@ -73,44 +74,26 @@ export class PaymentManager {
 
     if (!dbSession) {
       console.error('❌ Checkout session not found in database:', sessionId)
-      console.log('💡 This might be normal if checkout was created before database tracking was enabled')
       return null
     }
-    
-    console.log('✅ Found database session:', {
-      id: dbSession.id,
-      userId: dbSession.userId,
-      status: dbSession.stripeStatus
-    })
 
     // Update session status
-    console.log('📝 Updating checkout session status...')
     await prisma.checkoutSession.update({
       where: { id: dbSession.id },
       data: {
-        stripeStatus: session.status || 'complete',
-        paymentStatus: session.payment_status || 'paid',
+        stripeStatus: sessionData.status || 'complete',
+        paymentStatus: sessionData.payment_status || 'paid',
         completedAt: new Date(),
-        stripeData: JSON.parse(JSON.stringify(session))
+        stripeData: JSON.parse(JSON.stringify(sessionData))
       }
     })
-    console.log('✅ Checkout session updated')
 
     // Handle subscription creation
-    if (session.mode === 'subscription' && session.subscription) {
-      console.log('🚀 Processing subscription creation...')
-      const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription as string) as unknown as StripeSubscriptionExtended
-      console.log('📋 Stripe subscription details:', {
-        id: stripeSubscription.id,
-        status: stripeSubscription.status,
-        customer: stripeSubscription.customer,
-        current_period_start: stripeSubscription.current_period_start,
-        current_period_end: stripeSubscription.current_period_end
-      })
-
-      await this.processSubscriptionFromCheckout(stripeSubscription, dbSession.userId, dbSession.id)
-    } else {
-      console.log('ℹ️ Not a subscription or no subscription ID found')
+    if (sessionData.mode === 'subscription' && sessionData.subscription) {
+      if (provider === 'stripe') {
+        const stripeSubscription = await this.stripeGateway.retrieveSubscription(sessionData.subscription as string)
+        await this.processSubscriptionFromCheckout(stripeSubscription, dbSession.userId, dbSession.id)
+      }
     }
 
     return dbSession
@@ -127,7 +110,7 @@ export class PaymentManager {
     console.log('🎯 Processing subscription from checkout...')
     console.log('User ID:', userId)
     console.log('Checkout Session ID:', checkoutSessionId)
-    
+
     if (!userId) {
       console.error('❌ No user ID for subscription creation')
       return null
@@ -141,10 +124,10 @@ export class PaymentManager {
 
     // Map price ID to plan type using centralized config
     console.log('🔍 Mapping price ID to plan type:', priceId)
-    
+
     const plan = getPlanByPriceId(priceId)
     let planType: PlanType
-    
+
     if (plan) {
       planType = plan.planType
       console.log(`✅ Mapped to ${plan.planType} plan (${plan.name})`)
@@ -225,7 +208,7 @@ export class PaymentManager {
    */
   static async handlePaymentSucceeded(invoice: StripeInvoiceExtended) {
     const subscriptionId = invoice.subscription as string | null
-    
+
     if (!subscriptionId) return
 
     const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -260,7 +243,7 @@ export class PaymentManager {
    */
   static async handlePaymentFailed(invoice: StripeInvoiceExtended) {
     const subscriptionId = invoice.subscription as string | null
-    
+
     if (!subscriptionId) return
 
     const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -301,7 +284,7 @@ export class PaymentManager {
     for (const session of expiredSessions) {
       try {
         const stripeSession = await stripe.checkout.sessions.retrieve(session.stripeSessionId)
-        
+
         await prisma.checkoutSession.update({
           where: { id: session.id },
           data: {
@@ -342,11 +325,11 @@ export class PaymentManager {
       totalRevenue: payments
         .filter(p => p.status === 'completed')
         .reduce((sum, p) => sum + Number(p.amount), 0),
-      
+
       totalPayments: payments.length,
       successfulPayments: payments.filter(p => p.status === 'completed').length,
       failedPayments: payments.filter(p => p.status === 'failed').length,
-      
+
       paymentsByMethod: payments.reduce((acc, p) => {
         acc[p.paymentMethod] = (acc[p.paymentMethod] || 0) + 1
         return acc

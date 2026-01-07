@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { stripe } from '@/lib/stripe'
+import { StripeGateway } from '@/lib/payments/gateways/stripe-gateway'
 import { PaymentManager } from '@/lib/payments/payment-manager'
 import { z } from 'zod'
 
@@ -26,26 +26,25 @@ export async function POST(request: NextRequest) {
       metadata = { userId: session.user.id }
     }
 
-    // Create Stripe checkout session
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: mode,
-      customer_email: customerEmail,
-      client_reference_id: clientReferenceId,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payments/cancel`,
-      metadata: metadata,
+    // Use StripeGateway (default for now)
+    const stripeGateway = new StripeGateway()
+    const checkoutSession = await stripeGateway.createCheckoutSession({
+      userId: clientReferenceId,
+      email: customerEmail,
+      planType: 'FAN', // Defaulting to FAN for now, should be derived from priceId in a real burst
+      priceId: priceId,
+      mode: mode as 'subscription' | 'payment',
+      successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/payments/cancel`,
+      metadata: metadata
     })
 
     // Save session to database
     try {
+      // We need the raw session data for backward compatibility in PaymentManager
+      const rawSession = await stripeGateway.retrieveSession(checkoutSession.id)
       await PaymentManager.createCheckoutSessionRecord(
-        checkoutSession, 
+        rawSession,
         session?.user?.id
       )
       console.log('Checkout session saved to database successfully')
@@ -55,25 +54,25 @@ export async function POST(request: NextRequest) {
       // The webhook will handle the completion tracking
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       sessionId: checkoutSession.id,
-      url: checkoutSession.url 
+      url: checkoutSession.url
     })
 
   } catch (error) {
     console.error('Checkout creation error:', error)
-    
+
     // More detailed error logging
     if (error instanceof Error) {
       console.error('Error message:', error.message)
       console.error('Error stack:', error.stack)
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to create checkout session',
         details: error instanceof Error ? error.message : 'Unknown error'
-      }, 
+      },
       { status: 500 }
     )
   }

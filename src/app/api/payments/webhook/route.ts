@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
 import { PaymentManager } from '@/lib/payments/payment-manager'
+import { StripeGateway } from '@/lib/payments/gateways/stripe-gateway'
 import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -14,15 +14,15 @@ export async function POST(request: NextRequest) {
     console.log('Body length:', body.length)
     console.log('Signature:', signature ? 'present' : 'missing')
 
-    let event: Stripe.Event
+    const gateway = new StripeGateway()
+    const { isValid, event } = await gateway.verifyWebhook(body, signature, webhookSecret)
 
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-      console.log('✅ Webhook signature verified')
-    } catch (err) {
-      console.error('❌ Webhook signature verification failed:', err)
+    if (!isValid) {
+      console.error('❌ Webhook signature verification failed')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
+
+    console.log('✅ Webhook signature verified')
 
     console.log('🎯 Processing event:', event.type, 'ID:', event.id)
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         console.log('Session ID:', session.id)
         console.log('Payment status:', session.payment_status)
         console.log('Mode:', session.mode)
-        
+
         const result = await PaymentManager.completeCheckoutSession(session.id)
         console.log('✅ Checkout processed, result:', result ? 'success' : 'no result')
         break
