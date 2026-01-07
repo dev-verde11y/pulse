@@ -19,6 +19,7 @@ export interface CheckoutSessionResponse {
 
 export interface WebhookVerificationResult {
     isValid: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     event: any // Provider-specific event object
 }
 
@@ -39,5 +40,6 @@ export interface PaymentProvider {
      * Parse a verified event into a standardized format if possible
      * or return the raw event for the gateway's specific handler
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parseEvent(event: any): { type: string; data: any }
 }

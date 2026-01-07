@@ -29,7 +29,8 @@ function CheckoutContent() {
   const [error, setError] = useState('')
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'pix'>('stripe')
 
-  const planConfig = planTypeParam ? (STRIPE_PLANS as any)[planTypeParam] : null
+  const isValidPlan = planTypeParam && planTypeParam in STRIPE_PLANS
+  const planConfig = isValidPlan ? STRIPE_PLANS[planTypeParam as keyof typeof STRIPE_PLANS] : null
 
   useEffect(() => {
     if (!planTypeParam) {
@@ -182,7 +183,7 @@ function CheckoutContent() {
                         CLASSE SELECIONADA
                       </span>
                       <h2 className="text-3xl font-black mb-1">{plan?.name || planConfig?.name}</h2>
-                      <p className="text-gray-400 font-medium italic">"{planConfig?.phase || 'Pronto para a Batalha'}"</p>
+                      <p className="text-gray-400 font-medium italic">&quot;{planConfig?.phase || 'Pronto para a Batalha'}&quot;</p>
                     </div>
                   </div>
                   <div className="text-right">

@@ -5,15 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
-import { AuthResponse, SubscriptionInfo } from '@/types/auth'
+import { AuthResponse, SubscriptionInfo, SubscriptionPlan } from '@/types/auth'
 
-interface Plan {
-  id: string
-  name: string
-  price: number
-  description?: string
-  billingCycle?: string
-}
+
 
 function LoginContent() {
   const [email, setEmail] = useState(() => {
@@ -291,7 +285,7 @@ function LoginContent() {
                 {renewalInfo?.isExpired ? renewalInfo?.expiredWarning : renewalInfo?.gracePeriodWarning}
               </p>
               <div className="space-y-3">
-                {renewalInfo?.availablePlans?.map((plan: any) => (
+                {renewalInfo?.availablePlans?.map((plan: SubscriptionPlan) => (
                   <button
                     key={plan.id}
                     onClick={() => handleRenewSubscription(plan.id)}

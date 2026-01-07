@@ -32,6 +32,14 @@ export interface RegisterCredentials extends LoginCredentials {
   name?: string
 }
 
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  price: number
+  description?: string
+  billingCycle?: string
+}
+
 export interface SubscriptionInfo {
   isExpired?: boolean
   isInGracePeriod?: boolean
@@ -41,7 +49,7 @@ export interface SubscriptionInfo {
   gracePeriodWarning?: string
   graceDaysLeft?: number
   showRenewalModal?: boolean
-  availablePlans?: Array<Record<string, unknown>>
+  availablePlans?: Array<SubscriptionPlan>
 }
 
 export interface AuthResponse {

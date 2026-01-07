@@ -550,7 +550,7 @@ export function VideoPlayer({
             }}
             onMouseLeave={() => setPreviewThumb(null)}
             className="video-slider w-full h-1.5 pointer-events-auto"
-            style={{ '--progress': `${(currentTime / (duration || 1)) * 100}%` } as any}
+            style={{ '--progress': `${(currentTime / (duration || 1)) * 100}%` } as React.CSSProperties}
           />
           <div className="flex justify-between items-center text-[10px] font-black font-mono text-white/50 tracking-widest">
             <span>{formatTime(currentTime)}</span>

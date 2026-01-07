@@ -174,10 +174,10 @@ export function SeasonSelector({
                       ].map(opt => (
                         <button
                           key={opt.id}
-                          onClick={() => onFiltersChange({ ...filters, status: opt.id as any })}
+                          onClick={() => onFiltersChange({ ...filters, status: opt.id as EpisodeFilters['status'] })}
                           className={`text-[10px] font-bold px-3 py-2.5 rounded-xl transition-all border font-mono ${filters.status === opt.id
-                              ? 'bg-blue-600 border-blue-500 text-white'
-                              : 'bg-white/5 border-transparent text-gray-500 hover:border-white/10'
+                            ? 'bg-blue-600 border-blue-500 text-white'
+                            : 'bg-white/5 border-transparent text-gray-500 hover:border-white/10'
                             }`}
                         >
                           {opt.label.toUpperCase()}
@@ -196,10 +196,10 @@ export function SeasonSelector({
                       ].map(opt => (
                         <button
                           key={opt.id}
-                          onClick={() => onFiltersChange({ ...filters, availability: opt.id as any })}
+                          onClick={() => onFiltersChange({ ...filters, availability: opt.id as EpisodeFilters['availability'] })}
                           className={`text-[10px] font-bold px-3 py-2.5 rounded-xl transition-all border font-mono ${filters.availability === opt.id
-                              ? 'bg-blue-600 border-blue-500 text-white'
-                              : 'bg-white/5 border-transparent text-gray-500 hover:border-white/10'
+                            ? 'bg-blue-600 border-blue-500 text-white'
+                            : 'bg-white/5 border-transparent text-gray-500 hover:border-white/10'
                             }`}
                         >
                           {opt.label.toUpperCase()}

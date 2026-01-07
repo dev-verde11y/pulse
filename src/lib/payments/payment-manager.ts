@@ -58,7 +58,7 @@ export class PaymentManager {
   static async completeCheckoutSession(sessionId: string, provider: string = 'stripe') {
     console.log(`🔍 Completing checkout session (${provider}):`, sessionId)
 
-    let sessionData: any
+    let sessionData: Stripe.Checkout.Session
 
     if (provider === 'stripe') {
       sessionData = await this.stripeGateway.retrieveSession(sessionId)

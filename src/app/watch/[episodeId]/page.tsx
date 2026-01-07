@@ -82,7 +82,9 @@ export default async function WatchPage({ params }: { params: Promise<{ episodeI
         ...rawEpisode,
         seasonNumber: rawEpisode.season.seasonNumber,
         hasVideo: !!(rawEpisode.r2Key || rawEpisode.videoUrl)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       initialAnime={animeData as any}
       allEpisodes={allEpisodes}
       episodeId={episodeId}
