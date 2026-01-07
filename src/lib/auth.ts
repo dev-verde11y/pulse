@@ -24,13 +24,13 @@ export async function auth(): Promise<{ user: User } | null> {
   try {
     const cookieStore = await cookies()
     const token = cookieStore.get('auth-token')?.value
-    
+
     if (!token) {
       return null
     }
 
     const payload = AuthUtils.verifyToken(token)
-    
+
     if (!payload) {
       return null
     }
@@ -66,7 +66,7 @@ export class AuthUtils {
   }
 
   static generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' }) // Reduzido para 2 horas
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
   }
 
   static verifyToken(token: string): JWTPayload | null {
@@ -82,7 +82,7 @@ export class AuthUtils {
 
   static getTokenFromHeader(request: NextRequest): string | null {
     const authHeader = request.headers.get('authorization')
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null
     }

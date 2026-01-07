@@ -24,7 +24,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]))
         const isExpired = tokenPayload.exp * 1000 < Date.now()
-        
+
         if (isExpired) {
           logout()
         }
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Verifica a cada minuto
     const interval = setInterval(checkTokenExpiration, 60000)
-    
+
     return () => clearInterval(interval)
   }, [token])
 
@@ -45,12 +45,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const storedToken = localStorage.getItem('token')
         const storedUser = localStorage.getItem('user')
-        
+
         if (storedToken && storedUser) {
           // Verifica se o token expirou antes de usar
           const tokenPayload = JSON.parse(atob(storedToken.split('.')[1]))
           const isExpired = tokenPayload.exp * 1000 < Date.now()
-          
+
           if (isExpired) {
             // Token expirado, remove dados
             logout()
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     loadStoredAuth()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const validateToken = async (token: string) => {
@@ -82,11 +82,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           'Authorization': `Bearer ${token}`
         }
       })
-      
+
       if (!response.ok) {
         throw new Error('Token inválido')
       }
-      
+
       const data = await response.json()
       // Só atualiza se o usuário mudou
       setUser(prevUser => {
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       setError(null)
-      
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -119,22 +119,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data: AuthResponse = await response.json()
-      
+
       // Salva no localStorage e cookie de forma síncrona
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       if (data.subscriptionInfo) {
         localStorage.setItem('subscriptionInfo', JSON.stringify(data.subscriptionInfo))
       }
-      // Salva no cookie para o middleware (2 horas)
-      document.cookie = `token=${data.token}; path=/; max-age=${2 * 60 * 60}` // 2 horas
-      
+      // Salva no cookie para o middleware (7 dias)
+      document.cookie = `auth-token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`
+
       // Atualiza estado de forma batch
       setToken(data.token)
       setUser(data.user)
       setSubscriptionInfo(data.subscriptionInfo || null)
       setLoading(false)
-      
+
       // Retorna os dados para que o componente possa lidar com modal de renovação
       return data
     } catch (err) {
@@ -148,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setError(null)
       setLoading(true)
-      
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -163,11 +163,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data: AuthResponse = await response.json()
-      
+
       // Salva no localStorage
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      
+
       setToken(data.token)
       setUser(data.user)
     } catch (err) {
@@ -181,16 +181,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const updateUser = (userData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null
-      
+
       const updatedUser = { ...prevUser, ...userData }
-      
+
       // Atualiza no localStorage
       try {
         localStorage.setItem('user', JSON.stringify(updatedUser))
       } catch {
         // Ignore localStorage errors on server
       }
-      
+
       return updatedUser
     })
   }
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('user')
       localStorage.removeItem('subscriptionInfo')
       // Remove cookie
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     } catch {
       // Ignore localStorage errors on server
     }

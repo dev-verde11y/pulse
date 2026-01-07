@@ -136,6 +136,15 @@ export function DashboardClient({
         return <LoadingScreen message="Verificando autenticação..." />
     }
 
+    // Se não estiver carregando e não houver usuário, redireciona para login
+    // Isso resolve o problema de navegar no dashboard "sem login" após expiração
+    if (!user) {
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+        }
+        return <LoadingScreen message="Sessão expirada. Redirecionando..." />
+    }
+
     return (
         <div className="min-h-screen bg-black">
             <Header />

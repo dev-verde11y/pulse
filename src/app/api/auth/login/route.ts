@@ -21,11 +21,11 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting baseado no email do usuário
     const rateLimitResult = loginRateLimiter.isRateLimited(email)
-    
+
     if (rateLimitResult.limited) {
       const resetTime = new Date(rateLimitResult.resetTime!).toLocaleTimeString()
       return NextResponse.json(
-        { 
+        {
           error: `Muitas tentativas de login para este usuário. Tente novamente às ${resetTime}`,
           resetTime: rateLimitResult.resetTime
         },
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar status da assinatura e atualizar se necessário
     const now = new Date()
-    
+
     // Se o usuário tem data de expiração e ela já passou
     if (user.subscriptionExpiry && user.subscriptionExpiry < now) {
       // Atualizar status do usuário expirado
@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
 
     // Gera JWT token com role incluído
     const token = jwt.sign(
-      { 
-        userId: user.id, 
+      {
+        userId: user.id,
         email: user.email,
-        role: user.role 
+        role: user.role
       },
       JWT_SECRET,
-      { expiresIn: '2h' } // Reduzido para 2 horas
+      { expiresIn: '7d' }
     )
 
     // Retorna dados do usuário (sem senha)
@@ -110,10 +110,10 @@ export async function POST(request: NextRequest) {
     // Adicionar informações específicas baseado no status
     if (isExpired) {
       response.message = 'Login realizado - Assinatura expirada'
-      
+
       // Buscar planos disponíveis
       const availablePlans = await prisma.plan.findMany({
-        where: { 
+        where: {
           active: true,
           type: { not: 'FREE' }
         },
@@ -127,9 +127,9 @@ export async function POST(request: NextRequest) {
       })
     } else if (isInGracePeriod) {
       response.message = 'Login realizado - Atenção: Sua assinatura está em período de graça'
-      const graceDaysLeft = user.gracePeriodEnd ? 
+      const graceDaysLeft = user.gracePeriodEnd ?
         Math.ceil((user.gracePeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0
-      
+
       Object.assign(response.subscriptionInfo, {
         gracePeriodWarning: `Sua assinatura expirou. Você tem ${graceDaysLeft} dias para renovar antes de perder o acesso.`,
         graceDaysLeft,
@@ -139,13 +139,13 @@ export async function POST(request: NextRequest) {
 
     // Criar resposta com cookie
     const jsonResponse = NextResponse.json(response)
-    
+
     // Definir cookie httpOnly para o token
     jsonResponse.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 2 // 2 horas
+      maxAge: 60 * 60 * 24 * 7 // 7 dias
     })
 
     return jsonResponse
