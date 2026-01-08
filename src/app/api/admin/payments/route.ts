@@ -1,70 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 
-const paymentsQuerySchema = z.object({
-  page: z.string().optional().default('1'),
-  limit: z.string().optional().default('10'),
-  status: z.string().optional(),
-  paymentMethod: z.string().optional(),
-  search: z.string().optional()
-})
-
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const query = paymentsQuerySchema.parse({
-      page: searchParams.get('page') || '1',
-      limit: searchParams.get('limit') || '10',
-      status: searchParams.get('status') || undefined,
-      paymentMethod: searchParams.get('paymentMethod') || undefined,
-      search: searchParams.get('search') || undefined
-    })
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const status = searchParams.get('status')
+    const search = searchParams.get('search')
+    const skip = (page - 1) * limit
 
-    const page = parseInt(query.page)
-    const limit = parseInt(query.limit)
-    const offset = (page - 1) * limit
+    const where: Prisma.PaymentWhereInput = {}
 
-    // Build where clause
-    const where: Record<string, unknown> = {}
-    
-    if (query.status) {
-      where.status = query.status
-    }
-    
-    if (query.paymentMethod) {
-      where.paymentMethod = query.paymentMethod
+    if (status && status !== 'all') {
+      where.status = status
     }
 
-    if (query.search) {
+    if (search) {
       where.OR = [
-        { externalId: { contains: query.search, mode: 'insensitive' } },
-        { subscription: { 
-          user: { 
-            OR: [
-              { name: { contains: query.search, mode: 'insensitive' } },
-              { email: { contains: query.search, mode: 'insensitive' } }
-            ]
-          }
-        }}
+        { subscription: { user: { name: { contains: search, mode: 'insensitive' } } } },
+        { subscription: { user: { email: { contains: search, mode: 'insensitive' } } } },
+        { externalId: { contains: search, mode: 'insensitive' } }
       ]
     }
 
-    // Get payments with pagination
     const [payments, total] = await Promise.all([
       prisma.payment.findMany({
         where,
-        skip: offset,
+        skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: {
+          createdAt: 'desc'
+        },
         include: {
           subscription: {
             include: {
               user: {
                 select: {
-                  id: true,
                   name: true,
-                  email: true
+                  email: true,
+                  avatar: true
                 }
               },
               plan: {
@@ -80,21 +56,35 @@ export async function GET(request: NextRequest) {
       prisma.payment.count({ where })
     ])
 
-    const totalPages = Math.ceil(total / limit)
-
     return NextResponse.json({
-      payments,
+      payments: payments.map((p) => ({
+        id: p.id,
+        amount: parseFloat(p.amount.toString()),
+        currency: p.currency,
+        status: p.status,
+        paymentMethod: p.paymentMethod,
+        externalId: p.externalId,
+        paidAt: p.paidAt,
+        createdAt: p.createdAt,
+        user: {
+          name: p.subscription.user.name || p.subscription.user.email,
+          email: p.subscription.user.email,
+          avatar: p.subscription.user.avatar
+        },
+        plan: {
+          name: p.subscription.plan.name,
+          type: p.subscription.plan.type
+        }
+      })),
       pagination: {
-        page,
-        limit,
         total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
+        pages: Math.ceil(total / limit),
+        currentPage: page,
+        limit
       }
     })
   } catch (error) {
-    console.error('Error fetching payments:', error)
+    console.error('Error fetching admin payments:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
