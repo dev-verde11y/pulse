@@ -1,17 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     token: string
-  }
+  }>
 }
 
 export default function ResetPasswordPage({ params }: PageProps) {
+  const { token } = use(params)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string; general?: string }>({})
@@ -46,7 +47,7 @@ export default function ResetPasswordPage({ params }: PageProps) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ token: params.token }),
+          body: JSON.stringify({ token }),
         })
 
         setTokenValid(response.ok)
@@ -57,7 +58,7 @@ export default function ResetPasswordPage({ params }: PageProps) {
     }
 
     verifyToken()
-  }, [params.token])
+  }, [token])
 
   const validateForm = () => {
     const newErrors: { password?: string; confirmPassword?: string } = {}
@@ -92,7 +93,7 @@ export default function ResetPasswordPage({ params }: PageProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          token: params.token,
+          token,
           password,
         }),
       })

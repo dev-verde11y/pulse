@@ -41,6 +41,17 @@ enum BillingCycle {
   LIFETIME
 }
 
+enum HuntingGroupStatus {
+  OPEN
+  CLOSED
+  HUNTING
+}
+
+enum GroupRole {
+  LEADER
+  MEMBER
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -84,6 +95,10 @@ model User {
   favorites         Favorite[]
   checkoutSessions  CheckoutSession[]
   notifications     Notification[]
+  
+  // Watch Party / Caça
+  huntingGroups     HuntingGroup[]    @relation("GroupLeader")
+  joinedGroups      GroupMember[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
