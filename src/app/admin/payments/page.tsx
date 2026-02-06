@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 interface PaymentRecord {
     id: string
@@ -174,7 +175,13 @@ export default function AdminPaymentsPage() {
                                             <div className="flex items-center gap-3">
                                                 <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center p-0.5 border border-white/10 overflow-hidden group-hover/row:scale-110 transition-transform">
                                                     {payment.user.avatar ? (
-                                                        <img src={payment.user.avatar} alt="" className="w-full h-full rounded-[9px] object-cover" />
+                                                        <Image
+                                                            unoptimized
+                                                            src={payment.user.avatar}
+                                                            alt=""
+                                                            fill
+                                                            className="rounded-[9px] object-cover"
+                                                        />
                                                     ) : (
                                                         <span className="text-sm font-black text-purple-300">{payment.user.name.charAt(0)}</span>
                                                     )}

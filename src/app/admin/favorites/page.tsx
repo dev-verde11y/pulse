@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface FavoriteStat {
     id: string
@@ -75,7 +76,13 @@ export default function AdminFavoritesPage() {
 
                             {/* Background Image */}
                             <div className="absolute inset-0">
-                                <img src={anime.thumbnail || anime.banner || ''} alt={anime.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <Image
+                                    unoptimized
+                                    src={anime.thumbnail || anime.banner || '/placeholder-anime.jpg'}
+                                    alt={anime.title}
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
                                 <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent"></div>
                             </div>
 

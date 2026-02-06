@@ -40,7 +40,7 @@ type BrowseTab = 'all' | 'new' | 'top'
 
 export default function BrowsePage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { } = useAuth()
   const [animes, setAnimes] = useState<Anime[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

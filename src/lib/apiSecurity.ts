@@ -41,7 +41,7 @@ export function sanitizeEpisodeByContext(episode: Record<string, unknown>, reque
   }
 
   // Se é contexto público, remove URLs e caminhos sensíveis
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
     videoUrl,
     r2Key: _r2Key,
@@ -51,6 +51,7 @@ export function sanitizeEpisodeByContext(episode: Record<string, unknown>, reque
     r2ThumbnailPath: _r2ThumbnailPath,
     ...sanitized
   } = episode
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   // Adicionar flag de disponibilidade sem expor a URL
   return {

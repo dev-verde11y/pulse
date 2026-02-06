@@ -27,10 +27,10 @@ function LoginContent() {
   const [isLogging, setIsLogging] = useState(false)
   const [showRenewalModal, setShowRenewalModal] = useState(false)
   const [renewalInfo, setRenewalInfo] = useState<SubscriptionInfo | null>(null)
-  const [showContactMessage, setShowContactMessage] = useState(false)
+
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [isRenewing, setIsRenewing] = useState(false)
-  const [selectedPlanForRenewal, setSelectedPlanForRenewal] = useState<string | null>(null)
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [showPassword, setShowPassword] = useState(false)
 
@@ -124,7 +124,7 @@ function LoginContent() {
 
   const handleRenewSubscription = async (planId: string) => {
     setIsRenewing(true)
-    setSelectedPlanForRenewal(planId)
+
     try {
       const response = await fetch('/api/checkout/renewal', {
         method: 'POST',
@@ -138,7 +138,7 @@ function LoginContent() {
       console.error('Renewal error:', error)
       alert('Erro ao processar renovação. Tente novamente.')
       setIsRenewing(false)
-      setSelectedPlanForRenewal(null)
+
     }
   }
 

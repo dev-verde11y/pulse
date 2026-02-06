@@ -45,7 +45,7 @@ export function PosterCarousel({ title, animes, isTop10 = false }: PosterCarouse
     updateItemsConfig()
     window.addEventListener('resize', updateItemsConfig)
     return () => window.removeEventListener('resize', updateItemsConfig)
-  }, [])
+  }, [isTop10])
 
   const nextSlide = () => {
     const maxIndex = Math.max(0, animes.length - itemsToShow)

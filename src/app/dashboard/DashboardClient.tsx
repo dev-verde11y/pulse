@@ -17,7 +17,7 @@ import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
 import '@/styles/swiper.css'
-import { AnimeCardSkeleton, MediumAnimeCardSkeleton } from '@/components/ui/AnimeCardSkeleton'
+import { MediumAnimeCardSkeleton } from '@/components/ui/AnimeCardSkeleton'
 
 interface DashboardClientProps {
     trending: Anime[]

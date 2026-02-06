@@ -80,13 +80,13 @@ export function VideoPlayer({
   const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(0)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
   const [showQualityMenu, setShowQualityMenu] = useState(false)
-  const [lastProgressUpdate, setLastProgressUpdate] = useState(0)
+
   const [showSkipIntro, setShowSkipIntro] = useState(false)
   const [autoPlayCountdown, setAutoPlayCountdown] = useState<number | null>(null)
   const [hasSeekedInitial, setHasSeekedInitial] = useState(false)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
   const [hasPrefetchedNext, setHasPrefetchedNext] = useState(false)
-  const [isAmbilightEnabled, setIsAmbilightEnabled] = useState(true)
+  const [isAmbilightEnabled] = useState(true)
   const [previewThumb, setPreviewThumb] = useState<{ x: number, time: number } | null>(null)
   const lastApiSyncRef = useRef<number>(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -126,23 +126,24 @@ export function VideoPlayer({
   // Salvar progresso periódico
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    if (isPlaying && user && videoRef.current) {
+    const currentVideo = videoRef.current
+
+    if (isPlaying && user && currentVideo) {
       interval = setInterval(() => {
-        if (videoRef.current) {
-          const cTime = videoRef.current.currentTime
-          const duration = videoRef.current.duration
+        if (currentVideo) {
+          const cTime = currentVideo.currentTime
+          const duration = currentVideo.duration
 
           saveProgressLocal(cTime, duration)
           saveProgressToAPI(cTime, duration)
-          setLastProgressUpdate(cTime)
         }
       }, 2000) // Verifica a cada 2 segundos localmente
     }
     return () => {
       if (interval) clearInterval(interval)
       // Tentar um save final ao desmontar se o vídeo estava tocando
-      if (videoRef.current) {
-        saveProgressToAPI(videoRef.current.currentTime, videoRef.current.duration, true)
+      if (currentVideo) {
+        saveProgressToAPI(currentVideo.currentTime, currentVideo.duration, true)
       }
     }
   }, [isPlaying, user, saveProgressToAPI, saveProgressLocal])

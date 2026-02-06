@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { WatchClient } from './WatchClient'
-import { Episode, Anime, Season } from '@/types/anime'
+import { Episode } from '@/types/anime'
 
 export default async function WatchPage({ params }: { params: Promise<{ episodeId: string }> }) {
   const session = await auth()

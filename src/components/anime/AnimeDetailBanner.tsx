@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { Anime, Episode } from '@/types/anime'
 import { PlayIcon, StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
-import { StarIcon } from '@heroicons/react/24/outline'
+
 import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
@@ -58,7 +58,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
     }
 
     loadWatchHistory()
-  }, [user, anime.id])
+  }, [user, anime.id, anime])
 
   // Verificar se o anime está nos favoritos
   useEffect(() => {

@@ -142,7 +142,7 @@ function SearchPageContent() {
       console.log('Setting loading to false')
       setLoading(false)
     }
-  }, [query, selectedGenres, selectedRating, selectedStatus, selectedType, sortBy, yearFrom, yearTo])
+  }, [query, selectedGenres, selectedRating, selectedStatus, selectedType, sortBy, yearFrom, yearTo, isDubbed, isSubbed])
 
   // Search effect to trigger search when params change
   useEffect(() => {
@@ -215,7 +215,7 @@ function SearchPageContent() {
     }
 
     executeSearch()
-  }, [query, selectedGenres, selectedRating, selectedStatus, selectedType, sortBy, yearFrom, yearTo, currentPage])
+  }, [query, selectedGenres, selectedRating, selectedStatus, selectedType, sortBy, yearFrom, yearTo, currentPage, isDubbed, isSubbed])
 
   // Atualizar URL com parâmetros de busca
   useEffect(() => {
@@ -234,7 +234,7 @@ function SearchPageContent() {
 
     const newUrl = params.toString() ? `/search?${params.toString()}` : '/search'
     router.replace(newUrl, { scroll: false })
-  }, [query, selectedGenres, selectedRating, selectedStatus, selectedType, sortBy, yearFrom, yearTo, currentPage, router])
+  }, [query, selectedGenres, selectedRating, selectedStatus, selectedType, sortBy, yearFrom, yearTo, currentPage, router, isDubbed, isSubbed])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

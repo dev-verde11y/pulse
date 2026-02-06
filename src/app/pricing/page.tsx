@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/layout/Header"
 import { SimpleFooter } from "@/components/layout/SimpleFooter"
-import Image from "next/image"
+
 
 export default function PricingPage() {
   const router = useRouter()

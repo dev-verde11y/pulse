@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
-import { api } from '@/lib/api'
-import { Episode, Anime, Season } from '@/types/anime'
+
+import { Episode, Anime } from '@/types/anime'
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, StarIcon, HomeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid'
 import { PlayIcon, XMarkIcon } from '@heroicons/react/24/solid'
 

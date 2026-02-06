@@ -6,10 +6,7 @@ import { getPlanByPriceId, LEGACY_PRICE_MAPPING } from './plan-config'
 import Stripe from 'stripe'
 import { StripeGateway } from './gateways/stripe-gateway'
 
-type StripeSubscriptionExtended = Stripe.Subscription & {
-  current_period_start?: number
-  current_period_end?: number
-}
+
 
 type StripeInvoiceExtended = Stripe.Invoice & {
   subscription?: string | Stripe.Subscription

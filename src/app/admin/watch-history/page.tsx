@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
+import Image from 'next/image'
 
 interface WatchRecord {
     id: string
@@ -134,7 +134,13 @@ export default function AdminWatchHistoryPage() {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-gray-800 border border-white/5 flex items-center justify-center overflow-hidden">
                                                     {record.user.avatar ? (
-                                                        <img src={record.user.avatar} alt="" className="w-full h-full object-cover" />
+                                                        <Image
+                                                            unoptimized
+                                                            src={record.user.avatar}
+                                                            alt=""
+                                                            fill
+                                                            className="object-cover"
+                                                        />
                                                     ) : (
                                                         <span className="text-xs font-bold text-purple-400">{record.user.name.charAt(0)}</span>
                                                     )}
@@ -148,7 +154,15 @@ export default function AdminWatchHistoryPage() {
                                         <td className="px-6 py-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-8 rounded-lg bg-gray-800 border border-white/5 overflow-hidden flex-shrink-0">
-                                                    {record.anime.thumbnail && <img src={record.anime.thumbnail} alt="" className="w-full h-full object-cover" />}
+                                                    {record.anime.thumbnail && (
+                                                        <Image
+                                                            unoptimized
+                                                            src={record.anime.thumbnail}
+                                                            alt=""
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    )}
                                                 </div>
                                                 <span className="text-sm font-medium text-gray-300 group-hover:text-purple-300 transition-colors">{record.anime.title}</span>
                                             </div>

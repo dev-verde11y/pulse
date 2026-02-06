@@ -77,7 +77,7 @@ export default function WatchV2Page() {
     if (episodeId) {
       loadEpisodeData()
     }
-  }, [episodeId, router])
+  }, [episodeId, router, user])
 
   const handleNextEpisode = () => {
     if (currentEpisodeIndex < allEpisodes.length - 1) {
