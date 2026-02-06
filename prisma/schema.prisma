@@ -9,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -489,4 +490,42 @@ model Notification {
   @@index([userId, read])
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+model HuntingGroup {
+  id          String             @id @default(uuid())
+  name        String?
+  
+  // Current Content
+  animeId     String
+  episodeId   String?
+  
+  // State
+  status      HuntingGroupStatus @default(OPEN)
+  currentTime Float              @default(0)
+  isPlaying   Boolean            @default(false)
+  updatedAt   DateTime           @updatedAt
+  createdAt   DateTime           @default(now())
+
+  // Relations
+  leaderId    String
+  leader      User               @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  
+  @@map("hunting_groups")
+}
+
+model GroupMember {
+  id        String    @id @default(uuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(MEMBER)
+  joinedAt  DateTime  @default(now())
+
+  // Relations
+  group     HuntingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
 }
