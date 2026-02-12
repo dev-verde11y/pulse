@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
+import HuntingGroupModal from '@/components/WatchParty/HuntingGroupModal'
 
 import { Episode, Anime } from '@/types/anime'
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, StarIcon, HomeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid'
@@ -34,6 +35,7 @@ export function WatchClient({
     const [initialProgress, setInitialProgress] = useState(initialProgressSaved)
     const [visibleRange, setVisibleRange] = useState({ start: 0, end: 15 })
     const [searchQuery, setSearchQuery] = useState('')
+    const [isHuntingModalOpen, setIsHuntingModalOpen] = useState(false)
 
     // Sincronizar progresso quando mudar de episódio
     useEffect(() => {
@@ -155,7 +157,18 @@ export function WatchClient({
                     </div>
 
                     {/* Centro: Status Dinâmico */}
-                    <div className="hidden xl:flex flex-col items-center">
+                    <div className="hidden xl:flex items-center gap-4">
+                        <button
+                            onClick={() => setIsHuntingModalOpen(true)}
+                            className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-full flex items-center gap-2 hover:bg-orange-600/20 hover:border-orange-500/50 hover:text-orange-500 transition-all group"
+                            title="Criar Grupo de Caça"
+                        >
+                            <span className="text-lg leading-none group-hover:scale-125 transition-transform">⚔️</span>
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70 group-hover:text-orange-500">
+                                Grupo
+                            </span>
+                        </button>
+
                         <div className="bg-white/5 border border-white/10 px-6 py-1.5 rounded-full flex items-center gap-3 shadow-inner">
                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
                             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/70">
@@ -411,6 +424,13 @@ export function WatchClient({
                     </div>
                 </div>
             </main>
+
+            <HuntingGroupModal
+                isOpen={isHuntingModalOpen}
+                onClose={() => setIsHuntingModalOpen(false)}
+                animeId={initialAnime.id}
+                episodeId={initialEpisode.id}
+            />
         </div>
     )
 }

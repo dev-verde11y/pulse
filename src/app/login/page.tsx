@@ -62,9 +62,14 @@ function LoginContent() {
 
   useEffect(() => {
     if (user && !loading && !showRenewalModal) {
-      router.push('/dashboard')
+      const callbackUrl = searchParams.get('callbackUrl')
+      if (callbackUrl) {
+        router.push(decodeURIComponent(callbackUrl))
+      } else {
+        router.push('/dashboard')
+      }
     }
-  }, [user, loading, router, showRenewalModal])
+  }, [user, loading, router, showRenewalModal, searchParams])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -114,7 +119,12 @@ function LoginContent() {
         setIsLogging(false)
       } else {
         await new Promise(resolve => setTimeout(resolve, 300))
-        router.replace('/dashboard')
+        const callbackUrl = searchParams.get('callbackUrl')
+        if (callbackUrl) {
+          router.replace(decodeURIComponent(callbackUrl))
+        } else {
+          router.replace('/dashboard')
+        }
       }
     } catch (err) {
       console.error('Login error:', err)

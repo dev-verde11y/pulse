@@ -52,6 +52,14 @@ interface VideoPlayerProps {
   animeId: string
   initialProgress?: number
   nextEpisodeId?: string
+
+  // Watch Party Props
+  onPlayCallback?: () => void
+  onPauseCallback?: () => void
+  onSeekCallback?: (time: number) => void
+  externalTime?: number
+  externalIsPlaying?: boolean
+  isWatchParty?: boolean
 }
 
 export function VideoPlayer({
@@ -62,7 +70,13 @@ export function VideoPlayer({
   hasPreviousEpisode,
   animeId,
   initialProgress = 0,
-  nextEpisodeId
+  nextEpisodeId,
+  onPlayCallback,
+  onPauseCallback,
+  onSeekCallback,
+  externalTime,
+  externalIsPlaying,
+  isWatchParty = false
 }: VideoPlayerProps) {
   const videoRef = useRef<ExtendedHTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -254,19 +268,51 @@ export function VideoPlayer({
     }
   }, [duration, initialProgress, hasSeekedInitial])
 
+  // WATCH PARTY SYNC LOGIC
+  useEffect(() => {
+    if (!isWatchParty || !videoRef.current) return
+
+    // Sync Play/Pause
+    if (externalIsPlaying !== undefined) {
+      if (externalIsPlaying && !isPlaying) {
+        videoRef.current.play().catch(() => { })
+        setIsPlaying(true)
+      } else if (!externalIsPlaying && isPlaying) {
+        videoRef.current.pause()
+        setIsPlaying(false)
+      }
+    }
+
+    // Sync Time (only if difference is significant > 2s to avoid jitter)
+    if (externalTime !== undefined && Math.abs(currentTime - externalTime) > 2) {
+      console.log(`[Sync] Adjusting time from ${currentTime} to ${externalTime}`)
+      videoRef.current.currentTime = externalTime
+      setCurrentTime(externalTime)
+    }
+  }, [externalIsPlaying, externalTime, isWatchParty]) // Removed dependencies that cause loops like isPlaying/currentTime
+
+
   const handlePlay = async () => {
     if (videoRef.current) {
       if (videoRef.current.paused) {
         await videoRef.current.play().catch(e => console.error('Erro ao dar play:', e))
         setIsPlaying(true)
+        if (isWatchParty) onPlayCallback?.()
       } else {
         videoRef.current.pause()
         setIsPlaying(false)
+        if (isWatchParty) onPauseCallback?.()
         // Salvar imediatamente ao pausar
         saveProgressToAPI(videoRef.current.currentTime, videoRef.current.duration, true)
       }
     }
   }
+
+  // ... (keeping handleResume, handleTimeUpdate etc as is) ...
+
+  // Inside JSX input range for seek: onChange event
+
+
 
   const handleResume = () => {
     if (videoRef.current && duration > 0) {
@@ -451,8 +497,29 @@ export function VideoPlayer({
         </div>
       </div>
 
+      {/* Watch Party Start Overlay (Bypass Autoplay) */}
+      {isWatchParty && !isPlaying && currentTime === 0 && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <button
+            onClick={() => {
+              if (videoRef.current) {
+                videoRef.current.play().then(() => {
+                  videoRef.current?.pause() // Pause immediately, let sync take over
+                  setIsPlaying(false)
+                  if (onSeekCallback) onSeekCallback(0) // Tell server we are ready?
+                }).catch(console.error)
+              }
+            }}
+            className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-xl font-bold text-xl flex items-center gap-3 transition-transform hover:scale-105"
+          >
+            <PlayIcon className="w-8 h-8" />
+            ENTRAR NA SESSÃO
+          </button>
+        </div>
+      )}
+
       {/* Center Play Animation */}
-      <div className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-auto transition-all duration-500 bg-black/20 ${!isPlaying && !loading && !showResumePrompt ? 'scale-100 opacity-100' : 'scale-150 opacity-0 pointer-events-none'}`}>
+      <div className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-auto transition-all duration-500 bg-black/20 ${!isPlaying && !loading && !showResumePrompt && (!isWatchParty || currentTime > 0) ? 'scale-100 opacity-100' : 'scale-150 opacity-0 pointer-events-none'}`}>
         <button onClick={handlePlay} className="bg-blue-600/20 backdrop-blur-xl border border-blue-500/20 rounded-full p-8 focus:outline-none pulse-primary">
           <PlayIcon className="w-12 h-12 text-white ml-2" />
         </button>
@@ -542,7 +609,13 @@ export function VideoPlayer({
             min="0"
             max={duration || 0}
             value={currentTime}
-            onChange={(e) => { if (videoRef.current) videoRef.current.currentTime = parseFloat(e.target.value); }}
+            onChange={(e) => {
+              if (videoRef.current) {
+                const newTime = parseFloat(e.target.value)
+                videoRef.current.currentTime = newTime
+                if (isWatchParty) onSeekCallback?.(newTime)
+              }
+            }}
             onMouseMove={(e) => {
               const rect = e.currentTarget.getBoundingClientRect()
               const x = ((e.clientX - rect.left) / rect.width) * 100

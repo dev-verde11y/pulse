@@ -100,6 +100,7 @@ model User {
   // Watch Party / Caça
   huntingGroups     HuntingGroup[]    @relation("GroupLeader")
   joinedGroups      GroupMember[]
+  messages          ChatMessage[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -419,6 +420,7 @@ model Episode {
   
   // Relations
   season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  huntingGroups HuntingGroup[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -499,6 +501,7 @@ model HuntingGroup {
   // Current Content
   animeId     String
   episodeId   String?
+  episode     Episode?           @relation(fields: [episodeId], references: [id], onDelete: SetNull)
   
   // State
   status      HuntingGroupStatus @default(OPEN)
@@ -511,6 +514,7 @@ model HuntingGroup {
   leaderId    String
   leader      User               @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: Cascade)
   members     GroupMember[]
+  messages    ChatMessage[]
   
   @@map("hunting_groups")
 }
@@ -528,4 +532,19 @@ model GroupMember {
 
   @@unique([groupId, userId])
   @@map("group_members")
+}
+
+model ChatMessage {
+  id        String    @id @default(uuid())
+  groupId   String
+  userId    String
+  content   String    @db.VarChar(500)
+  createdAt DateTime  @default(now())
+
+  // Relations
+  group     HuntingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@map("chat_messages")
 }

@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
+import HuntingGroupModal from '../WatchParty/HuntingGroupModal'
 
 interface AnimeDetailBannerProps {
   anime: Anime
@@ -29,6 +30,7 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
   const [loading, setLoading] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [isHuntingModalOpen, setIsHuntingModalOpen] = useState(false)
 
   // Carregar histórico de visualização quando o componente montar
   useEffect(() => {
@@ -295,11 +297,26 @@ export function AnimeDetailBanner({ anime }: AnimeDetailBannerProps) {
             </div>
           </div>
 
+          <div className="mt-8 flex flex-wrap gap-4">
+            <button
+              onClick={() => setIsHuntingModalOpen(true)}
+              className="flex items-center gap-3 px-6 py-4 bg-gray-900/50 backdrop-blur border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-widest text-white hover:bg-orange-600/20 hover:border-orange-500/50 hover:text-orange-500 transition-all group/wp"
+            >
+              <span className="text-lg group-hover/wp:scale-125 transition-transform">⚔️</span>
+              <span>Criar Grupo de Caça</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Detail Grid Overlay - Bottom Section for extra info */}
+      {/* Detail Grid Overlay - Bottom Section for extra info */ }
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-10 hidden lg:block"></div>
-    </section>
+      
+      <HuntingGroupModal 
+        isOpen={isHuntingModalOpen} 
+        onClose={() => setIsHuntingModalOpen(false)}
+        animeId={anime.id}
+      />
+    </section >
   )
 }

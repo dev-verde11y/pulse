@@ -47,7 +47,8 @@ export async function middleware(request: NextRequest) {
   console.log('[Middleware] Request to:', pathname)
 
   // Rotas que requerem autenticação
-  const protectedRoutes = ['/dashboard', '/profile', '/favorites', '/admin', '/api/protected']
+  // Rotas que requerem autenticação
+  const protectedRoutes = ['/dashboard', '/profile', '/favorites', '/admin', '/api/protected', '/api/hunting-groups', '/watch-party']
 
   // Rotas que requerem admin
   const adminRoutes = ['/admin']
@@ -79,14 +80,18 @@ export async function middleware(request: NextRequest) {
 
     if (!token) {
       console.log('[Middleware] No token found, redirecting to login')
-      return NextResponse.redirect(new URL('/login', request.url))
+      const url = new URL('/login', request.url)
+      url.searchParams.set('callbackUrl', encodeURIComponent(pathname))
+      return NextResponse.redirect(url)
     }
 
     const payload = await verifyToken(token)
 
     if (!payload) {
       console.log('[Middleware] Invalid token, redirecting to login')
-      return NextResponse.redirect(new URL('/login', request.url))
+      const url = new URL('/login', request.url)
+      url.searchParams.set('callbackUrl', encodeURIComponent(pathname))
+      return NextResponse.redirect(url)
     }
 
     // Para rotas admin, verifica se o usuário é admin

@@ -11,7 +11,7 @@ const watchHistoryQuerySchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams)
     const { page, limit } = watchHistoryQuerySchema.parse(params)
-    
+
     const skip = (page - 1) * limit
 
     const [history, total] = await Promise.all([
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -99,14 +99,14 @@ export async function POST(request: NextRequest) {
       },
       update: {
         watchedAt: watchedAt ? new Date(watchedAt) : new Date(),
-        progress: progress || null
+        progress: progress ?? 0
       },
       create: {
         userId: session.user.id,
         animeId,
         episodeId,
         watchedAt: watchedAt ? new Date(watchedAt) : new Date(),
-        progress: progress || null
+        progress: progress ?? 0
       },
       include: {
         anime: true
