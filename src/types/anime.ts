@@ -13,7 +13,7 @@ export interface Anime {
   isDubbed?: boolean
   createdAt: Date | string
   updatedAt: Date | string
-  
+
   // Cloudflare R2 fields
   posterUrl?: string | null
   posterR2Key?: string | null
@@ -21,10 +21,10 @@ export interface Anime {
   bannerR2Key?: string | null
   logoUrl?: string | null
   logoR2Key?: string | null
-  
+
   // Additional fields that might be used in components
   duration?: number | null
-  
+
   // Relations (optional, depends on query)
   seasons?: Season[]
   _count?: {
@@ -56,6 +56,7 @@ export interface Episode {
   r2Key?: string | null
   thumbnailUrl?: string | null
   thumbnailR2Key?: string | null
+  r2SubtitlePath?: string | null
 
   // Flag de disponibilidade (adicionado pela API em contexto público)
   hasVideo?: boolean

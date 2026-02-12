@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { HLSVideoPlayer } from '@/components/video/HLSVideoPlayer'
+import { VideoPlayer } from '@/components/video/VideoPlayer'
 import HuntingGroupModal from '@/components/WatchParty/HuntingGroupModal'
 
 import { Episode, Anime } from '@/types/anime'
@@ -216,7 +216,7 @@ export function WatchClientV2({
                     {/* Seção do Player */}
                     <div className={`flex-1 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showEpisodeList ? 'lg:w-[65%]' : 'w-full'}`}>
                         <div className="relative group rounded-[56px] overflow-hidden shadow-[0_80px_160px_-40px_rgba(0,0,0,1)] bg-black border border-white/5 ring-1 ring-white/10">
-                            <HLSVideoPlayer
+                            <VideoPlayer
                                 episode={initialEpisode}
                                 animeId={initialAnime.id}
                                 initialProgress={initialProgress}
@@ -225,6 +225,7 @@ export function WatchClientV2({
                                 hasNextEpisode={findNextAvailableIndex() !== -1}
                                 hasPreviousEpisode={findPrevAvailableIndex() !== -1}
                                 nextEpisodeId={findNextAvailableIndex() !== -1 ? allEpisodes[findNextAvailableIndex()].id : undefined}
+                                subtitleTrackUrl={initialEpisode.r2SubtitlePath || undefined}
                             />
                         </div>
 

@@ -11,6 +11,8 @@ const updateEpisodeSchema = z.object({
   thumbnailUrl: z.string().url().optional().nullable(),
   videoUrl: z.string().url().optional().nullable(),
   r2Key: z.string().optional().nullable(),
+  r2VideoPath: z.string().optional().nullable(),
+  r2SubtitlePath: z.string().optional().nullable(),
   thumbnailR2Key: z.string().optional().nullable(),
   airDate: z.string().optional().nullable().transform(val => val ? new Date(val) : null)
 })
@@ -96,23 +98,23 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    
+
     // Validate request body
     const validatedData = updateEpisodeSchema.parse(body)
-    
+
     // Check if episode exists
     const existingEpisode = await prisma.episode.findUnique({
       where: { id },
       include: { season: true }
     })
-    
+
     if (!existingEpisode) {
       return NextResponse.json(
         { error: 'Episódio não encontrado' },
         { status: 404 }
       )
     }
-    
+
     // If changing episode number, check for conflicts
     if (validatedData.episodeNumber && validatedData.episodeNumber !== existingEpisode.episodeNumber) {
       const conflictingEpisode = await prisma.episode.findFirst({
@@ -122,10 +124,10 @@ export async function PUT(
           id: { not: id }
         }
       })
-      
+
       if (conflictingEpisode) {
         return NextResponse.json(
-          { 
+          {
             error: `Já existe o episódio ${validatedData.episodeNumber} nesta temporada`,
             conflictType: 'episodeNumber'
           },
@@ -133,15 +135,15 @@ export async function PUT(
         )
       }
     }
-    
+
     // Update episode
     const updateData: Partial<typeof validatedData> & { thumbnail?: string | null } = { ...validatedData }
-    
+
     // Update legacy thumbnail field if thumbnailUrl is provided
     if (validatedData.thumbnailUrl !== undefined) {
       updateData.thumbnail = validatedData.thumbnailUrl
     }
-    
+
     const updatedEpisode = await prisma.episode.update({
       where: { id },
       data: updateData,
@@ -160,21 +162,21 @@ export async function PUT(
         }
       }
     })
-    
+
     // 🛡️ Sanitizar resposta baseado no contexto
     const sanitizedResponse = sanitizeEpisodeByContext(updatedEpisode, request)
     return NextResponse.json(sanitizedResponse)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Dados inválidos',
           details: error.errors
         },
         { status: 400 }
       )
     }
-    
+
     console.error('Error updating episode:', error)
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
@@ -189,7 +191,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    
+
     // Check if episode exists
     const existingEpisode = await prisma.episode.findUnique({
       where: { id },
@@ -205,21 +207,21 @@ export async function DELETE(
         }
       }
     })
-    
+
     if (!existingEpisode) {
       return NextResponse.json(
         { error: 'Episódio não encontrado' },
         { status: 404 }
       )
     }
-    
+
     // Delete episode
     await prisma.episode.delete({
       where: { id }
     })
-    
+
     return NextResponse.json(
-      { 
+      {
         message: 'Episódio excluído com sucesso',
         deletedEpisode: {
           id: existingEpisode.id,

@@ -14,6 +14,7 @@ interface Episode {
   videoUrl?: string
   r2Key?: string
   r2VideoPath?: string
+  r2SubtitlePath?: string
   thumbnailR2Key?: string
   airDate?: string
   createdAt: string
@@ -49,11 +50,12 @@ type FormData = {
   seasonId: string
   r2Key: string
   r2VideoPath: string
+  r2SubtitlePath: string
 }
 
 export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEpisodeModalProps) {
   const [loading, setLoading] = useState(false)
-  
+
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -72,7 +74,8 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
     airDate: '',
     seasonId: '',
     r2Key: '',
-    r2VideoPath: ''
+    r2VideoPath: '',
+    r2SubtitlePath: ''
   })
 
   // Populate form when episode changes
@@ -88,7 +91,8 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
         airDate: episode.airDate ? new Date(episode.airDate).toISOString().split('T')[0] : '',
         seasonId: episode.season?.id || '',
         r2Key: episode.r2Key || '',
-        r2VideoPath: episode.r2VideoPath || ''
+        r2VideoPath: episode.r2VideoPath || '',
+        r2SubtitlePath: episode.r2SubtitlePath || ''
       })
     }
   }, [episode])
@@ -96,7 +100,7 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!episode) return
-    
+
     setLoading(true)
 
     try {
@@ -110,7 +114,8 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
         airDate: formData.airDate ? new Date(formData.airDate).toISOString() : null,
         seasonId: formData.seasonId || null,
         r2Key: formData.r2Key || null,
-        r2VideoPath: formData.r2VideoPath || null
+        r2VideoPath: formData.r2VideoPath || null,
+        r2SubtitlePath: formData.r2SubtitlePath || null
       }
 
       const response = await fetch(`/api/episodes/${episode.id}`, {
@@ -274,7 +279,7 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
               <h3 className="text-lg font-semibold text-white border-b border-gray-700/50 pb-2">
                 Cloudflare R2 Storage
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -332,12 +337,29 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
               </div>
             </div>
 
+            {/* Subtitles Path */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                R2 Subtitle Path
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={formData.r2SubtitlePath}
+                  onChange={(e) => setFormData(prev => ({ ...prev, r2SubtitlePath: e.target.value }))}
+                  className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none font-mono"
+                  placeholder="pasta/legenda.vtt"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Caminho do arquivo .vtt no R2 (para legendas externas)</p>
+            </div>
+
             {/* Media URLs */}
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-white border-b border-gray-700/50 pb-2">
                 URLs de Mídia
               </h3>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   URL do Vídeo
@@ -456,7 +478,7 @@ export function EditEpisodeModal({ episode, isOpen, onClose, onSuccess }: EditEp
             <span>{loading ? 'Salvando...' : 'Salvar Alterações'}</span>
           </button>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }

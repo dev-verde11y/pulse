@@ -26,7 +26,7 @@ const s3Client = new S3Client({
 })
 
 // Configuration: Change this to point to your local HLS folder
-const LOCAL_FOLDER_PATH = path.resolve('hls')
+const LOCAL_FOLDER_PATH = String.raw`C:\Users\verde\Downloads\testes\output`
 // Configuration: Change this to the destination folder in R2 (e.g., 'animes/slug/hls')
 const R2_DESTINATION_FOLDER = 'hls-test'
 
@@ -36,7 +36,9 @@ async function uploadFile(filePath: string, r2Path: string) {
         ? 'application/vnd.apple.mpegurl'
         : filePath.endsWith('.ts')
             ? 'video/MP2T'
-            : 'application/octet-stream'
+            : filePath.endsWith('.vtt')
+                ? 'text/vtt'
+                : 'application/octet-stream'
 
     console.log(`📤 Uploading: ${r2Path} (${contentType})...`)
 
