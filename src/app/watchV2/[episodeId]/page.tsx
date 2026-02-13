@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { WatchClientV2 } from './WatchClientV2'
-import { Episode, SubtitleTrack } from '@/types/anime'
+import { Episode, SubtitleTrack, Anime } from '@/types/anime'
 
 export default async function WatchPageV2({ params }: { params: Promise<{ episodeId: string }> }) {
   const session = await auth()
@@ -23,7 +23,7 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
           seasonNumber: true
         }
       },
-      // @ts-ignore - Prisma include types might be out of sync
+      // @ts-expect-error - Prisma include types might be out of sync
       subtitles: true
     }
   })
@@ -94,7 +94,7 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
           url: s.url.startsWith('http') ? s.url : `${process.env.API_URL_pub}/${s.url}`
         }))
       } as Episode}
-      initialAnime={animeData as unknown as any}
+      initialAnime={animeData as unknown as Anime}
       allEpisodes={allEpisodes}
       episodeId={episodeId}
       initialProgressSaved={initialProgressSaved}
