@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { WatchClientV2 } from './WatchClientV2'
-import { Episode } from '@/types/anime'
+import { Episode, SubtitleTrack } from '@/types/anime'
 
 export default async function WatchPageV2({ params }: { params: Promise<{ episodeId: string }> }) {
   const session = await auth()
@@ -22,7 +22,9 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
           animeId: true,
           seasonNumber: true
         }
-      }
+      },
+      // @ts-ignore - Prisma include types might be out of sync
+      subtitles: true
     }
   })
 
@@ -30,8 +32,14 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
     redirect('/dashboard')
   }
 
+  // Cast with unknown intermediate to satisfy TS since relations might be missing from base Episode type
+  const typedEpisode = (rawEpisode as unknown) as Episode & {
+    season: { animeId: string; seasonNumber: number },
+    subtitles: SubtitleTrack[]
+  }
+
   const animeData = await prisma.anime.findUnique({
-    where: { id: rawEpisode.season.animeId },
+    where: { id: typedEpisode.season.animeId },
     include: {
       seasons: {
         include: {
@@ -73,18 +81,20 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
   return (
     <WatchClientV2
       initialEpisode={{
-        ...rawEpisode,
-        seasonNumber: rawEpisode.season.seasonNumber,
-        hasVideo: !!(rawEpisode.r2Key || rawEpisode.videoUrl),
-        r2SubtitlePath: rawEpisode.r2SubtitlePath
-          ? rawEpisode.r2SubtitlePath.startsWith('http')
-            ? rawEpisode.r2SubtitlePath
-            : `${process.env.API_URL_pub}/${rawEpisode.r2SubtitlePath}`
-          : null
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      initialAnime={animeData as any}
+        ...typedEpisode,
+        seasonNumber: typedEpisode.season.seasonNumber,
+        hasVideo: !!(typedEpisode.r2Key || typedEpisode.videoUrl),
+        r2SubtitlePath: typedEpisode.r2SubtitlePath
+          ? typedEpisode.r2SubtitlePath.startsWith('http')
+            ? typedEpisode.r2SubtitlePath
+            : `${process.env.API_URL_pub}/${typedEpisode.r2SubtitlePath}`
+          : null,
+        subtitles: typedEpisode.subtitles.map(s => ({
+          ...s,
+          url: s.url.startsWith('http') ? s.url : `${process.env.API_URL_pub}/${s.url}`
+        }))
+      } as Episode}
+      initialAnime={animeData as unknown as any}
       allEpisodes={allEpisodes}
       episodeId={episodeId}
       initialProgressSaved={initialProgressSaved}

@@ -65,6 +65,16 @@ export interface Episode {
     animeId: string
     seasonNumber: number
   }
+  subtitles?: SubtitleTrack[]
+}
+
+export interface SubtitleTrack {
+  id: string
+  episodeId: string
+  language: string
+  label: string
+  url: string
+  r2Key: string
 }
 
 export interface WatchHistoryItem {

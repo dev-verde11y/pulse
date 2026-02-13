@@ -28,7 +28,7 @@ const s3Client = new S3Client({
 // Configuration: Change this to point to your local HLS folder
 const LOCAL_FOLDER_PATH = String.raw`C:\Users\verde\Downloads\testes\output`
 // Configuration: Change this to the destination folder in R2 (e.g., 'animes/slug/hls')
-const R2_DESTINATION_FOLDER = 'hls-test'
+const R2_DESTINATION_FOLDER = 'animes/jujutsu-kaisen/season-3/episode-1'
 
 async function uploadFile(filePath: string, r2Path: string) {
     const fileContent = fs.readFileSync(filePath)
@@ -89,8 +89,34 @@ uploadFolder(LOCAL_FOLDER_PATH, R2_DESTINATION_FOLDER)
         if (publicUrl) {
             console.log('\n🔗  Public URLs (Copy these to Admin):')
             console.log(`📺 Playlist: ${publicUrl}/${R2_DESTINATION_FOLDER}/master.m3u8`)
-            console.log(`📝 Subtitle: ${publicUrl}/${R2_DESTINATION_FOLDER}/legenda_ptbr.vtt`)
-            console.log(`\n(Adjust filenames if yours are different)`)
+
+            // Detect and list all VTT files
+            const findVttFiles = (dir: string, base: string = ''): string[] => {
+                const results: string[] = []
+                const list = fs.readdirSync(dir)
+                list.forEach(file => {
+                    const filePath = path.join(dir, file)
+                    const stat = fs.statSync(filePath)
+                    if (stat.isDirectory()) {
+                        results.push(...findVttFiles(filePath, base ? `${base}/${file}` : file))
+                    } else if (file.endsWith('.vtt')) {
+                        results.push(base ? `${base}/${file}` : file)
+                    }
+                })
+                return results
+            }
+
+            const vttFiles = findVttFiles(LOCAL_FOLDER_PATH)
+            if (vttFiles.length > 0) {
+                console.log('\n📝 Subtitles found:')
+                vttFiles.forEach(vtt => {
+                    const langMatch = vtt.match(/subtitle_(.*)\.vtt/)
+                    const lang = langMatch ? langMatch[1] : 'unknown'
+                    console.log(`- [${lang.toUpperCase()}]: ${publicUrl}/${R2_DESTINATION_FOLDER}/${vtt.replace(/\\/g, '/')}`)
+                })
+            }
+
+            console.log(`\n(Add these to the new Subtitles table in Prisma Studio)`)
         } else {
             console.log('\n⚠️ API_URL_pub not found in .env. Cannot generate public URLs.')
         }

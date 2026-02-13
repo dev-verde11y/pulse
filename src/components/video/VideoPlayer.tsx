@@ -14,7 +14,8 @@ import {
   Cog6ToothIcon,
   LanguageIcon,
   ChevronRightIcon,
-  ChatBubbleBottomCenterTextIcon
+  ChatBubbleBottomCenterTextIcon,
+  Square2StackIcon
 } from '@heroicons/react/24/solid'
 import { Episode } from '@/types/anime'
 import { api } from '@/lib/api'
@@ -29,6 +30,12 @@ interface VideoPlayerProps {
   animeId: string
   initialProgress?: number
   subtitleTrackUrl?: string
+  externalSubtitles?: {
+    id: string
+    languageCode: string
+    label: string
+    url: string
+  }[]
 
   // Watch Party Props
   onPlayCallback?: () => void
@@ -48,6 +55,7 @@ export function VideoPlayer({
   animeId,
   initialProgress = 0,
   subtitleTrackUrl,
+  externalSubtitles = [],
   onPlayCallback,
   onPauseCallback,
   onSeekCallback,
@@ -91,10 +99,42 @@ export function VideoPlayer({
   const [isAmbilightEnabled] = useState(true)
   const lastApiSyncRef = useRef<number>(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Auto-hide controls logic
+  const resetControlsTimer = useCallback(() => {
+    setShowControls(true)
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current)
+    if (isPlaying) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false)
+        setShowQualityMenu(false)
+        setShowAudioMenu(false)
+        setShowSubtitleMenu(false)
+      }, 3000)
+    }
+  }, [isPlaying])
+
+  useEffect(() => {
+    resetControlsTimer()
+    return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current)
+    }
+  }, [isPlaying, resetControlsTimer])
 
   // Custom Subtitle State
   const [customSubtitleText, setCustomSubtitleText] = useState('')
+  const [selectedExternalSubtitle, setSelectedExternalSubtitle] = useState<string | null>(null)
   const parsedCuesRef = useRef<{ start: number, end: number, text: string }[]>([])
+
+  // Initialize selected subtitle
+  useEffect(() => {
+    if (externalSubtitles.length > 0 && !selectedExternalSubtitle) {
+      // Default to PT-BR if available, otherwise first one
+      const por = externalSubtitles.find(s => s.languageCode.toLowerCase().includes('por') || s.languageCode.toLowerCase().includes('pt'))
+      setSelectedExternalSubtitle(por ? por.id : externalSubtitles[0].id)
+    }
+  }, [externalSubtitles, selectedExternalSubtitle])
 
   const { user } = useAuth()
 
@@ -241,12 +281,30 @@ export function VideoPlayer({
 
   // Manual VTT Parsing and Injection
   useEffect(() => {
-    if (!subtitleTrackUrl) return
+    // If we have external subtitles but none selected yet, wait for initialization
+    if (externalSubtitles.length > 0 && !selectedExternalSubtitle) {
+      return
+    }
+
+    let subtitleUrl = externalSubtitles.find(s => s.id === selectedExternalSubtitle)?.url || subtitleTrackUrl
+
+    if (!subtitleUrl) {
+      parsedCuesRef.current = []
+      setCustomSubtitleText('')
+      return
+    }
+
+    // Normalize URL: remove potential double slashes (except after protocol)
+    subtitleUrl = subtitleUrl.replace(/([^:]\/)\/+/g, '$1')
 
     const fetchAndParseSubtitle = async () => {
       try {
-        const response = await fetch(subtitleTrackUrl)
-        if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`)
+        console.log('📝 [VideoPlayer] Fetching subtitle:', subtitleUrl)
+        const response = await fetch(subtitleUrl)
+        if (!response.ok) {
+          console.warn(`⚠️ [VideoPlayer] Subtitle 404 or Error: ${response.statusText} at ${subtitleUrl}`)
+          return
+        }
         const text = await response.text()
 
         // Simple VTT Parser
@@ -262,27 +320,20 @@ export function VideoPlayer({
           if (parts.length === 3) {
             seconds += parseInt(parts[0]) * 3600
             seconds += parseInt(parts[1]) * 60
-            seconds += parseFloat(parts[2])
+            seconds += parseFloat(parts[2].replace(',', '.'))
           } else if (parts.length === 2) {
             seconds += parseInt(parts[0]) * 60
-            seconds += parseFloat(parts[1])
+            seconds += parseFloat(parts[1].replace(',', '.'))
           }
           return seconds
         }
 
-        const timeRegex = /((?:\d{2}:)?\d{2}:\d{2}\.\d{3})\s-->\s((?:\d{2}:)?\d{2}:\d{2}\.\d{3})/
+        const timeRegex = /((?:\d{2}:)?\d{2}:\d{2}[\.,]\d{3})\s-->\s((?:\d{2}:)?\d{2}:\d{2}[\.,]\d{3})/
         const newCues: { start: number, end: number, text: string }[] = []
 
         for (let line of lines) {
           line = line.trim()
-          if (!line) {
-            if (state === 1 && currentText) {
-              newCues.push({ start: currentStart, end: currentEnd, text: currentText.trim() })
-              currentText = ''
-              state = 0
-            }
-            continue
-          }
+          if (!line || line === 'WEBVTT') continue
 
           const timeMatch = line.match(timeRegex)
           if (timeMatch) {
@@ -294,7 +345,13 @@ export function VideoPlayer({
             currentEnd = timeToSeconds(timeMatch[2])
             state = 1
           } else if (state === 1) {
-            currentText += (currentText ? '\n' : '') + line
+            if (line === '') {
+              newCues.push({ start: currentStart, end: currentEnd, text: currentText.trim() })
+              currentText = ''
+              state = 0
+            } else {
+              currentText += (currentText ? '\n' : '') + line
+            }
           }
         }
         if (state === 1 && currentText) {
@@ -302,10 +359,14 @@ export function VideoPlayer({
         }
 
         parsedCuesRef.current = newCues
+        console.log(`✅ [VideoPlayer] Loaded ${newCues.length} cues.`)
 
-        // Auto-enable logic
-        setSubtitles([{ id: 0, lang: 'pt-BR', label: 'PT-BR' }])
-        setCurrentSubtitle(0)
+        // Update internal subtitles state for the menu if needed
+        if (externalSubtitles.length > 0) {
+          setSubtitles(externalSubtitles.map((s, i) => ({ id: i, lang: s.languageCode, label: s.label })))
+          const selectedIdx = externalSubtitles.findIndex(s => s.id === selectedExternalSubtitle)
+          setCurrentSubtitle(selectedIdx)
+        }
 
       } catch (error) {
         console.error('❌ [Player] VTT Parsing Error:', error)
@@ -313,7 +374,7 @@ export function VideoPlayer({
     }
 
     fetchAndParseSubtitle()
-  }, [subtitleTrackUrl]) // Run when URL changes
+  }, [subtitleTrackUrl, externalSubtitles, selectedExternalSubtitle]) // Run when URL changes
 
   // Sync Logic (HLS)
   const changeAudioTrack = (trackId: number) => {
@@ -333,6 +394,17 @@ export function VideoPlayer({
   }
 
   const changeSubtitle = (trackId: number) => {
+    if (externalSubtitles.length > 0) {
+      if (trackId === -1) {
+        setSelectedExternalSubtitle(null)
+      } else {
+        setSelectedExternalSubtitle(externalSubtitles[trackId].id)
+      }
+      setCurrentSubtitle(trackId)
+      setShowSubtitleMenu(false)
+      return
+    }
+
     if (hlsRef.current) {
       hlsRef.current.subtitleTrack = trackId
       setCurrentSubtitle(trackId)
@@ -451,7 +523,7 @@ export function VideoPlayer({
       if (!duration && videoRef.current.duration) setDuration(videoRef.current.duration)
 
       // Custom Subtitle Logic
-      if (currentSubtitle === 0 && parsedCuesRef.current.length > 0) {
+      if (currentSubtitle !== -1 && parsedCuesRef.current.length > 0) {
         // Find visible cue
         const activeCue = parsedCuesRef.current.find(cue => time >= cue.start && time <= cue.end)
         setCustomSubtitleText(activeCue ? activeCue.text : '')
@@ -483,6 +555,18 @@ export function VideoPlayer({
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
+  const togglePiP = async () => {
+    try {
+      if (videoRef.current && document.pictureInPictureElement !== videoRef.current) {
+        await videoRef.current.requestPictureInPicture()
+      } else if (document.exitPictureInPicture) {
+        await document.exitPictureInPicture()
+      }
+    } catch (error) {
+      console.error('PiP Error:', error)
+    }
+  }
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen()
@@ -496,10 +580,10 @@ export function VideoPlayer({
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-black rounded-3xl overflow-hidden group shadow-2xl border border-white/5"
+      className={`relative w-full bg-black rounded-none md:rounded-3xl overflow-hidden group shadow-2xl border-y md:border border-white/5 transition-all duration-500 ${!showControls && isPlaying ? 'cursor-none' : 'cursor-default'}`}
       style={{ aspectRatio: '16/9' }}
-      onMouseMove={() => { setShowControls(true); }}
-      onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
+      onMouseMove={resetControlsTimer}
+      onClick={resetControlsTimer}
     >
       {/* Ambilight Canvas */}
       {isAmbilightEnabled && (
@@ -533,7 +617,7 @@ export function VideoPlayer({
 
       {/* Custom Subtitle Overlay */}
       {customSubtitleText && (
-        <div className="absolute bottom-20 left-0 right-0 text-center z-20 pointer-events-none px-4">
+        <div className="absolute bottom-12 md:bottom-20 left-0 right-0 text-center z-20 pointer-events-none px-4">
           <span
             className="inline-block bg-black/60 text-white text-lg md:text-xl lg:text-2xl px-4 py-2 rounded-lg backdrop-blur-sm leading-relaxed whitespace-pre-line shadow-lg"
             dangerouslySetInnerHTML={{ __html: customSubtitleText }}
@@ -542,23 +626,23 @@ export function VideoPlayer({
       )}
 
       {/* Top Bar */}
-      <div className={`absolute top-0 left-0 right-0 z-20 p-8 flex justify-between items-start transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+      <div className={`absolute top-0 left-0 right-0 z-20 p-3 md:p-8 flex justify-between items-start transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
             {/* Show HLS Badge if using HLS */}
-            {qualities.length > 0 && <span className="bg-purple-600 text-white text-[10px] font-black px-2 py-0.5 rounded tracking-widest uppercase">HLS</span>}
-            <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded tracking-widest uppercase">Episódio {episode.episodeNumber}</span>
-            <h3 className="text-white text-xl font-black tracking-tight drop-shadow-lg">{episode.title}</h3>
+            {qualities.length > 0 && <span className="bg-purple-600 text-white text-[7px] md:text-[10px] font-black px-1 md:px-2 py-0.5 rounded tracking-widest uppercase">HLS</span>}
+            <span className="bg-blue-600 text-white text-[7px] md:text-[10px] font-black px-1 md:px-2 py-0.5 rounded tracking-widest uppercase shrink-0">EP {episode.episodeNumber}</span>
+            <h3 className="text-white text-xs md:text-xl font-black tracking-tight drop-shadow-lg truncate max-w-[120px] md:max-w-none">{episode.title}</h3>
           </div>
-          <span className="text-white/40 text-xs font-bold uppercase tracking-widest">Pulse Unlimited • UHD Streaming</span>
+          <span className="hidden md:block text-white/40 text-xs font-bold uppercase tracking-widest">Pulse Unlimited • UHD Streaming</span>
         </div>
 
         <div className="flex gap-4">
           {/* Quality Selector (HLS Only) */}
           {qualities.length > 0 && (
             <div className="relative">
-              <button onClick={() => setShowQualityMenu(!showQualityMenu)} className="flex items-center gap-2 bg-white/5 text-white px-4 py-2 rounded-xl text-xs font-black">
-                <Cog6ToothIcon className="w-4 h-4" />
+              <button onClick={() => setShowQualityMenu(!showQualityMenu)} className="flex items-center gap-1.5 bg-white/5 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black">
+                <Cog6ToothIcon className="w-3 h-3 md:w-4 md:h-4" />
                 {currentQuality === -1 ? 'AUTO' : `${qualities.find(q => q.level === currentQuality)?.height}p`}
               </button>
               {showQualityMenu && (
@@ -575,8 +659,8 @@ export function VideoPlayer({
           {/* Audio Selector (HLS Only) */}
           {audioTracks.length > 0 && (
             <div className="relative">
-              <button onClick={() => setShowAudioMenu(!showAudioMenu)} className="flex items-center gap-2 bg-white/5 text-white px-4 py-2 rounded-xl text-xs font-black">
-                <LanguageIcon className="w-4 h-4" />
+              <button onClick={() => setShowAudioMenu(!showAudioMenu)} className="flex items-center gap-1.5 bg-white/5 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black">
+                <LanguageIcon className="w-3 h-3 md:w-4 md:h-4" />
                 Audio {currentAudioTrack + 1}
               </button>
               {showAudioMenu && (
@@ -592,9 +676,9 @@ export function VideoPlayer({
           {/* Subtitle Selector */}
           {subtitles.length > 0 && (
             <div className="relative">
-              <button onClick={() => { setShowSubtitleMenu(!showSubtitleMenu); setShowQualityMenu(false); setShowAudioMenu(false); }} className="flex items-center gap-2 bg-white/5 text-white px-4 py-2 rounded-xl text-xs font-black">
-                <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
-                {currentSubtitle === -1 ? 'CC OFF' : (subtitles[currentSubtitle]?.label || 'CC')}
+              <button onClick={() => { setShowSubtitleMenu(!showSubtitleMenu); setShowQualityMenu(false); setShowAudioMenu(false); }} className="flex items-center gap-1.5 bg-white/5 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black">
+                <ChatBubbleBottomCenterTextIcon className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="truncate max-w-[50px] md:max-w-none">{currentSubtitle === -1 ? 'OFF' : (subtitles[currentSubtitle]?.label || 'CC')}</span>
               </button>
               {showSubtitleMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-white/10 rounded-xl overflow-hidden min-w-[120px] z-50">
@@ -624,8 +708,8 @@ export function VideoPlayer({
 
       {/* Play/Loading Overlay */}
       <div className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-auto transition-all duration-500 bg-black/20 ${!isPlaying && !loading && !showResumePrompt && (!isWatchParty || currentTime > 0) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <button onClick={handlePlay} className="bg-blue-600/20 backdrop-blur-xl border border-blue-500/20 rounded-full p-8 focus:outline-none pulse-primary">
-          <PlayIcon className="w-12 h-12 text-white ml-2" />
+        <button onClick={handlePlay} className="bg-blue-600/20 backdrop-blur-xl border border-blue-500/20 rounded-full p-6 md:p-8 focus:outline-none pulse-primary">
+          <PlayIcon className="w-8 h-8 md:w-12 md:h-12 text-white ml-1 md:ml-2" />
         </button>
       </div>
 
@@ -638,40 +722,64 @@ export function VideoPlayer({
 
       {/* Resume Prompt */}
       {showResumePrompt && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gray-900/95 backdrop-blur-3xl border border-white/10 p-8 rounded-[40px] shadow-[0_40px_100px_rgba(0,0,0,0.9)] animate-slide-up-soft flex flex-col items-center max-w-sm text-center pointer-events-auto">
-          <div className="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 ring-4 ring-blue-600/10">
-            <PlayIcon className="w-10 h-10 text-blue-500 ml-1" />
-          </div>
-          <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-2">Continuar?</h4>
-          <p className="text-gray-400 text-sm font-medium mb-8 leading-relaxed">Detectamos progresso anterior ({Math.round(initialProgress)}%). Deseja retomar de onde parou?</p>
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+          <div className="bg-gray-900/40 backdrop-blur-3xl border border-white/10 p-8 md:p-12 rounded-[40px] md:rounded-[56px] shadow-[0_80px_160px_-40px_rgba(0,0,0,1)] animate-slide-up-soft flex flex-col items-center max-w-sm w-full text-center pointer-events-auto relative overflow-hidden group/modal">
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent opacity-50" />
 
-          <div className="flex flex-col w-full gap-3">
-            <button onClick={handleResume} className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20">RETOMAR</button>
-            <button onClick={() => { setShowResumePrompt(false); setHasSeekedInitial(true); }} className="w-full bg-white/5 hover:bg-white/10 text-white/60 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all">RECOMEÇAR</button>
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-blue-600/20 rounded-full flex items-center justify-center mb-8 ring-8 ring-blue-600/5 relative z-10 transition-transform duration-700 group-hover/modal:scale-110">
+              <PlayIcon className="w-10 h-10 md:w-12 md:h-12 text-blue-500 ml-1.5 md:ml-2" />
+              <div className="absolute inset-0 rounded-full border-2 border-blue-500/50 animate-ping opacity-20" />
+            </div>
+
+            <h4 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-tighter mb-3 relative z-10">Continuar?</h4>
+            <p className="text-gray-400 text-sm md:text-base font-medium mb-10 leading-relaxed relative z-10 px-2">
+              Detectamos progresso anterior em <span className="text-white font-black">{Math.round(initialProgress)}%</span>. Deseja retomar de onde parou?
+            </p>
+
+            <div className="flex flex-col w-full gap-4 relative z-10">
+              <button
+                onClick={handleResume}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 md:py-5 rounded-2xl md:rounded-3xl font-black text-xs md:text-sm tracking-[0.2em] uppercase transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)]"
+              >
+                RETOMAR SESSÃO
+              </button>
+              <button
+                onClick={() => { setShowResumePrompt(false); setHasSeekedInitial(true); }}
+                className="w-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white py-4 md:py-5 rounded-2xl md:rounded-3xl font-black text-[10px] md:text-xs tracking-[0.2em] uppercase transition-all"
+              >
+                RECOMEÇAR DO ZERO
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Skip Intro */}
       {showSkipIntro && (
-        <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = 110; }} className="absolute bottom-32 left-8 z-30 bg-gray-950/80 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 text-white px-6 py-3 rounded-2xl font-black text-xs tracking-[0.2em] transition-all hover:scale-105 active:scale-95 animate-slide-up-soft flex items-center gap-3 pointer-events-auto">
+        <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = 110; }} className="absolute bottom-24 md:bottom-32 left-4 md:left-8 z-30 bg-gray-950/80 backdrop-blur-xl border border-white/10 hover:border-blue-500/50 text-white px-4 py-2 md:px-6 md:py-3 rounded-2xl font-black text-[9px] md:text-xs tracking-[0.2em] transition-all hover:scale-105 active:scale-95 animate-slide-up-soft flex items-center gap-3 pointer-events-auto">
           PULAR INTRODUÇÃO <ChevronRightIcon className="w-4 h-4 text-blue-500" />
         </button>
       )}
 
       {/* Autoplay Countdown */}
       {autoPlayCountdown !== null && (
-        <div className="absolute bottom-32 right-8 z-30 bg-blue-600/90 backdrop-blur-xl text-white p-6 rounded-3xl border border-white/20 animate-slide-up-soft shadow-2xl flex flex-col items-center min-w-[180px]">
-          <span className="text-[10px] font-black tracking-widest uppercase opacity-70 mb-2">Próximo Episódio</span>
-          <div className="text-4xl font-black mb-4 font-mono">{autoPlayCountdown}s</div>
-          <button onClick={() => onNextEpisode?.()} className="bg-white text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors pointer-events-auto">ASSISTIR AGORA</button>
+        <div className="absolute bottom-24 md:bottom-32 right-4 md:right-8 z-30 bg-blue-600/90 backdrop-blur-xl text-white p-4 md:p-6 rounded-3xl border border-white/20 animate-slide-up-soft shadow-2xl flex flex-col items-center min-w-[140px] md:min-w-[180px]">
+          <span className="text-[8px] md:text-[10px] font-black tracking-widest uppercase opacity-70 mb-1 md:mb-2">Próximo Episódio</span>
+          <div className="text-2xl md:text-4xl font-black mb-2 md:mb-4 font-mono">{autoPlayCountdown}s</div>
+          <button onClick={() => onNextEpisode?.()} className="bg-white text-blue-600 px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors pointer-events-auto">ASSISTIR AGORA</button>
         </div>
       )}
 
-      {/* Controls */}
-      <div className={`absolute bottom-0 left-0 right-0 z-40 p-8 transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-        {/* Slider */}
-        <div className="flex flex-col gap-4 mb-6 relative">
+      {/* Controls Container */}
+      <div
+        className={`absolute bottom-0 left-0 right-0 z-40 p-4 md:p-8 transition-all duration-700 pointer-events-none
+          ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
+        `}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent -z-10" />
+
+        {/* Slider Area */}
+        <div className="flex flex-col gap-4 mb-6 relative group/slider">
           <input
             type="range"
             min="0"
@@ -684,27 +792,37 @@ export function VideoPlayer({
                 if (isWatchParty) onSeekCallback?.(newTime)
               }
             }}
-            className="video-slider w-full h-1.5 pointer-events-auto"
+            className="video-slider w-full h-1 md:h-1.5 pointer-events-auto transition-all group-hover/slider:h-2"
             style={{ '--progress': `${(currentTime / (duration || 1)) * 100}%` } as React.CSSProperties}
           />
-          <div className="flex justify-between items-center text-[10px] font-black font-mono text-white/50 tracking-widest">
-            <span>{formatTime(currentTime)}</span>
-            <span className="text-white/80">{formatTime(duration)}</span>
+          <div className="flex justify-between items-center text-[10px] md:text-xs font-black font-mono text-white/50 tracking-widest px-1">
+            <span className="text-blue-500">{formatTime(currentTime)}</span>
+            <span className="text-white/30">{formatTime(duration)}</span>
           </div>
         </div>
 
-        {/* Bottom Buttons */}
+        {/* Bottom Bar Area */}
         <div className="flex items-center justify-between pointer-events-auto">
-          <div className="flex items-center gap-8">
-            <button onClick={handlePlay} className="text-white hover:text-blue-500 transition-all hover:scale-110 active:scale-90">
-              {isPlaying ? <PauseIcon className="w-8 h-8" /> : <PlayIcon className="w-8 h-8 ml-1" />}
+          <div className="flex items-center gap-4 md:gap-10">
+            <button onClick={handlePlay} className="text-white hover:text-blue-500 transition-all hover:scale-110 active:scale-90 p-1">
+              {isPlaying ? <PauseIcon className="w-8 h-8 md:w-10 md:h-10" /> : <PlayIcon className="w-8 h-8 md:w-10 md:h-10 ml-1" />}
             </button>
-            <div className="flex items-center gap-4">
-              {hasPreviousEpisode && <button onClick={onPreviousEpisode} className="text-white/60 hover:text-white transition-all"><BackwardIcon className="w-6 h-6" /></button>}
-              {hasNextEpisode && <button onClick={onNextEpisode} className="text-white/60 hover:text-white transition-all"><ForwardIcon className="w-6 h-6" /></button>}
+
+            <div className="flex items-center gap-6 md:gap-8">
+              {hasPreviousEpisode && (
+                <button onClick={onPreviousEpisode} className="text-white/40 hover:text-white transition-all transform hover:scale-110 active:scale-90">
+                  <BackwardIcon className="w-7 h-7 md:w-8 md:h-8" />
+                </button>
+              )}
+              {hasNextEpisode && (
+                <button onClick={onNextEpisode} className="text-white/40 hover:text-white transition-all transform hover:scale-110 active:scale-90">
+                  <ForwardIcon className="w-7 h-7 md:w-8 md:h-8" />
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
-              <button onClick={() => setIsMuted(!isMuted)} className="text-white/80 hover:text-white">
+
+            <div className="hidden md:flex items-center gap-4 bg-white/5 backdrop-blur-xl px-5 py-2.5 rounded-2xl border border-white/5 group/volume">
+              <button onClick={() => setIsMuted(!isMuted)} className="text-white/60 hover:text-white transition-colors">
                 {isMuted || volume === 0 ? <SpeakerXMarkIcon className="w-5 h-5 text-red-500" /> : <SpeakerWaveIcon className="w-5 h-5" />}
               </button>
               <input
@@ -717,13 +835,28 @@ export function VideoPlayer({
                   if (videoRef.current) videoRef.current.volume = val
                   setIsMuted(val === 0)
                 }}
-                className="video-slider w-16"
+                className="video-slider w-20 h-1 opacity-0 group-hover:opacity-100 transition-opacity"
               />
             </div>
           </div>
-          <button onClick={toggleFullscreen} className="text-white/60 hover:text-white transition-all hover:scale-110">
-            {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6" /> : <ArrowsPointingOutIcon className="w-6 h-6" />}
-          </button>
+
+          <div className="flex items-center gap-3 md:gap-6">
+            <button
+              onClick={togglePiP}
+              className="text-white/40 hover:text-blue-500 transition-all p-2 rounded-xl hover:bg-blue-500/10"
+              title="Miniatura (PiP)"
+            >
+              <Square2StackIcon className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+
+            <button
+              onClick={toggleFullscreen}
+              className="text-white/40 hover:text-white transition-all hover:scale-110 p-2"
+              title="Tela Cheia"
+            >
+              {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6 md:w-7 md:h-7" /> : <ArrowsPointingOutIcon className="w-6 h-6 md:w-7 md:h-7" />}
+            </button>
+          </div>
         </div>
       </div>
     </div>

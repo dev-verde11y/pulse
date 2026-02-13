@@ -421,12 +421,29 @@ model Episode {
   // Relations
   season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   huntingGroups HuntingGroup[]
+  subtitles     Subtitle[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([seasonId, episodeNumber])
   @@map("episodes")
+}
+
+model Subtitle {
+  id        String   @id @default(uuid())
+  episodeId String
+  language  String   // e.g., "por", "eng", "ara"
+  label     String   // e.g., "Português", "English", "العربية"
+  url       String   // R2 public URL
+  r2Key     String   // R2 key for the .vtt file
+  
+  episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subtitles")
 }
 
 model HeroBanner {
