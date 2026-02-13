@@ -83,5 +83,16 @@ console.log(`📂 Source: ${LOCAL_FOLDER_PATH}`)
 console.log(`☁️  Destination: ${R2_DESTINATION_FOLDER}`)
 
 uploadFolder(LOCAL_FOLDER_PATH, R2_DESTINATION_FOLDER)
-    .then(() => console.log('✨ All uploads completed!'))
+    .then(() => {
+        console.log('✨ All uploads completed!')
+        const publicUrl = process.env.API_URL_pub
+        if (publicUrl) {
+            console.log('\n🔗  Public URLs (Copy these to Admin):')
+            console.log(`📺 Playlist: ${publicUrl}/${R2_DESTINATION_FOLDER}/master.m3u8`)
+            console.log(`📝 Subtitle: ${publicUrl}/${R2_DESTINATION_FOLDER}/legenda_ptbr.vtt`)
+            console.log(`\n(Adjust filenames if yours are different)`)
+        } else {
+            console.log('\n⚠️ API_URL_pub not found in .env. Cannot generate public URLs.')
+        }
+    })
     .catch((err) => console.error('❌ Fatal error:', err))

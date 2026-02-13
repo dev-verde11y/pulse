@@ -75,7 +75,12 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
       initialEpisode={{
         ...rawEpisode,
         seasonNumber: rawEpisode.season.seasonNumber,
-        hasVideo: !!(rawEpisode.r2Key || rawEpisode.videoUrl)
+        hasVideo: !!(rawEpisode.r2Key || rawEpisode.videoUrl),
+        r2SubtitlePath: rawEpisode.r2SubtitlePath
+          ? rawEpisode.r2SubtitlePath.startsWith('http')
+            ? rawEpisode.r2SubtitlePath
+            : `${process.env.API_URL_pub}/${rawEpisode.r2SubtitlePath}`
+          : null
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

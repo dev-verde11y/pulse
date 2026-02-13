@@ -62,6 +62,10 @@ export function VideoPlayer({
   const containerRef = useRef<HTMLDivElement>(null)
   const hlsRef = useRef<Hls | null>(null)
 
+  useEffect(() => {
+    console.log('🎬 [VideoPlayer] Mounted. Props:', { episodeId: episode.id, subtitleTrackUrl })
+  }, [episode.id, subtitleTrackUrl])
+
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -92,6 +96,10 @@ export function VideoPlayer({
   const [previewThumb, setPreviewThumb] = useState<{ x: number, time: number } | null>(null)
   const lastApiSyncRef = useRef<number>(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Custom Subtitle State
+  const [customSubtitleText, setCustomSubtitleText] = useState('')
+  const parsedCuesRef = useRef<{ start: number, end: number, text: string }[]>([])
 
   const { user } = useAuth()
 
@@ -219,14 +227,81 @@ export function VideoPlayer({
 
   }, [episode.id, episode.videoUrl, episode.r2Key])
 
+  // Manual VTT Parsing and Injection
   useEffect(() => {
-    // If no HLS subtitles found, but we have an external URL, add it
-    if (subtitles.length === 0 && subtitleTrackUrl) {
-      setSubtitles([{ id: 0, lang: 'pt-BR', label: 'Português (External)' }])
-      // We don't auto-enable it to respect user choice, or we could:
-      // setCurrentSubtitle(0)
+    if (!subtitleTrackUrl) return
+
+    const fetchAndParseSubtitle = async () => {
+      try {
+        const response = await fetch(subtitleTrackUrl)
+        if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`)
+        const text = await response.text()
+
+        // Simple VTT Parser
+        const lines = text.split(/\r?\n/)
+        let currentStart = 0
+        let currentEnd = 0
+        let currentText = ''
+        let state = 0
+
+        const timeToSeconds = (timeStr: string) => {
+          const parts = timeStr.split(':')
+          let seconds = 0
+          if (parts.length === 3) {
+            seconds += parseInt(parts[0]) * 3600
+            seconds += parseInt(parts[1]) * 60
+            seconds += parseFloat(parts[2])
+          } else if (parts.length === 2) {
+            seconds += parseInt(parts[0]) * 60
+            seconds += parseFloat(parts[1])
+          }
+          return seconds
+        }
+
+        const timeRegex = /((?:\d{2}:)?\d{2}:\d{2}\.\d{3})\s-->\s((?:\d{2}:)?\d{2}:\d{2}\.\d{3})/
+        const newCues: { start: number, end: number, text: string }[] = []
+
+        for (let line of lines) {
+          line = line.trim()
+          if (!line) {
+            if (state === 1 && currentText) {
+              newCues.push({ start: currentStart, end: currentEnd, text: currentText.trim() })
+              currentText = ''
+              state = 0
+            }
+            continue
+          }
+
+          const timeMatch = line.match(timeRegex)
+          if (timeMatch) {
+            if (state === 1 && currentText) {
+              newCues.push({ start: currentStart, end: currentEnd, text: currentText.trim() })
+              currentText = ''
+            }
+            currentStart = timeToSeconds(timeMatch[1])
+            currentEnd = timeToSeconds(timeMatch[2])
+            state = 1
+          } else if (state === 1) {
+            currentText += (currentText ? '\n' : '') + line
+          }
+        }
+        if (state === 1 && currentText) {
+          newCues.push({ start: currentStart, end: currentEnd, text: currentText.trim() })
+        }
+
+        parsedCuesRef.current = newCues
+
+        // Auto-enable logic
+        setSubtitles([{ id: 0, lang: 'pt-BR', label: 'Português - PT-BR' }])
+        setCurrentSubtitle(0)
+
+      } catch (error) {
+        console.error('❌ [Player] VTT Parsing Error:', error)
+      }
     }
-  }, [subtitles.length, subtitleTrackUrl])
+
+    fetchAndParseSubtitle()
+  }, [subtitleTrackUrl]) // Run when URL changes
 
   // Sync Logic (HLS)
   const changeAudioTrack = (trackId: number) => {
@@ -340,12 +415,16 @@ export function VideoPlayer({
   const handlePlay = async () => {
     if (videoRef.current) {
       if (videoRef.current.paused) {
-        await videoRef.current.play().catch(console.error)
-        setIsPlaying(true)
-        if (isWatchParty) onPlayCallback?.()
+        try {
+          await videoRef.current.play()
+          if (isWatchParty) onPlayCallback?.()
+        } catch (error: any) {
+          if (error.name !== 'AbortError') {
+            console.error('Playback error:', error)
+          }
+        }
       } else {
         videoRef.current.pause()
-        setIsPlaying(false)
         if (isWatchParty) onPauseCallback?.()
         saveProgressToAPI(videoRef.current.currentTime, videoRef.current.duration, true)
       }
@@ -354,8 +433,18 @@ export function VideoPlayer({
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime)
+      const time = videoRef.current.currentTime
+      setCurrentTime(time)
       if (!duration && videoRef.current.duration) setDuration(videoRef.current.duration)
+
+      // Custom Subtitle Logic
+      if (currentSubtitle === 0 && parsedCuesRef.current.length > 0) {
+        // Find visible cue
+        const activeCue = parsedCuesRef.current.find(cue => time >= cue.start && time <= cue.end)
+        setCustomSubtitleText(activeCue ? activeCue.text : '')
+      } else {
+        setCustomSubtitleText('')
+      }
 
       // Skip Intro Logic
       if (videoRef.current.currentTime > 40 && videoRef.current.currentTime < 110) setShowSkipIntro(true)
@@ -412,6 +501,7 @@ export function VideoPlayer({
       <video
         ref={videoRef}
         className="relative w-full h-full cursor-none z-10"
+        crossOrigin="anonymous"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
@@ -425,17 +515,18 @@ export function VideoPlayer({
         onClick={handlePlay}
         playsInline
       >
-        {/* External Subtitle Track */}
-        {subtitleTrackUrl && (
-          <track
-            kind="subtitles"
-            src={subtitleTrackUrl}
-            srcLang="pt-BR"
-            label="Português"
-            default={currentSubtitle === 0}
-          />
-        )}
+        {/* Native tracks removed in favor of custom overlay */}
       </video>
+
+      {/* Custom Subtitle Overlay */}
+      {customSubtitleText && (
+        <div className="absolute bottom-20 left-0 right-0 text-center z-20 pointer-events-none px-4">
+          <span
+            className="inline-block bg-black/60 text-white text-lg md:text-xl lg:text-2xl px-4 py-2 rounded-lg backdrop-blur-sm leading-relaxed whitespace-pre-line shadow-lg"
+            dangerouslySetInnerHTML={{ __html: customSubtitleText }}
+          />
+        </div>
+      )}
 
       {/* Top Bar */}
       <div className={`absolute top-0 left-0 right-0 z-20 p-8 flex justify-between items-start transition-all duration-500 ${showControls || !isPlaying ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
