@@ -180,10 +180,15 @@ export function VideoPlayer({
         setCurrentAudioTrack(data.id)
       })
 
+
       hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (event, data) => {
-        console.log(`Subtitle switched to: ${data.id}`)
+        if (data.id !== -1) console.log(`Subtitle switched to: ${data.id}`)
         setCurrentSubtitle(data.id)
       })
+
+
+      let recoverDecodingErrorDate = 0
+      let recoverSwapAudioCodecDate = 0
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
@@ -194,17 +199,23 @@ export function VideoPlayer({
               break
             case Hls.ErrorTypes.MEDIA_ERROR:
               console.error('[VideoPlayer] Fatal media error encountered, trying to recover:', data)
-              hls.recoverMediaError()
+              const now = Date.now()
+              if (!recoverDecodingErrorDate || (now - recoverDecodingErrorDate) > 3000) {
+                recoverDecodingErrorDate = Date.now()
+                hls.recoverMediaError()
+              } else if (!recoverSwapAudioCodecDate || (now - recoverSwapAudioCodecDate) > 3000) {
+                recoverSwapAudioCodecDate = Date.now()
+                hls.swapAudioCodec()
+                hls.recoverMediaError()
+              } else {
+                console.error('[VideoPlayer] Fatal media error, recovery failed:', data)
+                hls.destroy()
+              }
               break
             default:
               console.error('[VideoPlayer] Fatal error, cannot recover:', data)
               hls.destroy()
               break
-          }
-        } else {
-          // Non-fatal errors
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            console.warn('[VideoPlayer] Non-fatal network error:', data)
           }
         }
       })
@@ -293,7 +304,7 @@ export function VideoPlayer({
         parsedCuesRef.current = newCues
 
         // Auto-enable logic
-        setSubtitles([{ id: 0, lang: 'pt-BR', label: 'Português - PT-BR' }])
+        setSubtitles([{ id: 0, lang: 'pt-BR', label: 'PT-BR' }])
         setCurrentSubtitle(0)
 
       } catch (error) {
