@@ -289,6 +289,7 @@ export function VideoPlayer({
       videoRef.current.currentTime = externalTime
       setCurrentTime(externalTime)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalIsPlaying, externalTime, isWatchParty]) // Removed dependencies that cause loops like isPlaying/currentTime
 
 

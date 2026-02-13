@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
     try {
+        const params = await props.params
         const userId = request.headers.get('x-user-id')
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

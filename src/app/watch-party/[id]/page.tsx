@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use, useRef } from 'react'
+import { useState, useEffect, use, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
@@ -69,9 +69,8 @@ export default function WatchPartyPage({ params }: WatchPartyPageProps) {
 
     // Polling logic for sync
     useEffect(() => {
-        let interval: NodeJS.Timeout
-
         const fetchGroupState = async () => {
+
             try {
                 const res = await fetch(`/api/hunting-groups/${id}`, { cache: 'no-store' })
                 if (!res.ok) {
@@ -90,7 +89,7 @@ export default function WatchPartyPage({ params }: WatchPartyPageProps) {
         }
 
         fetchGroupState()
-        interval = setInterval(fetchGroupState, 2000) // 2 seconds polling for faster sync
+        const interval = setInterval(fetchGroupState, 2000) // 2 seconds polling for faster sync
 
         return () => clearInterval(interval)
     }, [id])
@@ -121,7 +120,7 @@ export default function WatchPartyPage({ params }: WatchPartyPageProps) {
     const [newMessage, setNewMessage] = useState('')
     const chatEndRef = useRef<import('react').ElementRef<'div'>>(null)
 
-    const fetchMessages = async () => {
+    const fetchMessages = useCallback(async () => {
         try {
             const res = await fetch(`/api/hunting-groups/${id}/chat`, { cache: 'no-store' })
             if (res.ok) {
@@ -131,7 +130,7 @@ export default function WatchPartyPage({ params }: WatchPartyPageProps) {
         } catch (error) {
             console.error('Error fetching messages:', error)
         }
-    }
+    }, [id])
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -163,7 +162,7 @@ export default function WatchPartyPage({ params }: WatchPartyPageProps) {
         fetchMessages()
         const interval = setInterval(fetchMessages, 3000)
         return () => clearInterval(interval)
-    }, [id])
+    }, [fetchMessages])
 
     if (isLoading) {
         return (
@@ -258,7 +257,7 @@ export default function WatchPartyPage({ params }: WatchPartyPageProps) {
                                 <span className="text-4xl mb-4">📺</span>
                                 <p>O Líder ainda não selecionou um episódio.</p>
                                 {isLeader && (
-                                    <p className="text-xs text-orange-500 mt-2">Vá para a página do anime e clique em "Criar Grupo de Caça" novamente para selecionar.</p>
+                                    <p className="text-xs text-orange-500 mt-2">Vá para a página do anime e clique em &quot;Criar Grupo de Caça&quot; novamente para selecionar.</p>
                                 )}
                             </div>
                         )}

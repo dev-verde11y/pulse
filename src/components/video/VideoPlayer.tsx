@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Image from 'next/image'
 import Hls from 'hls.js'
 import {
   PlayIcon,
@@ -29,7 +28,6 @@ interface VideoPlayerProps {
   hasPreviousEpisode?: boolean
   animeId: string
   initialProgress?: number
-  nextEpisodeId?: string
   subtitleTrackUrl?: string
 
   // Watch Party Props
@@ -49,7 +47,6 @@ export function VideoPlayer({
   hasPreviousEpisode,
   animeId,
   initialProgress = 0,
-  nextEpisodeId,
   subtitleTrackUrl,
   onPlayCallback,
   onPauseCallback,
@@ -91,9 +88,7 @@ export function VideoPlayer({
   const [autoPlayCountdown, setAutoPlayCountdown] = useState<number | null>(null)
   const [hasSeekedInitial, setHasSeekedInitial] = useState(false)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
-  const [hasPrefetchedNext, setHasPrefetchedNext] = useState(false)
   const [isAmbilightEnabled] = useState(true)
-  const [previewThumb, setPreviewThumb] = useState<{ x: number, time: number } | null>(null)
   const lastApiSyncRef = useRef<number>(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -410,6 +405,7 @@ export function VideoPlayer({
       videoRef.current.currentTime = externalTime
       setCurrentTime(externalTime)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalIsPlaying, externalTime, isWatchParty])
 
   const handlePlay = async () => {
@@ -418,8 +414,8 @@ export function VideoPlayer({
         try {
           await videoRef.current.play()
           if (isWatchParty) onPlayCallback?.()
-        } catch (error: any) {
-          if (error.name !== 'AbortError') {
+        } catch (error: unknown) {
+          if (error instanceof Error && error.name !== 'AbortError') {
             console.error('Playback error:', error)
           }
         }

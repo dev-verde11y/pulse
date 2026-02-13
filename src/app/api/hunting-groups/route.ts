@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 // GET: List active groups
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const groups = await prisma.huntingGroup.findMany({
             where: {

@@ -224,7 +224,6 @@ export function WatchClient({
                                 onPreviousEpisode={handlePreviousEpisode}
                                 hasNextEpisode={findNextAvailableIndex() !== -1}
                                 hasPreviousEpisode={findPrevAvailableIndex() !== -1}
-                                nextEpisodeId={findNextAvailableIndex() !== -1 ? allEpisodes[findNextAvailableIndex()].id : undefined}
                             />
                         </div>
 
