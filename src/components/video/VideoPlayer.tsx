@@ -189,16 +189,22 @@ export function VideoPlayer({
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              console.log('fatal network error encountered, try to recover')
+              console.error('[VideoPlayer] Fatal network error encountered, trying to recover:', data)
               hls.startLoad()
               break
             case Hls.ErrorTypes.MEDIA_ERROR:
-              console.log('fatal media error encountered, try to recover')
+              console.error('[VideoPlayer] Fatal media error encountered, trying to recover:', data)
               hls.recoverMediaError()
               break
             default:
+              console.error('[VideoPlayer] Fatal error, cannot recover:', data)
               hls.destroy()
               break
+          }
+        } else {
+          // Non-fatal errors
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+            console.warn('[VideoPlayer] Non-fatal network error:', data)
           }
         }
       })

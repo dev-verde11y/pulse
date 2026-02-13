@@ -40,7 +40,8 @@ export function WatchClientV2({
     // Sincronizar progresso quando mudar de episódio
     useEffect(() => {
         setInitialProgress(initialProgressSaved)
-    }, [initialProgressSaved])
+        console.log('[WatchClientV2] Episode:', initialEpisode.id, 'Subtitle:', initialEpisode.r2SubtitlePath)
+    }, [initialProgressSaved, initialEpisode])
 
     const filteredEpisodes = allEpisodes.filter(ep =>
         ep.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
