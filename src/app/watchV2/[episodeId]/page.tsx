@@ -23,9 +23,9 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
           seasonNumber: true
         }
       },
-      // @ts-expect-error - Prisma include types might be out of sync
       subtitles: true
-    }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any
   })
 
   if (!rawEpisode) {
