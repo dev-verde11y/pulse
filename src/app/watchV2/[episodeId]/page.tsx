@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { WatchClientV2 } from './WatchClientV2'
-import { Episode, SubtitleTrack, Anime } from '@/types/anime'
+import { Episode, SubtitleTrack, Anime, AudioTrack } from '@/types/anime'
 
 export default async function WatchPageV2({ params }: { params: Promise<{ episodeId: string }> }) {
   const session = await auth()
@@ -23,7 +23,8 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
           seasonNumber: true
         }
       },
-      subtitles: true
+      subtitles: true,
+      audioTracks: true
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any
   })
@@ -35,7 +36,8 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
   // Cast with unknown intermediate to satisfy TS since relations might be missing from base Episode type
   const typedEpisode = (rawEpisode as unknown) as Episode & {
     season: { animeId: string; seasonNumber: number },
-    subtitles: SubtitleTrack[]
+    subtitles: SubtitleTrack[],
+    audioTracks: AudioTrack[]
   }
 
   const animeData = await prisma.anime.findUnique({
@@ -92,7 +94,8 @@ export default async function WatchPageV2({ params }: { params: Promise<{ episod
         subtitles: typedEpisode.subtitles.map(s => ({
           ...s,
           url: s.url.startsWith('http') ? s.url : `${process.env.API_URL_pub}/${s.url}`
-        }))
+        })),
+        audioTracks: typedEpisode.audioTracks
       } as Episode}
       initialAnime={animeData as unknown as Anime}
       allEpisodes={allEpisodes}

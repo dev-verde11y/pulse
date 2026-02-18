@@ -42,6 +42,11 @@ interface VideoPlayerProps {
   onPauseCallback?: () => void
   onSeekCallback?: (time: number) => void
   externalTime?: number
+  externalAudioTracks?: {
+    id: string
+    languageCode: string
+    label: string
+  }[]
   externalIsPlaying?: boolean
   isWatchParty?: boolean
 }
@@ -56,6 +61,7 @@ export function VideoPlayer({
   initialProgress = 0,
   subtitleTrackUrl,
   externalSubtitles = [],
+  externalAudioTracks = [],
   onPlayCallback,
   onPauseCallback,
   onSeekCallback,
@@ -200,7 +206,16 @@ export function VideoPlayer({
 
         // Get Audio Tracks
         if (hls.audioTracks && hls.audioTracks.length > 0) {
-          setAudioTracks(hls.audioTracks.map((t, i) => ({ id: i, name: t.name })))
+          setAudioTracks(hls.audioTracks.map((t, i) => {
+            // Find matching external label by language or index
+            const external = externalAudioTracks.find(ea =>
+              ea.languageCode.toLowerCase() === t.lang?.toLowerCase()
+            )
+            return {
+              id: i,
+              name: external ? external.label : (t.name || `Audio ${i + 1}`)
+            }
+          }))
           setCurrentAudioTrack(hls.audioTrack)
         }
 

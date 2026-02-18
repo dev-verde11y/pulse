@@ -7,8 +7,8 @@ import fs from 'fs'
  * Adjust these values before running the script
  * npx tsx scripts/convert-to-hls.ts
  */
-const INPUT_FILE = String.raw`C:\Users\verde\Downloads\testes\jujutsu-kaisen_season-3_episode-1.mkv`
-const OUTPUT_DIR = String.raw`C:\Users\verde\Downloads\testes\output`
+const INPUT_FILE = String.raw`C:\Users\verde\Downloads\testes\kaiju-no-8_season-1_episode-1.mp4`
+const OUTPUT_DIR = String.raw`C:\Users\verde\Downloads\kaiju-no-8\output`
 
 async function runCommand(command: string, args: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -36,6 +36,27 @@ function getSubtitleStreams(inputFile: string): { index: number, lang: string }[
     } catch (error) {
         console.warn('⚠️ Warning: Could not detect subtitle streams with ffprobe. Using default 0:2.')
         return [{ index: 2, lang: 'und' }]
+    }
+}
+
+function getAudioStreams(inputFile: string): { index: number, lang: string, title: string }[] {
+    try {
+        const output = execSync(
+            `ffprobe -v error -select_streams a -show_entries stream=index:stream_tags=language,title -of csv=p=0 "${inputFile}"`,
+            { encoding: 'utf8' }
+        )
+
+        return output.trim().split(/\r?\n/).filter(line => line.trim() !== '').map(line => {
+            const [index, lang, title] = line.split(',')
+            return {
+                index: parseInt(index),
+                lang: lang || 'und',
+                title: title || (lang === 'por' ? 'Português' : lang === 'jpn' ? 'Japonês' : 'Audio ' + index)
+            }
+        })
+    } catch (error) {
+        console.warn('⚠️ Warning: Could not detect audio streams with ffprobe. Using default 0:1.')
+        return [{ index: 1, lang: 'por', title: 'Português' }]
     }
 }
 
@@ -68,15 +89,36 @@ async function main() {
             ])
         }
 
-        // 2. Convert to HLS (Multi-bitrate)
-        console.log('\n--- 🎬 Converting to HLS (1080p + 720p) ---')
-        await runCommand('ffmpeg', [
+        // 2. Convert to HLS (Multi-bitrate + Multi-audio)
+        console.log('\n--- 🎬 Converting to HLS (1080p + 720p + Multi-Audio) ---')
+        const audioStreams = getAudioStreams(INPUT_FILE)
+        console.log(`Found ${audioStreams.length} audio tracks.`)
+
+        const ffmpegArgs = [
             '-i', INPUT_FILE,
             '-filter_complex', '[0:v]split=2[v1080][v720]; [v1080]scale=w=1920:h=1080[v1080out]; [v720]scale=w=1280:h=720[v720out]',
             '-map', '[v1080out]', '-c:v:0', 'libx264', '-preset', 'veryfast', '-b:v:0', '5000k', '-maxrate:v:0', '5350k', '-bufsize:v:0', '7500k',
             '-map', '[v720out]', '-c:v:1', 'libx264', '-preset', 'veryfast', '-b:v:1', '2800k', '-maxrate:v:1', '2996k', '-bufsize:v:1', '4200k',
-            '-map', 'a:0', '-c:a:0', 'aac', '-b:a:0', '128k', '-ac', '2',
-            '-map', 'a:0', '-c:a:1', 'aac', '-b:a:1', '128k', '-ac', '2',
+        ]
+
+        // Map all audio streams
+        audioStreams.forEach((audio, i) => {
+            ffmpegArgs.push('-map', `0:${audio.index}`, `-c:a:${i}`, 'aac', `-b:a:${i}`, '128k', '-ac', '2')
+            ffmpegArgs.push(`-metadata:s:a:${i}`, `language=${audio.lang}`, `-metadata:s:a:${i}`, `title=${audio.title}`)
+        })
+
+        // Build var_stream_map
+        // v:0,a:0 v:0,a:1 v:1,a:0 v:1,a:1 etc? 
+        // No, standard HLS multi-audio uses groups
+        // e.g. -var_stream_map "v:0,agroup:audio v:1,agroup:audio"
+        // And we need to define the audio groups
+
+        let varStreamMap = 'v:0,name:1080p,agroup:audio v:1,name:720p,agroup:audio'
+        audioStreams.forEach((audio, i) => {
+            varStreamMap += ` a:${i},agroup:audio,language:${audio.lang},default:${i === 0 ? 'YES' : 'NO'}`
+        })
+
+        ffmpegArgs.push(
             '-f', 'hls',
             '-hls_time', '10',
             '-hls_playlist_type', 'vod',
@@ -84,10 +126,12 @@ async function main() {
             '-hls_segment_type', 'mpegts',
             '-hls_segment_filename', path.join(OUTPUT_DIR, 'v%v', 'seg%03d.ts').replace(/\\/g, '/'),
             '-master_pl_name', 'master.m3u8',
-            '-var_stream_map', 'v:0,a:0 v:1,a:1',
+            '-var_stream_map', varStreamMap,
             path.join(OUTPUT_DIR, 'v%v', 'index.m3u8').replace(/\\/g, '/'),
             '-y'
-        ])
+        )
+
+        await runCommand('ffmpeg', ffmpegArgs)
 
         console.log('\n✨ Conversion completed successfully!')
         console.log(`📂 Output located at: ${OUTPUT_DIR}`)

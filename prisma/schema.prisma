@@ -422,6 +422,7 @@ model Episode {
   season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   huntingGroups HuntingGroup[]
   subtitles     Subtitle[]
+  audioTracks   AudioTrack[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -444,6 +445,21 @@ model Subtitle {
   updatedAt DateTime @updatedAt
 
   @@map("subtitles")
+}
+
+model AudioTrack {
+  id        String   @id @default(uuid())
+  episodeId String
+  language  String   // e.g., "por", "jpn"
+  label     String   // e.g., "Português (Dublado)", "Japonês (Original)"
+  url       String?  // Optional: URL if stored separately, otherwise metadata for HLS index
+  
+  episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("audio_tracks")
 }
 
 model HeroBanner {

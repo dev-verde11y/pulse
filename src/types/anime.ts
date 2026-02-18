@@ -66,6 +66,7 @@ export interface Episode {
     seasonNumber: number
   }
   subtitles?: SubtitleTrack[]
+  audioTracks?: AudioTrack[]
 }
 
 export interface SubtitleTrack {
@@ -75,6 +76,14 @@ export interface SubtitleTrack {
   label: string
   url: string
   r2Key: string
+}
+
+export interface AudioTrack {
+  id: string
+  episodeId: string
+  language: string
+  label: string
+  url?: string | null
 }
 
 export interface WatchHistoryItem {

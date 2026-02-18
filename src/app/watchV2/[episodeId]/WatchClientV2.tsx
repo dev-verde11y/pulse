@@ -200,6 +200,11 @@ export function WatchClientV2({
                                     label: s.label,
                                     url: s.url
                                 }))}
+                                externalAudioTracks={initialEpisode.audioTracks?.map(a => ({
+                                    id: a.id,
+                                    languageCode: a.language,
+                                    label: a.label
+                                }))}
                             />
                         </div>
 
