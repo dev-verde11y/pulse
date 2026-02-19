@@ -17,7 +17,7 @@ import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
 import '@/styles/swiper.css'
-import { LandscapeCardSkeleton, CarouselSkeleton } from '@/components/ui/AnimeCardSkeleton'
+import { CarouselSkeleton } from '@/components/ui/AnimeCardSkeleton'
 
 // Helper function to find episode info
 const getEpisodeInfo = (anime: Anime, episodeId: string) => {

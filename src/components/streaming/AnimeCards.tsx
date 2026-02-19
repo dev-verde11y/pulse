@@ -223,12 +223,12 @@ export function TrendingAnimeCard({ anime, rank }: { anime: Anime; rank: number 
   }
 
   // Rank Styling
-  const getRankColor = (r: number) => {
-    if (r === 1) return 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]'
-    if (r === 2) return 'text-gray-300 drop-shadow-[0_0_8px_rgba(209,213,219,0.5)]'
-    if (r === 3) return 'text-amber-700 drop-shadow-[0_0_8px_rgba(180,83,9,0.5)]'
-    return 'text-white/80'
-  }
+  // const getRankColor = (r: number) => {
+  //   if (r === 1) return 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+  //   if (r === 2) return 'text-gray-300 drop-shadow-[0_0_8px_rgba(209,213,219,0.5)]'
+  //   if (r === 3) return 'text-amber-700 drop-shadow-[0_0_8px_rgba(180,83,9,0.5)]'
+  //   return 'text-white/80'
+  // }
 
   const getGlowStyles = (r: number) => {
     if (r === 1) return 'shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.5)]'
