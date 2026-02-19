@@ -213,3 +213,183 @@ export function ContinueWatchingCard({ anime }: { anime: Anime }) {
     </div>
   )
 }
+
+// Card Em Alta / Trending
+export function TrendingAnimeCard({ anime, rank }: { anime: Anime; rank: number }) {
+  const router = useRouter()
+
+  const handleClick = () => {
+    router.push(`/anime/${anime.id}`)
+  }
+
+  // Rank Styling
+  const getRankColor = (r: number) => {
+    if (r === 1) return 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+    if (r === 2) return 'text-gray-300 drop-shadow-[0_0_8px_rgba(209,213,219,0.5)]'
+    if (r === 3) return 'text-amber-700 drop-shadow-[0_0_8px_rgba(180,83,9,0.5)]'
+    return 'text-white/80'
+  }
+
+  const getGlowStyles = (r: number) => {
+    if (r === 1) return 'shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.5)]'
+    if (r <= 3) return 'shadow-[0_0_15px_rgba(34,211,238,0.2)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)]'
+    return 'hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]'
+  }
+
+  return (
+    <div
+      onClick={handleClick}
+      className={`relative cursor-pointer group transition-all duration-300 ease-out hover:-translate-y-2 rounded-xl backdrop-blur-sm ${getGlowStyles(rank)}`}
+    >
+      {/* Poster Image */}
+      <div className="aspect-[2/3] bg-gray-900 rounded-xl overflow-hidden relative shadow-2xl">
+        <Image
+          src={getAnimeImage(anime)}
+          alt={anime.title}
+          fill
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 15vw"
+          className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          loading="lazy"
+        />
+
+        {/* Overlay Dark Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+
+        {/* Hover Overlay Interactions */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 z-30">
+          <div className="bg-white/10 backdrop-blur-md p-3 rounded-full mb-3 transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100 hover:bg-white/20">
+            <PlayIcon className="w-8 h-8 text-white" />
+          </div>
+
+          <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75 text-center">
+            <p className="text-green-400 font-bold text-sm mb-1">{anime.rating || '9.8'} Match</p>
+            <p className="text-white text-xs font-medium bg-white/10 px-2 py-1 rounded inline-block">{anime.genres?.[0]}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Card Paisagem (4:3) para Continue Assistindo e Minha Lista
+export function LandscapeAnimeCard({
+  anime,
+  variant = 'standard',
+  progress,
+  totalDuration,
+  episodeNumber,
+  seasonNumber
+}: {
+  anime: Anime;
+  variant?: 'standard' | 'continue-watching';
+  progress?: number;
+  totalDuration?: number; // em minutos
+  episodeNumber?: number;
+  seasonNumber?: number;
+}) {
+  const router = useRouter()
+
+  const handleClick = () => {
+    router.push(`/anime/${anime.id}`)
+  }
+
+  const isContinueWatching = variant === 'continue-watching'
+  const currentProgress = progress || 0
+  const remainingTime = totalDuration ? Math.round((100 - currentProgress) / 100 * totalDuration) : 0
+  const isCompleted = currentProgress >= 90
+
+  return (
+    <div
+      onClick={handleClick}
+      className={`cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-20 relative group card-glow rounded-xl ${isContinueWatching ? 'border border-blue-500/20' : ''}`}
+    >
+      {/* Poster Image (4:3 Aspect Ratio) */}
+      <div className="aspect-[4/3] bg-gray-900 rounded-xl overflow-hidden relative mb-2 shadow-lg">
+        <Image
+          src={getAnimeImage(anime)}
+          alt={anime.title}
+          fill
+          sizes="(max-width: 640px) 70vw, (max-width: 1024px) 40vw, 20vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
+        />
+
+        {/* Overlay Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+
+        {/* Play Button - Center */}
+        <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
+          <div className="bg-blue-600/90 rounded-full p-3 hover:bg-blue-500 transition-all duration-300 shadow-xl backdrop-blur-sm ring-4 ring-blue-600/20">
+            <PlayIcon className="w-8 h-8 text-white pl-1" />
+          </div>
+        </button>
+
+        {/* Progress Bar (Continue Watching Only) */}
+        {isContinueWatching && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700/50">
+            <div
+              className={`h-full transition-all duration-500 ${isCompleted ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-blue-500 shadow-[0_0_10px_#3b82f6]'}`}
+              style={{ width: `${Math.max(currentProgress, 5)}%` }}
+            />
+          </div>
+        )}
+
+        {/* Episode Info (Continue Watching Only) */}
+        {isContinueWatching && episodeNumber && (
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <div className="bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded text-[10px] font-bold border border-white/10 flex items-center gap-1">
+                <span className="text-blue-400">T{seasonNumber || 1}</span>
+                <span className="text-gray-400">|</span>
+                <span>E{episodeNumber}</span>
+              </div>
+            </div>
+            {!isCompleted && (
+              <span className="text-[10px] text-blue-200 font-medium drop-shadow-md bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-sm">
+                {totalDuration ? `${remainingTime}m` : `${Math.round(currentProgress)}%`}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Badge: Continuar (Top Left) */}
+        {isContinueWatching && (
+          <div className="absolute top-2 left-2 transform transition-transform duration-300 group-hover:-translate-y-1">
+            <div className="bg-blue-600/90 backdrop-blur-md text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-lg border border-blue-400/20 flex items-center gap-1">
+              <PlayIcon className="w-3 h-3" />
+              Continuar
+            </div>
+          </div>
+        )}
+
+        {/* Badge: Rating or HD (Top Right) */}
+        {!isContinueWatching && (
+          <div className="absolute top-2 right-2 transform transition-transform duration-300 group-hover:-translate-y-1">
+            <div className="bg-black/60 backdrop-blur-md text-white px-1.5 py-0.5 rounded text-[10px] font-bold border border-white/10">
+              {anime.rating || 'HD'}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Meta Info */}
+      <div className="px-1">
+        <h3 className="text-sm font-semibold text-white mb-0.5 group-hover:text-blue-400 transition-colors truncate">
+          {anime.title}
+        </h3>
+        {!isContinueWatching && (
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span>{anime.year}</span>
+            <span className="w-0.5 h-0.5 bg-gray-500 rounded-full"></span>
+            <span className="truncate max-w-[100px]">{anime.genres?.[0]}</span>
+          </div>
+        )}
+        {isContinueWatching && (
+          <p className="text-xs text-gray-400 truncate">
+            {isCompleted ? 'Completo' : 'Continue de onde parou'}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}

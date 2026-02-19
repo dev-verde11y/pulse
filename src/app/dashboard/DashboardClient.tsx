@@ -17,7 +17,21 @@ import { api } from '@/lib/api'
 import { categories } from '@/data/mockData'
 import { Anime, WatchHistoryItem } from '@/types/anime'
 import '@/styles/swiper.css'
-import { MediumAnimeCardSkeleton } from '@/components/ui/AnimeCardSkeleton'
+import { LandscapeCardSkeleton, CarouselSkeleton } from '@/components/ui/AnimeCardSkeleton'
+
+// Helper function to find episode info
+const getEpisodeInfo = (anime: Anime, episodeId: string) => {
+    for (const season of anime.seasons || []) {
+        const episode = season.episodes?.find((ep: { id: string }) => ep.id === episodeId)
+        if (episode) {
+            return {
+                ...episode,
+                seasonNumber: season.seasonNumber
+            }
+        }
+    }
+    return null
+}
 
 interface DashboardClientProps {
     trending: Anime[]
@@ -121,13 +135,23 @@ export function DashboardClient({
         }
     }, [user, loading, trending, topRated])
 
-    // Continue Watching logic
-    const continueWatchingAnimes = watchHistory
-        .map(item => item.anime)
-        .filter((anime, index, self) =>
-            index === self.findIndex(a => a.id === anime.id)
+    // Continue Watching logic - Enrich items with progress
+    const continueWatchingItems = watchHistory
+        .filter((item, index, self) =>
+            index === self.findIndex(i => i.animeId === item.animeId)
         )
         .slice(0, 10)
+        .map(item => {
+            const episodeInfo = item.episodeId ? getEpisodeInfo(item.anime, item.episodeId) : null
+            return {
+                ...item.anime,
+                progress: item.progress,
+                episodeId: item.episodeId,
+                episodeNumber: episodeInfo?.episodeNumber,
+                seasonNumber: episodeInfo?.seasonNumber,
+                totalDuration: episodeInfo?.duration || undefined
+            }
+        })
 
     const myList = favorites.slice(0, 10)
     const recommendations = personalizedRecommendations.length > 0 ? personalizedRecommendations : trending.slice(0, 10)
@@ -172,7 +196,6 @@ export function DashboardClient({
             <main className="bg-black text-white">
                 <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 space-y-12 sm:space-y-16">
 
-
                     {/* Em Alta */}
                     <RevealSection delay="delay-100">
                         <PosterCarousel
@@ -187,40 +210,27 @@ export function DashboardClient({
                         <RevealSection delay="delay-200">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-bold text-white px-4 md:px-0">Continue Assistindo</h2>
-                                <div className="flex gap-4 overflow-hidden px-4 md:px-0">
-                                    {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="w-[160px] flex-shrink-0">
-                                            <MediumAnimeCardSkeleton />
-                                        </div>
-                                    ))}
-                                </div>
+                                <CarouselSkeleton />
                             </div>
                         </RevealSection>
                     ) : (
-                        user && continueWatchingAnimes.length > 0 && (
+                        user && continueWatchingItems.length > 0 && (
                             <RevealSection delay="delay-200">
                                 <SmallCardCarousel
                                     title="Continue Assistindo"
-                                    animes={continueWatchingAnimes}
+                                    items={continueWatchingItems}
+                                    variant="continue-watching"
                                 />
                             </RevealSection>
                         )
                     )}
-
-
 
                     {/* Minha Lista (Only if logged in and has favorites) */}
                     {userContentLoading && user ? (
                         <RevealSection delay="delay-300">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-bold text-white px-4 md:px-0">Minha Lista</h2>
-                                <div className="flex gap-4 overflow-hidden px-4 md:px-0">
-                                    {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="w-[160px] flex-shrink-0">
-                                            <MediumAnimeCardSkeleton />
-                                        </div>
-                                    ))}
-                                </div>
+                                <CarouselSkeleton />
                             </div>
                         </RevealSection>
                     ) : (
@@ -228,7 +238,8 @@ export function DashboardClient({
                             <RevealSection delay="delay-300">
                                 <SmallCardCarousel
                                     title="Minha Lista"
-                                    animes={myList}
+                                    items={myList}
+                                    variant="standard"
                                 />
                             </RevealSection>
                         )

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Anime } from '@/types/anime'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
-import { MediumAnimeCard } from './AnimeCards'
+import { MediumAnimeCard, TrendingAnimeCard } from './AnimeCards'
 
 interface PosterCarouselProps {
   title: string
@@ -127,44 +127,12 @@ export function PosterCarousel({ title, animes, isTop10 = false }: PosterCarouse
                 width: isTop10 ? "55vw" : "35vw"
               }}
             >
-              {isTop10 && (
-                <div className="absolute left-1 sm:left-2 inset-y-0 flex items-center z-30 pointer-events-none select-none">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-[2px] h-10 mb-2 rounded-full animate-pulse blur-[1px] ${idx === 0 ? 'bg-amber-400 shadow-[0_0_10px_#fbbf24]' :
-                      idx < 3 ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]' :
-                        'bg-white/40 shadow-[0_0_8px_rgba(255,255,255,0.3)]'
-                      }`} />
-
-                    <div className="relative flex items-center justify-center">
-                      <span
-                        className={`text-4xl sm:text-5xl font-black italic tracking-tighter ${idx === 0 ? 'text-amber-400' :
-                          idx < 3 ? 'text-cyan-300' :
-                            'text-white'
-                          }`}
-                        style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}
-                      >
-                        {idx + 1}
-                      </span>
-                      {/* Restore HUD brackets */}
-                      {idx < 3 && (
-                        <div className={`absolute -inset-2 border-l-2 border-t-2 rounded-tl-lg rounded-br-lg border-r-2 border-b-2 opacity-40 ${idx === 0 ? 'border-amber-400' : 'border-cyan-400'
-                          }`} />
-                      )}
-                    </div>
-
-                    <div className={`w-[2px] h-10 mt-2 rounded-full animate-pulse blur-[1px] ${idx === 0 ? 'bg-amber-400 shadow-[0_0_10px_#fbbf24]' :
-                      idx < 3 ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]' :
-                        'bg-white/40 shadow-[0_0_8px_rgba(255,255,255,0.3)]'
-                      }`} />
-
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-300 block" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-                      Rank
-                    </span>
-                  </div>
-                </div>
-              )}
-              <div className={`${isTop10 ? 'pl-10 sm:pl-12' : ''} ${isMobile ? (isTop10 ? "w-[40vw]" : "sm:w-[25vw]") : "w-full"} relative z-20 hover:z-50 group-hover:scale-105 transition-all duration-300`}>
-                <MediumAnimeCard anime={anime} />
+              <div className={`${isTop10 ? 'pl-8 sm:pl-10' : ''} ${isMobile ? (isTop10 ? "w-[40vw]" : "sm:w-[25vw]") : "w-full"} relative z-20 hover:z-50 transition-all duration-300`}>
+                {isTop10 ? (
+                  <TrendingAnimeCard anime={anime} rank={idx + 1} />
+                ) : (
+                  <MediumAnimeCard anime={anime} />
+                )}
               </div>
             </div>
           ))}

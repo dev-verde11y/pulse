@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { Anime, Episode } from '@/types/anime'
-
+import { HeroBannerSkeleton } from '@/components/ui/HeroBannerSkeleton'
 // Import Swiper styles
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -342,21 +342,7 @@ export function HeroBanner() {
 
   // Exibir loading skeleton se banners estão carregando ou imagens não foram precarregadas
   if (bannersLoading || !imagesLoaded) {
-    return (
-      <div className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh] w-full overflow-hidden bg-gray-900">
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 animate-pulse" />
-        <div className="absolute inset-0 flex items-center pb-6 sm:pb-8 md:pb-10 lg:pb-12 z-20">
-          <div className="w-full px-6 sm:px-8 lg:px-12 ml-0 sm:ml-8 lg:ml-16">
-            <div className="max-w-2xl space-y-4">
-              <div className="h-4 bg-gray-700 rounded animate-pulse w-20"></div>
-              <div className="h-12 bg-gray-700 rounded animate-pulse w-3/4"></div>
-              <div className="h-6 bg-gray-700 rounded animate-pulse w-1/2"></div>
-              <div className="h-12 bg-gray-700 rounded animate-pulse w-40"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <HeroBannerSkeleton />
   }
 
   // Se não há banners para exibir, não renderizar nada
@@ -365,7 +351,7 @@ export function HeroBanner() {
   }
 
   return (
-    <div className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh] w-full overflow-hidden">
+    <div className="relative h-[65vh] sm:h-[70vh] md:h-[75vh] lg:h-[85vh] w-full overflow-hidden">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
@@ -404,20 +390,29 @@ export function HeroBanner() {
             <SwiperSlide key={`${content.id}-${index}`}>
               <div className="relative h-full w-full">
                 {/* Background Image with Parallax Effect */}
+                {/* Responsive Background Image */}
+                {/* Mobile: Poster (Portrait) */}
                 <div
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 transition-transform duration-[8000ms]"
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat sm:hidden scale-110 transition-transform duration-[8000ms]"
+                  style={{ backgroundImage: `url(${content.posterUrl || content.backgroundImage || content.bannerUrl || content.banner || content.thumbnail || '/images/anime-placeholder.svg'})` }}
+                />
+
+                {/* Desktop: Banner (Landscape) */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden sm:block scale-110 transition-transform duration-[8000ms]"
                   style={{ backgroundImage: `url(${content.backgroundImage || content.bannerUrl || content.banner || content.posterUrl || content.thumbnail || '/images/anime-placeholder.svg'})` }}
                 />
 
-                {/* Advanced Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60" />
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-transparent" />
+                {/* Advanced Gradient Overlays - Refined for Header Integration */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent" /> {/* Top gradient for header readability */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-transparent to-transparent" />
 
                 {/* Main Content Container */}
-                <div className="absolute inset-0 flex items-center pb-4 sm:pb-6 md:pb-8 lg:pb-10 xl:pb-12 z-20">
-                  <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 ml-0 sm:ml-4 lg:ml-8 xl:ml-16">
-                    <div className="max-w-xl sm:max-w-2xl">
+                <div className="absolute inset-0 flex items-center pb-8 sm:pb-12 md:pb-16 lg:pb-20 xl:pb-24 pt-20 z-20">
+                  <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 ml-0 sm:ml-4 lg:ml-8 xl:ml-10">
+                    <div className="max-w-3xl sm:max-w-4xl lg:max-w-5xl">
 
                       {/* Main Content */}
                       <div className="space-y-2 sm:space-y-3 md:space-y-4 animate-fadeIn">
@@ -433,13 +428,13 @@ export function HeroBanner() {
                           )}
                         </div>
 
-                        {/* Title with Enhanced Typography */}
-                        <div className="space-y-0.5 sm:space-y-1 md:space-y-2">
-                          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-[0.9] sm:leading-[0.85] text-white drop-shadow-2xl tracking-tight">
+                        {/* Title with Enhanced Typography and Standardized Height */}
+                        <div className="flex flex-col justify-end space-y-2 sm:space-y-3 md:space-y-4 min-h-[140px] sm:min-h-[160px] md:min-h-[180px]">
+                          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[0.9] sm:leading-[0.85] text-white drop-shadow-2xl tracking-tight line-clamp-2">
                             {title}
                           </h1>
-                          <h2 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-blue-300 font-medium max-w-xs sm:max-w-sm md:max-w-lg leading-relaxed">
-                            {subtitle || (description ? description.slice(0, 60) + '...' : 'Descrição não disponível')}
+                          <h2 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-blue-200 font-medium max-w-lg sm:max-w-xl md:max-w-2xl leading-relaxed drop-shadow-md line-clamp-1">
+                            {subtitle || (description ? description.slice(0, 80) + '...' : 'Descrição não disponível')}
                           </h2>
                         </div>
 
@@ -461,22 +456,24 @@ export function HeroBanner() {
                           </div>
                         </div>
 
-                        {/* Genres as Pills */}
-                        <div className="flex flex-wrap gap-2 sm:gap-2">
+                        {/* Genres as Pills - Limited to 3 */}
+                        <div className="flex flex-wrap gap-2 sm:gap-2 h-8 overflow-hidden">
                           {genres.slice(0, 3).map((genre: unknown) => (
-                            <span key={String(genre)} className="bg-blue-500/30 backdrop-blur-md border border-blue-400/40 px-2.5 sm:px-2 md:px-3 py-1 sm:py-1 rounded-lg text-xs sm:text-xs md:text-sm text-white font-medium hover:bg-blue-500/40 hover:border-blue-300/60 hover:scale-105 transition-all cursor-pointer shadow-md">
+                            <span key={String(genre)} className="bg-blue-500/30 backdrop-blur-md border border-blue-400/40 px-2.5 sm:px-2 md:px-3 py-1 sm:py-1 rounded-lg text-xs sm:text-xs md:text-sm text-white font-medium shadow-md whitespace-nowrap">
                               {String(genre)}
                             </span>
                           ))}
                         </div>
 
-                        {/* Description */}
-                        <p className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed text-white/80 max-w-xs sm:max-w-sm md:max-w-xl line-clamp-2 hidden sm:block">
-                          {description || 'Uma aventura épica cheia de ação e emoção que irá te manter na borda do assento.'}
-                        </p>
+                        {/* Description - Standardized Height */}
+                        <div className="min-h-[3rem] sm:min-h-[4.5rem]">
+                          <p className="text-xs sm:text-base md:text-lg lg:text-xl leading-relaxed text-blue-100/90 max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl line-clamp-2 sm:line-clamp-3 drop-shadow-md font-medium">
+                            {description || 'Uma aventura épica cheia de ação e emoção que irá te manter na borda do assento.'}
+                          </p>
+                        </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-row items-center gap-3 pt-4 sm:pt-2 w-full max-w-md sm:max-w-none">
+                        <div className="flex flex-row items-center gap-4 pt-6 sm:pt-4 w-full max-w-lg sm:max-w-xl">
                           {(() => {
                             const buttonState = getButtonState(content)
                             return (
