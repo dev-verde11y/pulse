@@ -7,7 +7,7 @@ interface CategoryCardProps {
 const getCategoryIcon = (categoryName: string) => {
   const icons: { [key: string]: string } = {
     'Ação': '⚔️',
-    'Romance': '💕', 
+    'Romance': '💕',
     'Comédia': '😂',
     'Drama': '🎭',
     'Fantasia': '🔮',
@@ -39,31 +39,35 @@ const getCategoryGradient = (categoryName: string) => {
 
 export default function CategoryCard({ name, count, onClick }: CategoryCardProps) {
   const icon = getCategoryIcon(name)
+  const gradient = getCategoryGradient(name)
 
   return (
     <div className="relative group">
+      {/* Glow Effect Layer */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500 rounded-xl`} />
+
       <button
         onClick={onClick}
-        className="relative w-full h-32 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-xl p-4 text-center cursor-pointer transform hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out shadow-lg hover:shadow-xl overflow-hidden flex flex-col items-center justify-center"
+        className="relative w-full h-32 bg-black/40 hover:bg-gray-900/60 backdrop-blur-md border border-white/10 group-hover:border-white/30 rounded-xl p-4 text-center cursor-pointer transform hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out shadow-lg hover:shadow-2xl overflow-hidden flex flex-col items-center justify-center z-10"
       >
         {/* Background shine effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
-        
+
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full">
-          <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
+          <div className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
             {icon}
           </div>
-          <div className="text-sm font-bold text-white mb-1 tracking-tight leading-tight">
+          <div className="text-sm font-bold text-white mb-1 tracking-tight leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-200">
             {name}
           </div>
-          <div className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
+          <div className="text-xs text-gray-500 group-hover:text-blue-300 transition-colors font-medium">
             {count} títulos
           </div>
         </div>
 
-        {/* Subtle corner accent */}
-        <div className="absolute top-2 right-2 w-1 h-6 bg-blue-500/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
+        {/* Accent border bottom */}
+        <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
       </button>
     </div>
   )

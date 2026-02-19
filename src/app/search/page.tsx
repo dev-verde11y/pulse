@@ -14,6 +14,7 @@ import {
   ChevronDownIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { AnimeCardSkeleton } from '@/components/ui/AnimeCardSkeleton'
 
 const GENRES = [
   'Ação', 'Aventura', 'Comédia', 'Drama', 'Fantasia', 'Horror',
@@ -505,10 +506,16 @@ function SearchPageContent() {
             </div>
           )}
 
-          {/* Loading */}
+
+
+          {/* Loading Grid */}
           {loading && (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="aspect-[3/4]">
+                  <AnimeCardSkeleton />
+                </div>
+              ))}
             </div>
           )}
 

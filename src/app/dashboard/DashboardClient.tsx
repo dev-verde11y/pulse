@@ -156,15 +156,18 @@ export function DashboardClient({
     const myList = favorites.slice(0, 10)
     const recommendations = personalizedRecommendations.length > 0 ? personalizedRecommendations : trending.slice(0, 10)
 
-    if (loading) {
-        return <LoadingScreen message="Verificando autenticação..." />
-    }
+    // Loading: Show shimmers while Auth loads OR while User content fetches
+    const isLoading = loading || (!!user && userContentLoading)
 
-    if (!user) {
-        if (typeof window !== 'undefined') {
+    // Redirect if AUTH finished and NO USER
+    useEffect(() => {
+        if (!loading && !user) {
             window.location.href = '/login'
         }
-        return <LoadingScreen message="Sessão expirada. Redirecionando..." />
+    }, [loading, user])
+
+    if (!loading && !user) {
+        return <LoadingScreen message="Redirecionando para login..." />
     }
 
     return (
@@ -205,8 +208,8 @@ export function DashboardClient({
                         />
                     </RevealSection>
 
-                    {/* Continue Assistindo (Only if logged in and has history) */}
-                    {userContentLoading && user ? (
+                    {/* Continue Assistindo (Show skeleton if loading OR if user exists and content loading) */}
+                    {isLoading ? (
                         <RevealSection delay="delay-200">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-bold text-white px-4 md:px-0">Continue Assistindo</h2>
@@ -225,8 +228,8 @@ export function DashboardClient({
                         )
                     )}
 
-                    {/* Minha Lista (Only if logged in and has favorites) */}
-                    {userContentLoading && user ? (
+                    {/* Minha Lista (Show skeleton if loading OR if user exists and content loading) */}
+                    {isLoading ? (
                         <RevealSection delay="delay-300">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-bold text-white px-4 md:px-0">Minha Lista</h2>

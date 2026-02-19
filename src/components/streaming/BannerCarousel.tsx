@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Anime } from '@/types/anime'
+import { MediumAnimeCard } from './AnimeCards'
 import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 
@@ -60,23 +61,12 @@ export function BannerCarousel({ title, animes }: BannerCarouselProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent md:bg-gradient-to-r md:from-gray-900 md:via-gray-900/80 md:to-transparent" />
 
         <div className="relative flex flex-col md:flex-row items-center min-h-[400px] md:min-h-[320px] p-4 md:p-8">
+
+
           {/* Poster à esquerda (Escondido no Mobile para dar espaço) */}
           <div className="flex-shrink-0 mb-6 md:mb-0 md:mr-8 hidden md:block">
-            <div className="w-32 h-48 md:w-48 md:h-72 rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 relative group">
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${currentAnime.thumbnail})` }}
-              />
-              {/* Rating Badge */}
-              <div className="absolute top-3 left-3 bg-orange-600 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-bold shadow-lg">
-                {currentAnime.rating}+
-              </div>
-              {/* Play Button Overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="bg-orange-600 rounded-full p-4 transform hover:scale-110 transition-transform">
-                  <PlayIcon className="w-8 h-8 text-white" />
-                </div>
-              </div>
+            <div className="w-32 md:w-48 transform hover:scale-105 transition-transform duration-300 relative group z-20">
+              <MediumAnimeCard anime={currentAnime} />
             </div>
           </div>
 

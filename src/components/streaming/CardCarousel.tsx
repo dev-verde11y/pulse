@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Anime } from '@/types/anime'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
-import { SmallAnimeCard } from './AnimeCards'
+import { MediumAnimeCard } from './AnimeCards'
 
 interface CardCarouselProps {
   title: string
@@ -12,8 +12,8 @@ interface CardCarouselProps {
 
 export function CardCarousel({ title, animes }: CardCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [itemsToShow, setItemsToShow] = useState(8)
-  const [itemsToScroll, setItemsToScroll] = useState(5)
+  const [itemsToShow, setItemsToShow] = useState(6)
+  const [itemsToScroll, setItemsToScroll] = useState(3)
   const [isMobile, setIsMobile] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -22,16 +22,16 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
       const width = window.innerWidth
 
       if (width < 640) {
-        setItemsToShow(2.2) // Show partial next card for affordance
-        setItemsToScroll(2)
+        setItemsToShow(2.5) // Match PosterCarousel (MediumCard)
+        setItemsToScroll(1)
         setIsMobile(true)
       } else if (width < 768) {
-        setItemsToShow(3.2)
-        setItemsToScroll(3)
+        setItemsToShow(3.5)
+        setItemsToScroll(2)
         setIsMobile(true)
       } else if (width < 1024) {
-        setItemsToShow(6)
-        setItemsToScroll(5)
+        setItemsToShow(5)
+        setItemsToScroll(3)
         setIsMobile(false)
       } else {
         setItemsToShow(6)
@@ -115,11 +115,11 @@ export function CardCarousel({ title, animes }: CardCarouselProps) {
               style={!isMobile ? {
                 width: `${100 / animes.length}%`
               } : {
-                width: "40vw"
+                width: `${100 / itemsToShow}vw`
               }}
             >
-              <div className={isMobile ? "sm:w-[28vw]" : "w-full"}>
-                <SmallAnimeCard anime={anime} />
+              <div className={isMobile ? "w-[30vw]" : "w-full"}>
+                <MediumAnimeCard anime={anime} />
               </div>
             </div>
           ))}
