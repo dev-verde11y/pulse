@@ -30,10 +30,10 @@ enum SubscriptionStatus {
 }
 
 enum PlanType {
-  FREE
-  FAN
-  MEGA_FAN
-  MEGA_FAN_ANNUAL
+  CITIZEN
+  ADVENTURER
+  HERO
+  LEGEND
 }
 
 enum BillingCycle {
@@ -54,54 +54,54 @@ enum GroupRole {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  avatar    String?
-  role      UserRole @default(USER)
+  id       String   @id @default(uuid())
+  email    String   @unique
+  password String
+  name     String?
+  avatar   String?
+  role     UserRole @default(USER)
 
   // Subscription related
   subscriptionStatus SubscriptionStatus @default(ACTIVE)
-  currentPlan        PlanType          @default(FREE)
+  currentPlan        PlanType           @default(CITIZEN)
   subscriptionExpiry DateTime?
-  maxScreens         Int               @default(1)
-  offlineViewing     Boolean           @default(false)
-  gameVaultAccess    Boolean           @default(false)
-  adFree            Boolean           @default(false)
+  maxScreens         Int                @default(1)
+  offlineViewing     Boolean            @default(false)
+  gameVaultAccess    Boolean            @default(false)
+  adFree             Boolean            @default(false)
 
   // Billing
-  lastPaymentDate   DateTime?
-  nextBillingDate   DateTime?
-  autoRenewal       Boolean           @default(true)
+  lastPaymentDate DateTime?
+  nextBillingDate DateTime?
+  autoRenewal     Boolean   @default(true)
 
   // Grace period (5 days after expiry)
-  gracePeriodEnd    DateTime?
+  gracePeriodEnd DateTime?
 
   // Stripe integration
-  stripeCustomerId      String?
-  stripeSubscriptionId  String?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
 
   // Password reset
-  resetToken        String?
-  resetTokenExpiry  DateTime?
+  resetToken       String?
+  resetTokenExpiry DateTime?
 
   // Preferences
-  language          String            @default("pt-BR")
-  emailNotifications Boolean          @default(true)
-  
+  language           String  @default("pt-BR")
+  emailNotifications Boolean @default(true)
+
   // Relations
-  subscriptions     Subscription[]
-  watchHistory      WatchHistory[]
-  favorites         Favorite[]
-  checkoutSessions  CheckoutSession[]
-  notifications     Notification[]
-  
+  subscriptions    Subscription[]
+  watchHistory     WatchHistory[]
+  favorites        Favorite[]
+  checkoutSessions CheckoutSession[]
+  notifications    Notification[]
+
   // Watch Party / Caça
-  huntingGroups     HuntingGroup[]    @relation("GroupLeader")
-  joinedGroups      GroupMember[]
-  messages          ChatMessage[]
-  
+  huntingGroups HuntingGroup[] @relation("GroupLeader")
+  joinedGroups  GroupMember[]
+  messages      ChatMessage[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -109,31 +109,31 @@ model User {
 }
 
 model Plan {
-  id               String      @id @default(uuid())
-  name             String      @unique // "Fan", "Mega Fan", "Mega Fan Annual"
-  type             PlanType    @unique
-  billingCycle     BillingCycle
-  price            Decimal     @db.Decimal(10, 2)
-  currency         String      @default("BRL")
-  
+  id           String       @id @default(uuid())
+  name         String       @unique // "Fan", "Mega Fan", "Mega Fan Annual"
+  type         PlanType     @unique
+  billingCycle BillingCycle
+  price        Decimal      @db.Decimal(10, 2)
+  currency     String       @default("BRL")
+
   // Features
-  maxScreens       Int         @default(1)
-  offlineViewing   Boolean     @default(false)
-  gameVaultAccess  Boolean     @default(false)
-  adFree          Boolean     @default(true)
-  
+  maxScreens      Int     @default(1)
+  offlineViewing  Boolean @default(false)
+  gameVaultAccess Boolean @default(false)
+  adFree          Boolean @default(true)
+
   // Descriptions
-  description      String
-  features         String[]    // Array of feature descriptions
-  
+  description String
+  features    String[] // Array of feature descriptions
+
   // Status
-  active           Boolean     @default(true)
-  displayOrder     Int         @default(0)
-  popular          Boolean     @default(false)
-  
+  active       Boolean @default(true)
+  displayOrder Int     @default(0)
+  popular      Boolean @default(false)
+
   // Relations
-  subscriptions    Subscription[]
-  
+  subscriptions Subscription[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -141,41 +141,42 @@ model Plan {
 }
 
 model Subscription {
-  id                String             @id @default(uuid())
-  userId            String
-  planId            String
-  
+  id     String @id @default(uuid())
+  userId String
+  planId String
+
   // Status
-  status            SubscriptionStatus @default(PENDING)
-  startDate         DateTime           @default(now())
-  endDate           DateTime
-  autoRenewal       Boolean            @default(true)
-  
+  status      SubscriptionStatus @default(PENDING)
+  startDate   DateTime           @default(now())
+  endDate     DateTime
+  autoRenewal Boolean            @default(true)
+
   // Payment info
-  amount            Decimal            @db.Decimal(10, 2)
-  currency          String             @default("BRL")
-  paymentMethod     String?            // "credit_card", "pix", "boleto"
-  transactionId     String?
-  
+  amount          Decimal @db.Decimal(10, 2)
+  currency        String  @default("BRL")
+  paymentMethod   String? // "credit_card", "pix", "boleto"
+  paymentProvider String? // "stripe", "mercadopago"
+  transactionId   String?
+
   // External integration (Stripe, etc)
-  externalId        String?            // Stripe subscription ID
-  externalData      Json?              // Store full external object
-  
+  externalId   String? // Stripe subscription ID
+  externalData Json? // Store full external object
+
   // Renewal tracking
-  renewalCount      Int                @default(0)
-  lastRenewalDate   DateTime?
-  nextBillingDate   DateTime?
-  
+  renewalCount    Int       @default(0)
+  lastRenewalDate DateTime?
+  nextBillingDate DateTime?
+
   // Cancellation
-  cancelledAt       DateTime?
+  cancelledAt        DateTime?
   cancellationReason String?
-  
+
   // Relations
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan              Plan               @relation(fields: [planId], references: [id])
-  payments          Payment[]
-  checkoutSessions  CheckoutSession[]
-  
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             Plan              @relation(fields: [planId], references: [id])
+  payments         Payment[]
+  checkoutSessions CheckoutSession[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -183,27 +184,28 @@ model Subscription {
 }
 
 model Payment {
-  id               String    @id @default(uuid())
-  subscriptionId   String
-  
+  id             String @id @default(uuid())
+  subscriptionId String
+
   // Payment details
-  amount           Decimal   @db.Decimal(10, 2)
-  currency         String    @default("BRL")
-  status           String    // "pending", "completed", "failed", "refunded"
-  paymentMethod    String    // "credit_card", "pix", "boleto"
-  
+  amount          Decimal @db.Decimal(10, 2)
+  currency        String  @default("BRL")
+  status          String // "pending", "completed", "failed", "refunded"
+  paymentMethod   String // "credit_card", "pix", "boleto"
+  paymentProvider String? // "stripe", "mercadopago"
+
   // External references
-  externalId       String?   // Payment provider ID
-  receiptUrl       String?
-  
+  externalId String? // Payment provider ID
+  receiptUrl String?
+
   // Dates
-  paidAt           DateTime?
-  dueDate          DateTime?
-  refundedAt       DateTime?
-  
+  paidAt     DateTime?
+  dueDate    DateTime?
+  refundedAt DateTime?
+
   // Relations
-  subscription     Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -211,36 +213,36 @@ model Payment {
 }
 
 model CheckoutSession {
-  id                 String    @id @default(uuid())
-  userId             String?
-  
+  id     String  @id @default(uuid())
+  userId String?
+
   // Stripe session info
-  stripeSessionId    String    @unique
-  stripeStatus       String    // "open", "complete", "expired"
-  paymentStatus      String    // "paid", "unpaid", "no_payment_required"
-  
+  stripeSessionId String @unique
+  stripeStatus    String // "open", "complete", "expired"
+  paymentStatus   String // "paid", "unpaid", "no_payment_required"
+
   // Session details
-  mode               String    // "subscription", "payment"
-  priceId            String
-  amount             Decimal   @db.Decimal(10, 2)
-  currency           String    @default("BRL")
-  
+  mode     String // "subscription", "payment"
+  priceId  String
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("BRL")
+
   // URLs
-  successUrl         String?
-  cancelUrl          String?
-  
+  successUrl String?
+  cancelUrl  String?
+
   // External data
-  stripeData         Json?     // Full Stripe session object
-  
+  stripeData Json? // Full Stripe session object
+
   // Timestamps
-  expiresAt          DateTime?
-  completedAt        DateTime?
-  
+  expiresAt   DateTime?
+  completedAt DateTime?
+
   // Relations
-  user               User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  subscription       Subscription?  @relation(fields: [subscriptionId], references: [id])
-  subscriptionId     String?
-  
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -248,21 +250,21 @@ model CheckoutSession {
 }
 
 model WatchHistory {
-  id          String   @id @default(uuid())
-  userId      String
-  animeId     String
-  episodeId   String?
-  
+  id        String  @id @default(uuid())
+  userId    String
+  animeId   String
+  episodeId String?
+
   // Progress
-  progress    Float    @default(0) // 0-100 percentage
-  duration    Int?     // Total duration in seconds
-  watchedAt   DateTime @default(now())
-  completed   Boolean  @default(false)
-  
+  progress  Float    @default(0) // 0-100 percentage
+  duration  Int? // Total duration in seconds
+  watchedAt DateTime @default(now())
+  completed Boolean  @default(false)
+
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  anime       Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade)
-  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime Anime @relation(fields: [animeId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -271,16 +273,16 @@ model WatchHistory {
 }
 
 model Favorite {
-  id        String   @id @default(uuid())
-  userId    String
-  animeId   String
-  
+  id      String @id @default(uuid())
+  userId  String
+  animeId String
+
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  anime     Anime    @relation(fields: [animeId], references: [id], onDelete: Cascade)
-  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime Anime @relation(fields: [animeId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
-  
+
   @@unique([userId, animeId])
   @@map("favorites")
 }
@@ -313,48 +315,48 @@ enum NotificationType {
 }
 
 model Anime {
-  id            String       @id @default(uuid())
-  title         String
-  description   String       @db.Text
-  thumbnail     String?
-  banner        String?
-  logo          String?
-  
+  id          String  @id @default(uuid())
+  title       String
+  description String  @db.Text
+  thumbnail   String?
+  banner      String?
+  logo        String?
+
   // Basic info
   year          Int
-  status        AnimeStatus  @default(ONGOING)
-  type          AnimeType    @default(ANIME)
-  rating        String       // "Livre", "10+", "12+", "14+", "16+", "18+"
+  status        AnimeStatus @default(ONGOING)
+  type          AnimeType   @default(ANIME)
+  rating        String // "Livre", "10+", "12+", "14+", "16+", "18+"
   totalEpisodes Int?
-  
+
   // Content flags
-  isSubbed      Boolean      @default(true)
-  isDubbed      Boolean      @default(false)
-  
+  isSubbed Boolean @default(true)
+  isDubbed Boolean @default(false)
+
   // Metadata
-  genres        String[]     // Array of genres
-  tags          String[]     @default([])
-  director      String?
-  studio        String?
-  
+  genres   String[] // Array of genres
+  tags     String[] @default([])
+  director String?
+  studio   String?
+
   // Cloudflare R2 integration
-  r2BucketPath  String?      // Base path in R2 bucket
-  posterUrl     String?      // R2 public URL for poster
-  posterR2Key   String?      // R2 key for poster image
-  bannerUrl     String?      // R2 public URL for banner
-  bannerR2Key   String?      // R2 key for banner image
-  logoUrl       String?      // R2 public URL for logo
-  logoR2Key     String?      // R2 key for logo image
-  
+  r2BucketPath String? // Base path in R2 bucket
+  posterUrl    String? // R2 public URL for poster
+  posterR2Key  String? // R2 key for poster image
+  bannerUrl    String? // R2 public URL for banner
+  bannerR2Key  String? // R2 key for banner image
+  logoUrl      String? // R2 public URL for logo
+  logoR2Key    String? // R2 key for logo image
+
   // Relations
-  seasons       Season[]
-  favorites     Favorite[]
-  watchHistory  WatchHistory[]
-  heroBanners   HeroBanner[]
-  
+  seasons      Season[]
+  favorites    Favorite[]
+  watchHistory WatchHistory[]
+  heroBanners  HeroBanner[]
+
   // SEO
-  slug          String       @unique
-  
+  slug String @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -362,27 +364,27 @@ model Anime {
 }
 
 model Season {
-  id          String    @id @default(uuid())
-  animeId     String
-  
+  id      String @id @default(uuid())
+  animeId String
+
   // Season info
   seasonNumber Int
-  title       String?   // Optional season title like "Final Season"
-  description String?   @db.Text
-  
+  title        String? // Optional season title like "Final Season"
+  description  String? @db.Text
+
   // Dates
   releaseDate DateTime?
   endDate     DateTime?
-  
+
   // Cloudflare R2 integration
-  r2BucketPath String?  // Season-specific path in R2 bucket
-  bannerUrl    String?  // R2 public URL for season banner
-  bannerR2Key  String?  // R2 key for season banner image
-  
+  r2BucketPath String? // Season-specific path in R2 bucket
+  bannerUrl    String? // R2 public URL for season banner
+  bannerR2Key  String? // R2 key for season banner image
+
   // Relations
-  anime       Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade)
-  episodes    Episode[]
-  
+  anime    Anime     @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  episodes Episode[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -391,39 +393,39 @@ model Season {
 }
 
 model Episode {
-  id            String    @id @default(uuid())
-  seasonId      String
-  
+  id       String @id @default(uuid())
+  seasonId String
+
   // Episode info
   episodeNumber Int
   title         String
-  description   String?   @db.Text
+  description   String? @db.Text
   thumbnail     String?
-  
+
   // Duration in seconds
-  duration      Int
-  
+  duration Int
+
   // Cloudflare R2 integration
-  videoUrl         String?   // R2 public URL for video
-  r2Key           String?   // R2 key for video file
-  r2VideoPath     String?   // Legacy: Path to video file in R2
-  r2SubtitlePath  String?   // Path to subtitle files in R2
-  thumbnailUrl    String?   // R2 public URL for thumbnail
-  thumbnailR2Key  String?   // R2 key for thumbnail image
-  r2ThumbnailPath String?   // Legacy: Path to thumbnail in R2
-  
+  videoUrl        String? // R2 public URL for video
+  r2Key           String? // R2 key for video file
+  r2VideoPath     String? // Legacy: Path to video file in R2
+  r2SubtitlePath  String? // Path to subtitle files in R2
+  thumbnailUrl    String? // R2 public URL for thumbnail
+  thumbnailR2Key  String? // R2 key for thumbnail image
+  r2ThumbnailPath String? // Legacy: Path to thumbnail in R2
+
   // Video quality available
   availableQualities VideoQuality[] @default([HD])
-  
+
   // Air date
-  airDate       DateTime?
-  
+  airDate DateTime?
+
   // Relations
-  season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  season        Season         @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   huntingGroups HuntingGroup[]
   subtitles     Subtitle[]
   audioTracks   AudioTrack[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -432,15 +434,15 @@ model Episode {
 }
 
 model Subtitle {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   episodeId String
-  language  String   // e.g., "por", "eng", "ara"
-  label     String   // e.g., "Português", "English", "العربية"
-  url       String   // R2 public URL
-  r2Key     String   // R2 key for the .vtt file
-  
-  episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  
+  language  String // e.g., "por", "eng", "ara"
+  label     String // e.g., "Português", "English", "العربية"
+  url       String // R2 public URL
+  r2Key     String // R2 key for the .vtt file
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -448,14 +450,14 @@ model Subtitle {
 }
 
 model AudioTrack {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   episodeId String
-  language  String   // e.g., "por", "jpn"
-  label     String   // e.g., "Português (Dublado)", "Japonês (Original)"
-  url       String?  // Optional: URL if stored separately, otherwise metadata for HLS index
-  
-  episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  
+  language  String // e.g., "por", "jpn"
+  label     String // e.g., "Português (Dublado)", "Japonês (Original)"
+  url       String? // Optional: URL if stored separately, otherwise metadata for HLS index
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -463,64 +465,64 @@ model AudioTrack {
 }
 
 model HeroBanner {
-  id            String   @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   // Content info
-  title         String
-  subtitle      String
-  description   String   @db.Text
-  
+  title       String
+  subtitle    String
+  description String @db.Text
+
   // Media assets
   backgroundImage String
-  logo          String?
-  
+  logo            String?
+
   // Meta info
-  type          String   @default("anime")
-  year          Int
-  rating        String   @default("16+")
-  duration      String   @default("24 min")
-  episode       String?
-  
+  type     String  @default("anime")
+  year     Int
+  rating   String  @default("16+")
+  duration String  @default("24 min")
+  episode  String?
+
   // Genre tags
-  genres        String[] @default([])
-  
+  genres String[] @default([])
+
   // Display order and status
-  displayOrder  Int      @default(0)
-  isActive      Boolean  @default(true)
-  
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
   // Relation to anime (optional)
-  animeId       String?
-  anime         Anime?   @relation(fields: [animeId], references: [id], onDelete: SetNull)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  animeId String?
+  anime   Anime?  @relation(fields: [animeId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("hero_banners")
 }
 
 model Notification {
-  id          Int              @id @default(autoincrement())
-  userId      String
+  id     Int    @id @default(autoincrement())
+  userId String
 
   // Notification content
-  type        NotificationType
-  title       String           @db.VarChar(200)
-  message     String           @db.VarChar(1000)
+  type    NotificationType
+  title   String           @db.VarChar(200)
+  message String           @db.VarChar(1000)
 
   // Optional fields
-  actionUrl   String?          // URL to redirect when clicked
-  imageUrl    String?          // Image/thumbnail for the notification
-  data        Json?            // Additional structured data
+  actionUrl String? // URL to redirect when clicked
+  imageUrl  String? // Image/thumbnail for the notification
+  data      Json? // Additional structured data
 
   // Status
-  read        Boolean          @default(false)
-  readAt      DateTime?
+  read   Boolean   @default(false)
+  readAt DateTime?
 
   // Relations
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, read])
   @@index([userId, createdAt])
@@ -528,14 +530,14 @@ model Notification {
 }
 
 model HuntingGroup {
-  id          String             @id @default(uuid())
-  name        String?
-  
+  id   String  @id @default(uuid())
+  name String?
+
   // Current Content
-  animeId     String
-  episodeId   String?
-  episode     Episode?           @relation(fields: [episodeId], references: [id], onDelete: SetNull)
-  
+  animeId   String
+  episodeId String?
+  episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: SetNull)
+
   // State
   status      HuntingGroupStatus @default(OPEN)
   currentTime Float              @default(0)
@@ -544,39 +546,39 @@ model HuntingGroup {
   createdAt   DateTime           @default(now())
 
   // Relations
-  leaderId    String
-  leader      User               @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: Cascade)
-  members     GroupMember[]
-  messages    ChatMessage[]
-  
+  leaderId String
+  leader   User          @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members  GroupMember[]
+  messages ChatMessage[]
+
   @@map("hunting_groups")
 }
 
 model GroupMember {
-  id        String    @id @default(uuid())
-  groupId   String
-  userId    String
-  role      GroupRole @default(MEMBER)
-  joinedAt  DateTime  @default(now())
+  id       String    @id @default(uuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
 
   // Relations
-  group     HuntingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group HuntingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@map("group_members")
 }
 
 model ChatMessage {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   groupId   String
   userId    String
-  content   String    @db.VarChar(500)
-  createdAt DateTime  @default(now())
+  content   String   @db.VarChar(500)
+  createdAt DateTime @default(now())
 
   // Relations
-  group     HuntingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group HuntingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([groupId, createdAt])
   @@map("chat_messages")

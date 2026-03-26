@@ -6,7 +6,7 @@ const usersQuerySchema = z.object({
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),
   limit: z.string().optional().transform(val => val ? parseInt(val) : 20),
   role: z.enum(['USER', 'PREMIUM', 'SUPER_PREMIUM', 'ADMIN']).optional(),
-  plan: z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']).optional(),
+  plan: z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND']).optional(),
   status: z.enum(['ACTIVE', 'EXPIRED', 'CANCELLED', 'PENDING', 'GRACE_PERIOD']).optional(),
   search: z.string().optional(),
   sortBy: z.enum(['email', 'name', 'role', 'createdAt']).optional().default('email'),

@@ -25,10 +25,10 @@ const targetOptions = [
 ]
 
 const planTypes = [
-  { value: 'FREE', label: 'Grátis' },
-  { value: 'FAN', label: 'Fan' },
-  { value: 'MEGA_FAN', label: 'Mega Fan' },
-  { value: 'MEGA_FAN_ANNUAL', label: 'Mega Fan Anual' }
+  { value: 'CITIZEN', label: 'Civil' },
+  { value: 'ADVENTURER', label: 'Aventureiro' },
+  { value: 'HERO', label: 'Herói' },
+  { value: 'LEGEND', label: 'Imortal' }
 ]
 
 type FormData = {

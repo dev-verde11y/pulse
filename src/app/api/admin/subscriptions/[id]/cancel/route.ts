@@ -87,7 +87,7 @@ export async function PATCH(
         where: { id: existingSubscription.userId },
         data: {
           subscriptionStatus: 'CANCELLED',
-          currentPlan: 'FREE',
+          currentPlan: 'CITIZEN',
           autoRenewal: false,
           // Remover benefícios premium
           adFree: false,

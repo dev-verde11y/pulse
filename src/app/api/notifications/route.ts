@@ -14,7 +14,7 @@ const createNotificationSchema = z.object({
   userId: z.string().optional(), // Para enviar para usuário específico
   userIds: z.array(z.string()).optional(), // Para enviar para múltiplos usuários
   sendToAll: z.boolean().optional(), // Para enviar para todos os usuários
-  targetPlans: z.array(z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL'])).optional() // Para enviar por planos
+  targetPlans: z.array(z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND'])).optional() // Para enviar por planos
 })
 
 // GET - Buscar notificações do usuário
@@ -104,10 +104,10 @@ export async function POST(request: NextRequest) {
         where: {
           // Apenas usuários com planos ativos
           OR: [
-            { currentPlan: 'FAN' },
-            { currentPlan: 'MEGA_FAN' },
-            { currentPlan: 'MEGA_FAN_ANNUAL' },
-            { currentPlan: 'FREE' }
+            { currentPlan: 'ADVENTURER' },
+            { currentPlan: 'HERO' },
+            { currentPlan: 'LEGEND' },
+            { currentPlan: 'CITIZEN' }
           ]
         },
         select: { id: true }

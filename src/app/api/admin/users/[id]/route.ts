@@ -6,7 +6,7 @@ const updateUserSchema = z.object({
   name: z.string().optional().nullable(),
   role: z.enum(['USER', 'PREMIUM', 'SUPER_PREMIUM', 'ADMIN']).optional(),
   subscriptionStatus: z.enum(['ACTIVE', 'EXPIRED', 'CANCELLED', 'PENDING', 'GRACE_PERIOD']).optional(),
-  currentPlan: z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']).optional(),
+  currentPlan: z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND']).optional(),
   maxScreens: z.number().int().positive().optional(),
   offlineViewing: z.boolean().optional(),
   gameVaultAccess: z.boolean().optional(),

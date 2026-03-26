@@ -13,14 +13,14 @@ import Link from "next/link"
 // Helper function to format plan names for display
 const formatPlanName = (planType: string | undefined): string => {
   switch (planType) {
-    case 'FREE':
+    case 'CITIZEN':
       return 'Aventureiro'
-    case 'FAN':
+    case 'ADVENTURER':
       return 'Cavaleiro'
-    case 'MEGA_FAN':
-      return 'Titã'
-    case 'MEGA_FAN_ANNUAL':
-      return 'Titã Anual'
+    case 'HERO':
+      return 'Herói Lendário'
+    case 'LEGEND':
+      return 'Imortal'
     default:
       return 'Aventureiro'
   }
@@ -410,11 +410,11 @@ export function Header({ forceSolid = false }: { forceSolid?: boolean }) {
                                     Admin
                                   </span>
                                 )}
-                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${user?.currentPlan === 'FREE'
+                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${user?.currentPlan === 'CITIZEN'
                                   ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
-                                  : user?.currentPlan === 'FAN'
+                                  : user?.currentPlan === 'ADVENTURER'
                                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-                                    : user?.currentPlan === 'MEGA_FAN' || user?.currentPlan === 'MEGA_FAN_ANNUAL'
+                                    : user?.currentPlan === 'HERO' || user?.currentPlan === 'LEGEND'
                                       ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                                       : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                                   }`}>

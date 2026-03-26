@@ -6,7 +6,7 @@ const subscriptionsQuerySchema = z.object({
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),
   limit: z.string().optional().transform(val => val ? parseInt(val) : 20),
   status: z.enum(['PENDING', 'ACTIVE', 'EXPIRED', 'CANCELLED', 'GRACE_PERIOD']).optional(),
-  plan: z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']).optional(),
+  plan: z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND']).optional(),
   paymentMethod: z.enum(['credit_card', 'pix', 'boleto']).optional(),
   search: z.string().optional(),
   sortBy: z.enum(['createdAt', 'startDate', 'endDate', 'amount']).optional().default('createdAt'),

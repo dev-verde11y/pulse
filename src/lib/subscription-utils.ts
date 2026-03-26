@@ -68,7 +68,7 @@ export class SubscriptionManager {
       where: { id: userId },
       data: {
         subscriptionStatus: 'EXPIRED',
-        currentPlan: 'FREE',
+        currentPlan: 'CITIZEN',
         role: 'USER',
         maxScreens: 1,
         offlineViewing: false,
@@ -254,12 +254,12 @@ export class SubscriptionManager {
    */
   static getPlanRole(planType: PlanType) {
     switch (planType) {
-      case 'FREE':
+      case 'CITIZEN':
         return 'USER'
-      case 'FAN':
+      case 'ADVENTURER':
         return 'PREMIUM'
-      case 'MEGA_FAN':
-      case 'MEGA_FAN_ANNUAL':
+      case 'HERO':
+      case 'LEGEND':
         return 'SUPER_PREMIUM'
       default:
         return 'USER'
@@ -280,9 +280,9 @@ export class SubscriptionManager {
       case 'multiple_screens':
         return user.maxScreens > 1
       case 'hd_quality':
-        return user.currentPlan !== 'FREE'
+        return user.currentPlan !== 'CITIZEN'
       case '4k_quality':
-        return user.currentPlan === 'MEGA_FAN' || user.currentPlan === 'MEGA_FAN_ANNUAL'
+        return user.currentPlan === 'HERO' || user.currentPlan === 'LEGEND'
       default:
         return false
     }

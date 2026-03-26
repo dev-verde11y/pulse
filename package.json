@@ -11,6 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seeders/seed.ts",
     "db:seed-animes": "tsx prisma/seeders/seed-animes.ts",
+    "db:seed-banners": "tsx prisma/seeders/hero-banners.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },

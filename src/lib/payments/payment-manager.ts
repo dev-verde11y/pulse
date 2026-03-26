@@ -141,8 +141,8 @@ export class PaymentManager {
         planType = legacyMapping as PlanType
         console.log(`✅ Mapped via legacy mapping to ${planType}`)
       } else {
-        console.warn('⚠️ Unknown price ID, defaulting to FAN:', priceId)
-        planType = 'FAN'
+        console.warn('⚠️ Unknown price ID, defaulting to ADVENTURER:', priceId)
+        planType = 'ADVENTURER'
       }
     }
 

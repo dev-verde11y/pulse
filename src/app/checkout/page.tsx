@@ -77,7 +77,7 @@ function CheckoutContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceId: planConfig?.priceId || plan.id,
-          mode: plan.type === 'MEGA_FAN_ANNUAL' ? 'subscription' : 'subscription', // Ajustar conforme necessário
+          mode: plan.type === 'LEGEND' ? 'subscription' : 'subscription', // Ajustar conforme necessário
           provider: selectedGateway
         }),
       })
@@ -122,18 +122,18 @@ function CheckoutContent() {
   // Cores dinâmicas baseadas no plano
   const getThemeColor = () => {
     switch (planTypeParam) {
-      case 'FAN': return 'from-blue-600 to-cyan-500'
-      case 'MEGA_FAN': return 'from-purple-600 to-pink-500'
-      case 'MEGA_FAN_ANNUAL': return 'from-emerald-600 to-teal-500'
+      case 'ADVENTURER': return 'from-blue-600 to-cyan-500'
+      case 'HERO': return 'from-purple-600 to-pink-500'
+      case 'LEGEND': return 'from-emerald-600 to-teal-500'
       default: return 'from-orange-600 to-pink-600'
     }
   }
 
   const getBorderColor = () => {
     switch (planTypeParam) {
-      case 'FAN': return 'border-blue-500/30'
-      case 'MEGA_FAN': return 'border-purple-500/30'
-      case 'MEGA_FAN_ANNUAL': return 'border-emerald-500/30'
+      case 'ADVENTURER': return 'border-blue-500/30'
+      case 'HERO': return 'border-purple-500/30'
+      case 'LEGEND': return 'border-emerald-500/30'
       default: return 'border-orange-500/30'
     }
   }
@@ -211,15 +211,15 @@ function CheckoutContent() {
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
                   <p className="text-xs text-gray-500 font-bold uppercase tracking-tighter mb-1">QUALIDADE</p>
-                  <p className="font-bold">{planConfig?.planType === 'FAN' ? 'HD' : '4K HDR'}</p>
+                  <p className="font-bold">{planConfig?.planType === 'ADVENTURER' ? 'HD' : '4K HDR'}</p>
                 </div>
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
                   <p className="text-xs text-gray-500 font-bold uppercase tracking-tighter mb-1">TELAS</p>
-                  <p className="font-bold">{planConfig?.planType === 'FAN' ? '1 Tela' : '4 Telas'}</p>
+                  <p className="font-bold">{planConfig?.planType === 'ADVENTURER' ? '1 Tela' : '4 Telas'}</p>
                 </div>
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
                   <p className="text-xs text-gray-500 font-bold uppercase tracking-tighter mb-1">OFFLINE</p>
-                  <p className="font-bold">{planConfig?.planType === 'FAN' ? 'Não' : 'Sim'}</p>
+                  <p className="font-bold">{planConfig?.planType === 'ADVENTURER' ? 'Não' : 'Sim'}</p>
                 </div>
               </div>
             </RevealSection>

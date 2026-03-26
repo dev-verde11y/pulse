@@ -10,7 +10,7 @@ interface User {
   avatar: string | null
   role: 'USER' | 'PREMIUM' | 'SUPER_PREMIUM' | 'ADMIN'
   subscriptionStatus: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PENDING' | 'GRACE_PERIOD'
-  currentPlan: 'FREE' | 'FAN' | 'MEGA_FAN' | 'MEGA_FAN_ANNUAL'
+  currentPlan: 'CITIZEN' | 'ADVENTURER' | 'HERO' | 'LEGEND'
   subscriptionExpiry: string | null
   maxScreens: number
   offlineViewing: boolean
@@ -186,12 +186,12 @@ export default function UsersPage() {
 
   const getPlanBadge = (plan: string) => {
     const colors = {
-      MEGA_FAN_ANNUAL: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-      MEGA_FAN: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      FAN: 'bg-green-500/20 text-green-400 border-green-500/30',
-      FREE: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      LEGEND: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      HERO: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+      ADVENTURER: 'bg-green-500/20 text-green-400 border-green-500/30',
+      CITIZEN: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
     }
-    return colors[plan as keyof typeof colors] || colors.FREE
+    return colors[plan as keyof typeof colors] || colors.CITIZEN
   }
 
   const getStatusBadge = (status: string) => {
@@ -225,10 +225,10 @@ export default function UsersPage() {
 
   const getPlanDisplayName = (plan: string) => {
     const names = {
-      MEGA_FAN_ANNUAL: 'Mega Fan Anual',
-      MEGA_FAN: 'Mega Fan',
-      FAN: 'Fan',
-      FREE: 'Gratuito'
+      LEGEND: 'Mega Fan Anual',
+      HERO: 'Mega Fan',
+      ADVENTURER: 'Fan',
+      CITIZEN: 'Gratuito'
     }
     return names[plan as keyof typeof names] || plan
   }
@@ -362,10 +362,10 @@ export default function UsersPage() {
               className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
             >
               <option value="">Todos</option>
-              <option value="MEGA_FAN_ANNUAL">Mega Fan Anual</option>
-              <option value="MEGA_FAN">Mega Fan</option>
-              <option value="FAN">Fan</option>
-              <option value="FREE">Gratuito</option>
+              <option value="LEGEND">Mega Fan Anual</option>
+              <option value="HERO">Mega Fan</option>
+              <option value="ADVENTURER">Fan</option>
+              <option value="CITIZEN">Gratuito</option>
             </select>
           </div>
 

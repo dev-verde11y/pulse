@@ -38,20 +38,20 @@ interface PaymentHistory {
 
 function getMoonPhaseName(planType: string) {
   const plans = {
-    'FREE': 'Aventureiro',
-    'FAN': 'Cavaleiro',
-    'MEGA_FAN': 'Titã',
-    'MEGA_FAN_ANNUAL': 'Titã Anual'
+    'CITIZEN': 'Civil',
+    'ADVENTURER': 'Aventureiro',
+    'HERO': 'Herói',
+    'LEGEND': 'Imortal'
   }
   return plans[planType as keyof typeof plans] || planType
 }
 
 function getMoonPhaseIcon(planType: string) {
   const icons = {
-    'FREE': '🛡️',
-    'FAN': '⚔️',
-    'MEGA_FAN': '👑',
-    'MEGA_FAN_ANNUAL': '💎'
+    'CITIZEN': '🛡️',
+    'ADVENTURER': '⚔️',
+    'HERO': '👑',
+    'LEGEND': '💎'
   }
   return icons[planType as keyof typeof icons] || '✨'
 }
@@ -116,11 +116,11 @@ export default function SubscriptionDashboard() {
           setPayments(payData.payments || [])
         }
 
-        // Load available plans (excluindo FREE)
+        // Load available plans (excluindo CITIZEN)
         const plansResponse = await fetch('/api/plans')
         if (plansResponse.ok) {
           const plansData = await plansResponse.json()
-          const paidPlans = (plansData.plans || []).filter((p: Plan) => p.type !== 'FREE')
+          const paidPlans = (plansData.plans || []).filter((p: Plan) => p.type !== 'CITIZEN')
           setAvailablePlans(paidPlans)
         }
       } catch (error) {
@@ -282,7 +282,7 @@ export default function SubscriptionDashboard() {
                 </div>
               </div>
             ) : (
-              // No Subscription State (FREE users)
+              // No Subscription State (CITIZEN users)
               <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border border-gray-400/30 rounded-2xl flex items-center justify-center">
                   <span className="text-4xl">🌙</span>
@@ -292,7 +292,7 @@ export default function SubscriptionDashboard() {
               </div>
             )}
 
-            {/* Available Plans Section - Sempre visível para FREE */}
+            {/* Available Plans Section - Sempre visível para CITIZEN */}
             {!subscription && availablePlans.length > 0 && (
               <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Planos Disponíveis</h3>

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { PlanType } from '@prisma/client'
 
 const upgradeSchema = z.object({
-  planType: z.enum(['FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']),
+  planType: z.enum(['ADVENTURER', 'HERO', 'LEGEND']),
   paymentMethod: z.enum(['credit_card', 'pix', 'boleto']),
   paymentToken: z.string().optional() // For payment processing
 })

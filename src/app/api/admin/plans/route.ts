@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 const createPlanSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  type: z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']),
+  type: z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND']),
   billingCycle: z.enum(['MONTHLY', 'ANNUALLY', 'LIFETIME']),
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Preço deve ser um valor decimal válido'),
   currency: z.string().min(3).max(3).default('BRL'),
@@ -22,7 +22,7 @@ const createPlanSchema = z.object({
 const plansQuerySchema = z.object({
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),
   limit: z.string().optional().transform(val => val ? parseInt(val) : 20),
-  type: z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']).optional(),
+  type: z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND']).optional(),
   billingCycle: z.enum(['MONTHLY', 'ANNUALLY', 'LIFETIME']).optional(),
   active: z.string().optional().transform(val => val === 'true' ? true : val === 'false' ? false : undefined),
   search: z.string().optional(),

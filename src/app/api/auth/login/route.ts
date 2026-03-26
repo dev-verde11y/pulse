@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       const availablePlans = await prisma.plan.findMany({
         where: {
           active: true,
-          type: { not: 'FREE' }
+          type: { not: 'CITIZEN' }
         },
         orderBy: { displayOrder: 'asc' }
       })

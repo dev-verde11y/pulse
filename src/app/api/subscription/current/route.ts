@@ -41,8 +41,8 @@ export async function GET() {
       )
     }
 
-    // Check if user has no active subscription (FREE plan)
-    if (user.currentPlan === 'FREE' || user.subscriptionStatus === 'EXPIRED' || user.subscriptionStatus === 'CANCELLED') {
+    // Check if user has no active subscription (CITIZEN plan)
+    if (user.currentPlan === 'CITIZEN' || user.subscriptionStatus === 'EXPIRED' || user.subscriptionStatus === 'CANCELLED') {
       return NextResponse.json(
         { message: 'No active subscription found' },
         { status: 404 }

@@ -3,7 +3,7 @@ export interface User {
   email: string
   name: string | null
   avatar: string | null
-  currentPlan?: 'FREE' | 'FAN' | 'MEGA_FAN' | 'MEGA_FAN_ANNUAL'
+  currentPlan?: 'CITIZEN' | 'ADVENTURER' | 'HERO' | 'LEGEND'
   role?: string
   subscriptionStatus?: string
   createdAt: string

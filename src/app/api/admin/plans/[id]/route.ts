@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 const updatePlanSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').optional(),
-  type: z.enum(['FREE', 'FAN', 'MEGA_FAN', 'MEGA_FAN_ANNUAL']).optional(),
+  type: z.enum(['CITIZEN', 'ADVENTURER', 'HERO', 'LEGEND']).optional(),
   billingCycle: z.enum(['MONTHLY', 'ANNUALLY', 'LIFETIME']).optional(),
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Preço deve ser um valor decimal válido').optional(),
   currency: z.string().min(3).max(3).optional(),
@@ -181,10 +181,10 @@ export async function DELETE(
       )
     }
 
-    // Não permitir excluir plano FREE se for o único
-    if (existingPlan.type === 'FREE') {
+    // Não permitir excluir plano CITIZEN se for o único
+    if (existingPlan.type === 'CITIZEN') {
       const freePlansCount = await prisma.plan.count({
-        where: { type: 'FREE' }
+        where: { type: 'CITIZEN' }
       })
       
       if (freePlansCount <= 1) {

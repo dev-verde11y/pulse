@@ -73,13 +73,13 @@ export async function POST(request: NextRequest) {
     const trialExpiry = new Date()
     trialExpiry.setDate(trialExpiry.getDate() + 7)
 
-    // Cria o usuário com trial de 7 dias FREE
+    // Cria o usuário com trial de 7 dias CITIZEN
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name: name || null,
-        currentPlan: 'FREE',
+        currentPlan: 'CITIZEN',
         subscriptionStatus: 'ACTIVE',
         subscriptionExpiry: trialExpiry,
         adFree: true, // Durante trial, sem anúncios

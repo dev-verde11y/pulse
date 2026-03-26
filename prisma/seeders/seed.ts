@@ -12,14 +12,14 @@ async function main() {
   const plans = await Promise.all([
     // Free Plan
     prisma.plan.upsert({
-      where: { type: PlanType.FREE },
+      where: { type: PlanType.CITIZEN },
       update: {
-        name: 'Aventureiro',
+        name: 'Civil',
         description: 'Inicie sua jornada no mundo dos animes',
       },
       create: {
-        name: 'Aventureiro',
-        type: PlanType.FREE,
+        name: 'Civil',
+        type: PlanType.CITIZEN,
         billingCycle: BillingCycle.MONTHLY,
         price: 0,
         currency: 'BRL',
@@ -42,16 +42,16 @@ async function main() {
 
     // Fan Plan (Monthly)
     prisma.plan.upsert({
-      where: { type: PlanType.FAN },
+      where: { type: PlanType.ADVENTURER },
       update: {
-        name: 'Cavaleiro',
+        name: 'Aventureiro',
         description: 'Uma jornada sem interrupções e com mais honra',
       },
       create: {
-        name: 'Cavaleiro',
-        type: PlanType.FAN,
+        name: 'Aventureiro',
+        type: PlanType.ADVENTURER,
         billingCycle: BillingCycle.MONTHLY,
-        price: 14.99,
+        price: 24.90,
         currency: 'BRL',
         maxScreens: 1,
         offlineViewing: false,
@@ -73,16 +73,16 @@ async function main() {
 
     // Mega Fan Plan (Monthly)
     prisma.plan.upsert({
-      where: { type: PlanType.MEGA_FAN },
+      where: { type: PlanType.HERO },
       update: {
-        name: 'Titã',
+        name: 'Herói',
         description: 'O poder máximo para os mestres do acervo',
       },
       create: {
-        name: 'Titã',
-        type: PlanType.MEGA_FAN,
+        name: 'Herói',
+        type: PlanType.HERO,
         billingCycle: BillingCycle.MONTHLY,
-        price: 19.99,
+        price: 59.90,
         currency: 'BRL',
         maxScreens: 4,
         offlineViewing: true,
@@ -106,16 +106,16 @@ async function main() {
 
     // Mega Fan Plan (Annual)
     prisma.plan.upsert({
-      where: { type: PlanType.MEGA_FAN_ANNUAL },
+      where: { type: PlanType.LEGEND },
       update: {
-        name: 'Titã Anual',
+        name: 'Imortal',
         description: 'Domínio total por um ano com bônus de economia',
       },
       create: {
-        name: 'Titã Anual',
-        type: PlanType.MEGA_FAN_ANNUAL,
+        name: 'Imortal',
+        type: PlanType.LEGEND,
         billingCycle: BillingCycle.ANNUALLY,
-        price: 199.99,
+        price: 189.90,
         currency: 'BRL',
         maxScreens: 4,
         offlineViewing: true,
@@ -130,8 +130,8 @@ async function main() {
           'Download para assistir offline',
           'Acesse a Pulse Game Vault',
           'Qualidade Superior',
-          '16% de desconto (cobrado anualmente)',
-          'Economia de R$ 39,89/ano'
+          '73% de desconto (cobrado anualmente)',
+          'Economia de R$ 528,90/ano'
         ],
         active: true,
         displayOrder: 3,
@@ -154,7 +154,7 @@ async function main() {
       password: adminPasswordHash,
       name: 'Administrador',
       role: 'ADMIN',
-      currentPlan: PlanType.MEGA_FAN,
+      currentPlan: PlanType.HERO,
       subscriptionStatus: 'ACTIVE',
       subscriptionExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
       maxScreens: 4,
@@ -170,11 +170,11 @@ async function main() {
   await prisma.subscription.create({
     data: {
       userId: adminUser.id,
-      planId: plans.find(p => p.type === PlanType.MEGA_FAN)!.id,
+      planId: plans.find(p => p.type === PlanType.HERO)!.id,
       status: 'ACTIVE',
       startDate: new Date(),
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-      amount: 19.99,
+      amount: 59.90,
       currency: 'BRL',
       paymentMethod: 'credit_card',
       nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -186,16 +186,16 @@ async function main() {
   // Create test users for each plan
   const testPassword = await bcrypt.hash('TestUser@123!', 12)
 
-  // FREE Plan User
+  // CITIZEN Plan User
   const freeUser = await prisma.user.upsert({
     where: { email: 'free@pulse.com' },
     update: {},
     create: {
       email: 'free@pulse.com',
       password: testPassword,
-      name: 'Usuário Grátis',
+      name: 'Usuário Civil',
       role: 'USER',
-      currentPlan: PlanType.FREE,
+      currentPlan: PlanType.CITIZEN,
       subscriptionStatus: 'ACTIVE',
       maxScreens: 1,
       offlineViewing: false,
@@ -205,16 +205,16 @@ async function main() {
     },
   })
 
-  // FAN Plan User
+  // ADVENTURER Plan User
   const fanUser = await prisma.user.upsert({
     where: { email: 'fan@pulse.com' },
     update: {},
     create: {
       email: 'fan@pulse.com',
       password: testPassword,
-      name: 'Usuário Fan',
+      name: 'Usuário Aventureiro',
       role: 'PREMIUM',
-      currentPlan: PlanType.FAN,
+      currentPlan: PlanType.ADVENTURER,
       subscriptionStatus: 'ACTIVE',
       subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       maxScreens: 1,
@@ -227,31 +227,31 @@ async function main() {
     },
   })
 
-  // Create FAN subscription
+  // Create ADVENTURER subscription
   await prisma.subscription.create({
     data: {
       userId: fanUser.id,
-      planId: plans.find(p => p.type === PlanType.FAN)!.id,
+      planId: plans.find(p => p.type === PlanType.ADVENTURER)!.id,
       status: 'ACTIVE',
       startDate: new Date(),
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      amount: 14.99,
+      amount: 24.90,
       currency: 'BRL',
       paymentMethod: 'pix',
       nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   })
 
-  // MEGA FAN Plan User
+  // MEGA ADVENTURER Plan User
   const megaFanUser = await prisma.user.upsert({
     where: { email: 'megafan@pulse.com' },
     update: {},
     create: {
       email: 'megafan@pulse.com',
       password: testPassword,
-      name: 'Usuário Mega Fan',
+      name: 'Usuário Herói',
       role: 'SUPER_PREMIUM',
-      currentPlan: PlanType.MEGA_FAN,
+      currentPlan: PlanType.HERO,
       subscriptionStatus: 'ACTIVE',
       subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       maxScreens: 4,
@@ -264,31 +264,31 @@ async function main() {
     },
   })
 
-  // Create MEGA FAN subscription
+  // Create MEGA ADVENTURER subscription
   await prisma.subscription.create({
     data: {
       userId: megaFanUser.id,
-      planId: plans.find(p => p.type === PlanType.MEGA_FAN)!.id,
+      planId: plans.find(p => p.type === PlanType.HERO)!.id,
       status: 'ACTIVE',
       startDate: new Date(),
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      amount: 19.99,
+      amount: 59.90,
       currency: 'BRL',
       paymentMethod: 'credit_card',
       nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   })
 
-  // MEGA FAN ANNUAL Plan User
+  // MEGA ADVENTURER ANNUAL Plan User
   const megaFanAnnualUser = await prisma.user.upsert({
     where: { email: 'megafan-annual@pulse.com' },
     update: {},
     create: {
       email: 'megafan-annual@pulse.com',
       password: testPassword,
-      name: 'Usuário Mega Fan Anual',
+      name: 'Usuário Imortal',
       role: 'SUPER_PREMIUM',
-      currentPlan: PlanType.MEGA_FAN_ANNUAL,
+      currentPlan: PlanType.LEGEND,
       subscriptionStatus: 'ACTIVE',
       subscriptionExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 365 days
       maxScreens: 4,
@@ -301,15 +301,15 @@ async function main() {
     },
   })
 
-  // Create MEGA FAN ANNUAL subscription
+  // Create MEGA ADVENTURER ANNUAL subscription
   await prisma.subscription.create({
     data: {
       userId: megaFanAnnualUser.id,
-      planId: plans.find(p => p.type === PlanType.MEGA_FAN_ANNUAL)!.id,
+      planId: plans.find(p => p.type === PlanType.LEGEND)!.id,
       status: 'ACTIVE',
       startDate: new Date(),
       endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-      amount: 199.99,
+      amount: 189.90,
       currency: 'BRL',
       paymentMethod: 'credit_card',
       nextBillingDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
@@ -325,7 +325,7 @@ async function main() {
       password: testPassword,
       name: 'Usuário Expirado',
       role: 'USER',
-      currentPlan: PlanType.FREE,
+      currentPlan: PlanType.CITIZEN,
       subscriptionStatus: 'EXPIRED',
       subscriptionExpiry: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
       maxScreens: 1,
@@ -340,11 +340,11 @@ async function main() {
   await prisma.subscription.create({
     data: {
       userId: expiredUser.id,
-      planId: plans.find(p => p.type === PlanType.FAN)!.id,
+      planId: plans.find(p => p.type === PlanType.ADVENTURER)!.id,
       status: 'EXPIRED',
       startDate: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
       endDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      amount: 14.99,
+      amount: 24.90,
       currency: 'BRL',
       paymentMethod: 'boleto',
       cancelledAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
@@ -361,7 +361,7 @@ async function main() {
       password: testPassword,
       name: 'Usuário Período de Graça',
       role: 'PREMIUM',
-      currentPlan: PlanType.FAN,
+      currentPlan: PlanType.ADVENTURER,
       subscriptionStatus: 'GRACE_PERIOD',
       subscriptionExpiry: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       gracePeriodEnd: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
@@ -377,11 +377,11 @@ async function main() {
   await prisma.subscription.create({
     data: {
       userId: gracePeriodUser.id,
-      planId: plans.find(p => p.type === PlanType.FAN)!.id,
+      planId: plans.find(p => p.type === PlanType.ADVENTURER)!.id,
       status: 'GRACE_PERIOD',
       startDate: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000),
       endDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      amount: 14.99,
+      amount: 24.90,
       currency: 'BRL',
       paymentMethod: 'credit_card',
       nextBillingDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const checkoutSession = await stripeGateway.createCheckoutSession({
       userId: clientReferenceId,
       email: customerEmail,
-      planType: 'FAN', // Defaulting to FAN for now, should be derived from priceId in a real burst
+      planType: 'ADVENTURER', // Defaulting to ADVENTURER for now, should be derived from priceId in a real burst
       priceId: priceId,
       mode: mode as 'subscription' | 'payment',
       successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/payments/success?session_id={CHECKOUT_SESSION_ID}`,

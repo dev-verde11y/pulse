@@ -1,13 +1,13 @@
 // Centralized plan configuration
 export const STRIPE_PLANS = {
-  FAN: {
+  ADVENTURER: {
     priceId: process.env.STRIPE_FAN_PRICE_ID || 'price_1S5nLD91l9itSVBOCQpvSL1R',
     name: 'Cavaleiro',
     phase: 'Rising Knight',
     amount: 14.99,
     currency: 'BRL',
     interval: 'month',
-    planType: 'FAN' as const,
+    planType: 'ADVENTURER' as const,
     features: [
       'Sem anúncios',
       'HD Quality',
@@ -17,14 +17,14 @@ export const STRIPE_PLANS = {
     color: 'blue'
   },
 
-  MEGA_FAN: {
+  HERO: {
     priceId: process.env.STRIPE_MEGA_FAN_PRICE_ID || 'price_1S5rQZ91l9itSVBOIF3iJBPH',
     name: 'Titã',
     phase: 'Divine Power',
     amount: 19.99,
     currency: 'BRL',
     interval: 'month',
-    planType: 'MEGA_FAN' as const,
+    planType: 'HERO' as const,
     features: [
       'Tudo do Cavaleiro',
       '4K Ultra HD',
@@ -37,14 +37,14 @@ export const STRIPE_PLANS = {
     popular: true
   },
 
-  MEGA_FAN_ANNUAL: {
+  LEGEND: {
     priceId: process.env.STRIPE_MEGA_FAN_ANNUAL_PRICE_ID || 'price_1S5nOM91l9itSVBOqsJ2vJQU',
     name: 'Titã Anual',
     phase: 'Legendary Soul',
     amount: 199.99,
     currency: 'BRL',
     interval: 'year',
-    planType: 'MEGA_FAN_ANNUAL' as const,
+    planType: 'LEGEND' as const,
     features: [
       'Tudo do Titã',
       'Pagamento anual',
@@ -77,6 +77,6 @@ export function formatPrice(amount: number, currency: string = 'BRL') {
 
 // Legacy mapping for backward compatibility
 export const LEGACY_PRICE_MAPPING = {
-  [process.env.STRIPE_PRICE_ID || '']: 'FAN',
-  [process.env.STRIPE_SUBSCRIPTION_PRICE_ID || '']: 'MEGA_FAN_ANNUAL'
+  [process.env.STRIPE_PRICE_ID || '']: 'ADVENTURER',
+  [process.env.STRIPE_SUBSCRIPTION_PRICE_ID || '']: 'LEGEND'
 } as const

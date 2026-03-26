@@ -53,7 +53,7 @@ export default function ProfilePage() {
     if (user) {
       setProfileData({
         name: user.name || '',
-        currentPlan: user.currentPlan || 'FREE',
+        currentPlan: user.currentPlan || 'CITIZEN',
         subscriptionStatus: user.subscriptionStatus || '',
         createdAt: user.createdAt || ''
       })
@@ -136,11 +136,11 @@ export default function ProfilePage() {
 
   const formatPlanName = (plan: string) => {
     switch (plan) {
-      case 'FREE': return 'Gratis'
-      case 'FAN': return 'Fan'
-      case 'MEGA_FAN': return 'Mega Fan'
-      case 'MEGA_FAN_ANNUAL': return 'Super Premium'
-      default: return 'Gratis'
+      case 'CITIZEN': return 'Civil'
+      case 'ADVENTURER': return 'Aventureiro'
+      case 'HERO': return 'Herói'
+      case 'LEGEND': return 'Imortal'
+      default: return 'Civil'
     }
   }
 
@@ -170,7 +170,7 @@ export default function ProfilePage() {
                       {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
                   </div>
-                  {profileData.currentPlan !== 'FREE' && (
+                  {profileData.currentPlan !== 'CITIZEN' && (
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                       <CheckIcon className="h-3 w-3 text-white" />
                     </div>
@@ -399,18 +399,18 @@ export default function ProfilePage() {
             <div className="space-y-6">
 
               <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6 text-center">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 mx-auto ${profileData.currentPlan === 'FREE'
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 mx-auto ${profileData.currentPlan === 'CITIZEN'
                     ? 'bg-gray-700'
                     : 'bg-blue-600'
                   }`}>
                   <span className="text-xl">
-                    {profileData.currentPlan === 'FREE' ? '🆓' : '⭐'}
+                    {profileData.currentPlan === 'CITIZEN' ? '🆓' : '⭐'}
                   </span>
                 </div>
                 <h4 className="font-semibold text-white mb-1">{formatPlanName(profileData.currentPlan)}</h4>
                 <p className="text-gray-400 text-sm">Status: Ativo</p>
 
-                {profileData.currentPlan === 'FREE' && (
+                {profileData.currentPlan === 'CITIZEN' && (
                   <button className="w-full mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
                     Fazer Upgrade
                   </button>
